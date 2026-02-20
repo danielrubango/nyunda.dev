@@ -21,6 +21,22 @@
                     {{ strtoupper($forumThread->locale) }} • {{ $forumThread->author->name }} • {{ $forumThread->created_at?->format('Y-m-d H:i') }}
                 </p>
                 <h1 class="mt-3 text-4xl font-semibold leading-tight">{{ $forumThread->title }}</h1>
+                <div class="mt-4 flex items-center gap-2">
+                    @can('update', $forumThread)
+                        <a href="{{ route('forum.edit', $forumThread) }}" class="inline-flex rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-100">
+                            Modifier
+                        </a>
+                    @endcan
+                    @can('delete', $forumThread)
+                        <form method="POST" action="{{ route('forum.destroy', $forumThread) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-100">
+                                Supprimer
+                            </button>
+                        </form>
+                    @endcan
+                </div>
             </header>
 
             <article class="prose prose-zinc mt-8 max-w-none">
@@ -28,12 +44,12 @@
             </article>
 
             <section id="replies" class="mt-12">
-                <h2 class="text-xl font-semibold">Reponses</h2>
+                <h2 class="text-xl font-semibold">Réponses</h2>
 
                 @auth
                     <form method="POST" action="{{ route('forum.replies.store', ['forumThread' => $forumThread]) }}" class="mt-4 space-y-3 rounded-xl border border-zinc-200 p-4">
                         @csrf
-                        <label for="body_markdown" class="block text-sm font-medium text-zinc-700">Votre reponse</label>
+                        <label for="body_markdown" class="block text-sm font-medium text-zinc-700">Votre réponse</label>
                         <textarea id="body_markdown" name="body_markdown" rows="5" class="w-full rounded-md border-zinc-300 text-sm">{{ old('body_markdown') }}</textarea>
                         @error('body_markdown')
                             <p class="text-sm text-red-600">{{ $message }}</p>
@@ -43,7 +59,7 @@
                         </button>
                     </form>
                 @else
-                    <p class="mt-4 text-sm text-zinc-600">Connectez-vous pour repondre.</p>
+                    <p class="mt-4 text-sm text-zinc-600">Connectez-vous pour répondre.</p>
                 @endauth
 
                 <div class="mt-6 space-y-4">
@@ -57,7 +73,7 @@
                                     <span class="rounded bg-green-600 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-white">Best reply</span>
                                 @endif
                                 @if ($reply->is_hidden)
-                                    <span class="rounded bg-zinc-900 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-white">Masquee</span>
+                                    <span class="rounded bg-zinc-900 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-white">Masquée</span>
                                 @endif
                             </div>
 
@@ -100,7 +116,7 @@
                             </div>
                         </article>
                     @empty
-                        <p class="text-sm text-zinc-600">Aucune reponse pour le moment.</p>
+                        <p class="text-sm text-zinc-600">Aucune réponse pour le moment.</p>
                     @endforelse
                 </div>
             </section>

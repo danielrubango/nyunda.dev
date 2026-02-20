@@ -72,6 +72,15 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('throttle:forum-threads')
         ->name('forum.store');
 
+    Route::get('/forum/{forumThread:slug}/edit', [ForumThreadsController::class, 'edit'])
+        ->name('forum.edit');
+
+    Route::put('/forum/{forumThread:slug}', [ForumThreadsController::class, 'update'])
+        ->name('forum.update');
+
+    Route::delete('/forum/{forumThread:slug}', [ForumThreadsController::class, 'destroy'])
+        ->name('forum.destroy');
+
     Route::post('/forum/{forumThread:slug}/replies', [ForumRepliesController::class, 'store'])
         ->middleware('throttle:forum-replies')
         ->name('forum.replies.store');

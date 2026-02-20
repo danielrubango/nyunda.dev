@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Forum;
 
 use App\Actions\Content\RenderSafeMarkdown;
 use App\Actions\Forum\CreateForumThread;
+use App\Actions\Forum\DeleteForumThread;
+use App\Actions\Forum\UpdateForumThread;
 use App\Actions\Seo\BuildSeoMeta;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Forum\StoreForumThreadRequest;
+use App\Http\Requests\Forum\UpdateForumThreadRequest;
 use App\Models\ForumThread;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +21,8 @@ class ForumThreadsController extends Controller
 {
     public function __construct(
         private readonly CreateForumThread $createForumThread,
+        private readonly UpdateForumThread $updateForumThread,
+        private readonly DeleteForumThread $deleteForumThread,
         private readonly RenderSafeMarkdown $renderSafeMarkdown,
         private readonly BuildSeoMeta $buildSeoMeta,
     ) {}
@@ -110,6 +115,46 @@ class ForumThreadsController extends Controller
         return redirect()
             ->route('forum.show', $forumThread)
             ->with('status', 'Discussion créée avec succès.');
+    }
+
+    public function edit(ForumThread $forumThread): View
+    {
+        $this->authorize('update', $forumThread);
+
+        return view('forum.edit', [
+            'forumThread' => $forumThread,
+            'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
+            'seo' => $this->buildSeoMeta->handle(
+                title: 'Modifier la discussion',
+                description: 'Modifier le contenu de votre discussion.',
+                canonicalUrl: route('forum.edit', $forumThread),
+            ),
+        ]);
+    }
+
+    public function update(UpdateForumThreadRequest $request, ForumThread $forumThread): RedirectResponse
+    {
+        $this->authorize('update', $forumThread);
+
+        $this->updateForumThread->handle(
+            forumThread: $forumThread,
+            payload: $request->payload(),
+        );
+
+        return redirect()
+            ->route('forum.show', $forumThread)
+            ->with('status', 'Discussion mise à jour avec succès.');
+    }
+
+    public function destroy(ForumThread $forumThread): RedirectResponse
+    {
+        $this->authorize('delete', $forumThread);
+
+        $this->deleteForumThread->handle($forumThread);
+
+        return redirect()
+            ->route('forum.index')
+            ->with('status', 'Discussion supprimée avec succès.');
     }
 
     protected function canViewHiddenThread(ForumThread $forumThread): bool
