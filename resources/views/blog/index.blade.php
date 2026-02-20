@@ -12,7 +12,20 @@
                 <p class="text-xs uppercase tracking-[0.24em] text-zinc-500">{{ config('app.name') }}</p>
                 <h1 class="mt-3 text-3xl font-semibold tracking-tight">Blog</h1>
                 <p class="mt-2 text-sm text-zinc-600">Internal posts, external references, and community links.</p>
+                @auth
+                    <div class="mt-4">
+                        <a href="{{ route('community-links.create') }}" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
+                            Soumettre un lien communautaire
+                        </a>
+                    </div>
+                @endauth
             </header>
+
+            @if (session('status'))
+                <div class="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                    {{ session('status') }}
+                </div>
+            @endif
 
             <form method="GET" action="{{ route('blog.index') }}" class="mb-8 grid gap-4 rounded-xl border border-zinc-200 bg-white p-4 md:grid-cols-3">
                 <label class="space-y-2 text-sm">

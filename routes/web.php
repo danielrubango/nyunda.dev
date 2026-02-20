@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Blog\BlogContentController;
 use App\Http\Controllers\CommentsController;
+use App\Http\Controllers\CommunityLinkSubmissionsController;
 use App\Http\Controllers\LikeContentController;
 use App\Http\Controllers\Profiles\ShowPublicProfileController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,13 @@ Route::get('/blog/{locale}/{slug}', [BlogContentController::class, 'show'])
     ->name('blog.show');
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/community-links/create', [CommunityLinkSubmissionsController::class, 'create'])
+        ->name('community-links.create');
+
+    Route::post('/community-links', [CommunityLinkSubmissionsController::class, 'store'])
+        ->middleware('throttle:community-submissions')
+        ->name('community-links.store');
+
     Route::post('/content/{contentItem}/comments', [CommentsController::class, 'store'])
         ->middleware('throttle:content-comments')
         ->name('content.comments.store');
