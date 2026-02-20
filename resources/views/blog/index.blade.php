@@ -12,6 +12,11 @@
                 <p class="text-xs uppercase tracking-[0.24em] text-zinc-500">{{ config('app.name') }}</p>
                 <h1 class="mt-3 text-3xl font-semibold tracking-tight">Blog</h1>
                 <p class="mt-2 text-sm text-zinc-600">Internal posts, external references, and community links.</p>
+                <div class="mt-4">
+                    <a href="{{ route('about.show') }}" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
+                        About
+                    </a>
+                </div>
                 @auth
                     <div class="mt-4">
                         <a href="{{ route('community-links.create') }}" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">

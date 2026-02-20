@@ -10,7 +10,7 @@ test('private profiles are not publicly accessible', function () {
         'is_profile_public' => false,
     ]);
 
-    $response = $this->get('/@'.$slug);
+    $response = $this->get('/u/'.$slug);
 
     $response->assertNotFound();
 });
@@ -20,7 +20,7 @@ test('public profiles are accessible', function () {
         'name' => 'John Doe',
     ]);
 
-    $response = $this->get('/@'.$user->public_profile_slug);
+    $response = $this->get('/u/'.$user->public_profile_slug);
 
     $response
         ->assertOk()

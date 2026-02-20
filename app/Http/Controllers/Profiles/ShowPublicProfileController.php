@@ -8,10 +8,10 @@ use Illuminate\View\View;
 
 class ShowPublicProfileController extends Controller
 {
-    public function __invoke(string $publicProfileSlug): View
+    public function __invoke(string $username): View
     {
         $user = User::query()
-            ->where('public_profile_slug', $publicProfileSlug)
+            ->where('public_profile_slug', $username)
             ->where('is_profile_public', true)
             ->firstOrFail();
 

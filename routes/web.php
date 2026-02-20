@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AboutPageController;
 use App\Http\Controllers\Blog\BlogContentController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\CommunityLinkSubmissionsController;
@@ -11,8 +12,12 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::get('/@{publicProfileSlug}', ShowPublicProfileController::class)
+Route::get('/u/{username}', ShowPublicProfileController::class)
+    ->where('username', '[A-Za-z0-9][A-Za-z0-9_-]{2,39}')
     ->name('profiles.show');
+
+Route::get('/about', AboutPageController::class)
+    ->name('about.show');
 
 Route::get('/blog', [BlogContentController::class, 'index'])
     ->name('blog.index');
