@@ -39,6 +39,9 @@ class ContentItemsTable
                 IconColumn::make('show_likes')
                     ->boolean()
                     ->label('Likes'),
+                IconColumn::make('show_comments')
+                    ->boolean()
+                    ->label('Comments'),
                 TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable(),

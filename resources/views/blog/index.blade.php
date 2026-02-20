@@ -70,6 +70,20 @@
                         @endif
 
                         <p class="mt-3 text-sm leading-6 text-zinc-600">{{ $translation->excerpt }}</p>
+
+                        @if ($item->type->value === 'internal_post' && $item->show_likes)
+                            <div class="mt-4 flex items-center gap-3 text-sm text-zinc-700">
+                                <span class="font-medium">Likes: {{ (int) ($item->likes_count ?? 0) }}</span>
+                                @auth
+                                    <form method="POST" action="{{ route('content.likes.toggle', ['contentItem' => $item]) }}" class="inline">
+                                        @csrf
+                                        <button type="submit" class="rounded border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-100">
+                                            Like / Unlike
+                                        </button>
+                                    </form>
+                                @endauth
+                            </div>
+                        @endif
                     </article>
                 @empty
                     <p class="rounded-xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">No published content for the selected filters.</p>

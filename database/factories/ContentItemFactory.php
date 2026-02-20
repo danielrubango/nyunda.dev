@@ -26,6 +26,7 @@ class ContentItemFactory extends Factory
             'approved_at' => null,
             'published_at' => null,
             'show_likes' => true,
+            'show_comments' => true,
             'share_on_publish' => false,
         ];
     }

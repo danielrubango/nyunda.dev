@@ -9,6 +9,7 @@ use App\Enums\ContentType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Blog\ListBlogContentRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class BlogContentController extends Controller
@@ -51,10 +52,32 @@ class BlogContentController extends Controller
             return redirect()->away($translation->external_url);
         }
 
+        $contentItem->loadCount('likes');
+
+        /** @var Collection<int, \App\Models\Comment> $comments */
+        $comments = collect();
+
+        if ($contentItem->show_comments) {
+            $contentItem->load([
+                'comments' => fn ($query) => $query
+                    ->where('is_hidden', false)
+                    ->with('user')
+                    ->latest('created_at'),
+            ]);
+
+            $comments = $contentItem->comments;
+        }
+
         return view('blog.show', [
             'contentItem' => $contentItem,
             'translation' => $translation,
             'renderedBody' => $this->renderSafeMarkdown->handle($translation->body_markdown),
+            'comments' => $comments,
+            'renderedComments' => $comments->mapWithKeys(
+                fn ($comment): array => [
+                    $comment->id => $this->renderSafeMarkdown->handle($comment->body_markdown),
+                ],
+            ),
         ]);
     }
 }

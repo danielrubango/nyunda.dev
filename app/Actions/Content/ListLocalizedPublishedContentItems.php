@@ -23,6 +23,7 @@ class ListLocalizedPublishedContentItems
         $query = ContentItem::query()
             ->published()
             ->with('author')
+            ->withCount('likes')
             ->latest('published_at')
             ->latest('id');
 

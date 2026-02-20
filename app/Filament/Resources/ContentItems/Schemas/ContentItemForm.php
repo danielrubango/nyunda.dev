@@ -47,6 +47,8 @@ class ContentItemForm
                         DateTimePicker::make('published_at'),
                         Toggle::make('show_likes')
                             ->default(true),
+                        Toggle::make('show_comments')
+                            ->default(true),
                         Toggle::make('share_on_publish')
                             ->default(false),
                     ])

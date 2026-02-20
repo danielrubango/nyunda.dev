@@ -26,6 +26,7 @@ class ContentItem extends Model
         'approved_at',
         'published_at',
         'show_likes',
+        'show_comments',
         'share_on_publish',
     ];
 
@@ -40,6 +41,7 @@ class ContentItem extends Model
             'approved_at' => 'datetime',
             'published_at' => 'datetime',
             'show_likes' => 'boolean',
+            'show_comments' => 'boolean',
             'share_on_publish' => 'boolean',
         ];
     }
@@ -60,8 +62,33 @@ class ContentItem extends Model
             ->withTimestamps();
     }
 
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function likes(): HasMany
+    {
+        return $this->hasMany(ContentLike::class);
+    }
+
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', ContentStatus::Published->value);
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === ContentStatus::Published;
+    }
+
+    public function isInternalPost(): bool
+    {
+        return $this->type === ContentType::InternalPost;
+    }
+
+    public function isExternalPost(): bool
+    {
+        return $this->type === ContentType::ExternalPost;
     }
 }
