@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Subscribers\Tables;
 
 use App\Enums\SubscriberStatus;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -44,6 +45,12 @@ class SubscribersTable
             ])
             ->recordActions([
                 EditAction::make(),
+            ])
+            ->headerActions([
+                Action::make('export_csv')
+                    ->label('Export CSV')
+                    ->url(fn (): string => route('admin.subscribers.export'))
+                    ->openUrlInNewTab(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

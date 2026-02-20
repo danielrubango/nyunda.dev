@@ -32,6 +32,12 @@
                 </div>
             @endif
 
+            @if (session('error'))
+                <div class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <form method="GET" action="{{ route('blog.index') }}" class="mb-8 grid gap-4 rounded-xl border border-zinc-200 bg-white p-4 md:grid-cols-3">
                 <label class="space-y-2 text-sm">
                     <span class="block font-medium text-zinc-700">Locale</span>
@@ -59,6 +65,37 @@
                     </button>
                 </div>
             </form>
+
+            @php
+                $newsletterLocale = $selectedLocale === 'all'
+                    ? (string) config('app.locale', 'fr')
+                    : $selectedLocale;
+            @endphp
+            <section class="mb-8 rounded-xl border border-zinc-200 bg-white p-5">
+                <h2 class="text-base font-semibold text-zinc-900">Newsletter mensuelle</h2>
+                <p class="mt-1 text-sm text-zinc-600">Inscription avec double opt-in.</p>
+                <form method="POST" action="{{ route('newsletter.subscriptions.store') }}" class="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
+                    @csrf
+                    <input type="hidden" name="locale" value="{{ old('locale', $newsletterLocale) }}">
+                    <input
+                        type="email"
+                        name="email"
+                        value="{{ old('email') }}"
+                        placeholder="you@example.com"
+                        class="w-full rounded-md border-zinc-300 text-sm"
+                        required
+                    >
+                    <button type="submit" class="inline-flex items-center justify-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
+                        S inscrire
+                    </button>
+                </form>
+                @error('email')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+                @error('locale')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </section>
 
             <section class="space-y-4">
                 @forelse ($rows as $row)

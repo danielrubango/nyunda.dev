@@ -1,11 +1,15 @@
 <?php
 
 use App\Http\Controllers\AboutPageController;
+use App\Http\Controllers\Admin\ExportSubscribersCsvController;
 use App\Http\Controllers\Blog\BlogContentController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\CommunityLinkSubmissionsController;
+use App\Http\Controllers\ConfirmNewsletterController;
 use App\Http\Controllers\LikeContentController;
+use App\Http\Controllers\NewsletterSubscriptionsController;
 use App\Http\Controllers\Profiles\ShowPublicProfileController;
+use App\Http\Controllers\UnsubscribeNewsletterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -26,7 +30,20 @@ Route::get('/blog/{locale}/{slug}', [BlogContentController::class, 'show'])
     ->whereIn('locale', config('app.supported_locales', ['fr', 'en']))
     ->name('blog.show');
 
+Route::post('/newsletter/subscriptions', [NewsletterSubscriptionsController::class, 'store'])
+    ->middleware('throttle:newsletter-subscriptions')
+    ->name('newsletter.subscriptions.store');
+
+Route::get('/newsletter/confirm/{token}', ConfirmNewsletterController::class)
+    ->name('newsletter.confirm');
+
+Route::get('/newsletter/unsubscribe/{token}', UnsubscribeNewsletterController::class)
+    ->name('newsletter.unsubscribe');
+
 Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/subscribers/export', ExportSubscribersCsvController::class)
+        ->name('admin.subscribers.export');
+
     Route::get('/community-links/create', [CommunityLinkSubmissionsController::class, 'create'])
         ->name('community-links.create');
 

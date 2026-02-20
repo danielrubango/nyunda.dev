@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Comment;
 use App\Models\ContentItem;
+use App\Observers\ContentItemObserver;
 use App\Policies\CommentPolicy;
 use App\Policies\ContentItemPolicy;
 use Carbon\CarbonImmutable;
@@ -33,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configurePolicies();
+        $this->configureObservers();
         $this->configureRateLimiting();
     }
 
@@ -64,6 +66,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
         });
 
+        RateLimiter::for('newsletter-subscriptions', function (Request $request): Limit {
+            return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
+        });
+
         RateLimiter::for('content-likes', function (Request $request): Limit {
             return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
         });
@@ -77,5 +83,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(ContentItem::class, ContentItemPolicy::class);
         Gate::policy(Comment::class, CommentPolicy::class);
+    }
+
+    protected function configureObservers(): void
+    {
+        ContentItem::observe(ContentItemObserver::class);
     }
 }

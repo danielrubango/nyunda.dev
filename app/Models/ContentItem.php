@@ -72,6 +72,11 @@ class ContentItem extends Model
         return $this->hasMany(ContentLike::class);
     }
 
+    public function socialShareLogs(): HasMany
+    {
+        return $this->hasMany(SocialShareLog::class);
+    }
+
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', ContentStatus::Published->value);
