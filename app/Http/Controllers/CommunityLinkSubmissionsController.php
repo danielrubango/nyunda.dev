@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Content\SubmitCommunityLink;
+use App\Actions\Seo\BuildSeoMeta;
 use App\Http\Requests\Community\StoreCommunityLinkSubmissionRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -10,6 +11,10 @@ use Illuminate\View\View;
 
 class CommunityLinkSubmissionsController extends Controller
 {
+    public function __construct(
+        private readonly BuildSeoMeta $buildSeoMeta,
+    ) {}
+
     public function create(): View
     {
         $userLocale = $this->resolveUserLocale();
@@ -17,6 +22,11 @@ class CommunityLinkSubmissionsController extends Controller
         return view('community-links.create', [
             'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
             'defaultLocale' => $userLocale,
+            'seo' => $this->buildSeoMeta->handle(
+                title: 'Soumettre un lien communautaire',
+                description: 'Partage un lien externe avec la communaute NYUNDA.DEV.',
+                canonicalUrl: route('community-links.create'),
+            ),
         ]);
     }
 

@@ -9,12 +9,20 @@ use App\Http\Controllers\ConfirmNewsletterController;
 use App\Http\Controllers\LikeContentController;
 use App\Http\Controllers\NewsletterSubscriptionsController;
 use App\Http\Controllers\Profiles\ShowPublicProfileController;
+use App\Http\Controllers\RssFeedController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UnsubscribeNewsletterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+Route::get('/sitemap.xml', SitemapController::class)
+    ->name('seo.sitemap');
+
+Route::get('/feed.xml', RssFeedController::class)
+    ->name('seo.feed');
 
 Route::get('/u/{username}', ShowPublicProfileController::class)
     ->where('username', '[A-Za-z0-9][A-Za-z0-9_-]{2,39}')

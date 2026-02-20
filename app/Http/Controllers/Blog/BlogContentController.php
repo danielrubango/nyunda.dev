@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Blog;
 use App\Actions\Content\GetPublishedContentTranslationBySlug;
 use App\Actions\Content\ListLocalizedPublishedContentItems;
 use App\Actions\Content\RenderSafeMarkdown;
+use App\Actions\Seo\BuildSeoMeta;
 use App\Enums\ContentType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Blog\ListBlogContentRequest;
@@ -18,6 +19,7 @@ class BlogContentController extends Controller
         private readonly ListLocalizedPublishedContentItems $listLocalizedPublishedContentItems,
         private readonly GetPublishedContentTranslationBySlug $getPublishedContentTranslationBySlug,
         private readonly RenderSafeMarkdown $renderSafeMarkdown,
+        private readonly BuildSeoMeta $buildSeoMeta,
     ) {}
 
     public function index(ListBlogContentRequest $request): View
@@ -33,6 +35,11 @@ class BlogContentController extends Controller
             'selectedLocale' => $request->localeSelection(),
             'selectedType' => $request->typeFilter(),
             'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
+            'seo' => $this->buildSeoMeta->handle(
+                title: 'Blog',
+                description: 'Articles techniques, veille Laravel et contenu communautaire.',
+                canonicalUrl: $request->fullUrl(),
+            ),
         ]);
     }
 
@@ -73,6 +80,16 @@ class BlogContentController extends Controller
             'translation' => $translation,
             'renderedBody' => $this->renderSafeMarkdown->handle($translation->body_markdown),
             'comments' => $comments,
+            'seo' => $this->buildSeoMeta->handle(
+                title: $translation->title,
+                description: $translation->excerpt,
+                canonicalUrl: route('blog.show', [
+                    'locale' => $translation->locale,
+                    'slug' => $translation->slug,
+                ]),
+                imageUrl: $translation->external_og_image_url,
+                ogType: 'article',
+            ),
             'renderedComments' => $comments->mapWithKeys(
                 fn ($comment): array => [
                     $comment->id => $this->renderSafeMarkdown->handle($comment->body_markdown),
