@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -77,5 +78,10 @@ class User extends Authenticatable
     public function canPublishWithoutApproval(): bool
     {
         return $this->hasRole(UserRole::Admin) || $this->hasRole(UserRole::Author);
+    }
+
+    public function contentItems(): HasMany
+    {
+        return $this->hasMany(ContentItem::class, 'author_id');
     }
 }
