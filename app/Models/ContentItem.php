@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContentItem extends Model
@@ -51,6 +52,12 @@ class ContentItem extends Model
     public function translations(): HasMany
     {
         return $this->hasMany(ContentTranslation::class);
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'content_item_tag')
+            ->withTimestamps();
     }
 
     public function scopePublished(Builder $query): Builder
