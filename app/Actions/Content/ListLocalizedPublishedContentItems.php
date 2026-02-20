@@ -15,12 +15,20 @@ class ListLocalizedPublishedContentItems
     /**
      * @return Collection<int, array{content_item: ContentItem, translation: ContentTranslation}>
      */
-    public function handle(?string $filterLocale = null, ?string $userLocale = null): Collection
-    {
+    public function handle(
+        ?string $filterLocale = null,
+        ?string $userLocale = null,
+        ?string $contentType = null,
+    ): Collection {
         $query = ContentItem::query()
             ->published()
+            ->with('author')
             ->latest('published_at')
             ->latest('id');
+
+        if ($contentType !== null) {
+            $query->where('type', $contentType);
+        }
 
         if ($filterLocale !== null) {
             $items = $query
