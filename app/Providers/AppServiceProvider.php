@@ -4,9 +4,13 @@ namespace App\Providers;
 
 use App\Models\Comment;
 use App\Models\ContentItem;
+use App\Models\ForumReply;
+use App\Models\ForumThread;
 use App\Observers\ContentItemObserver;
 use App\Policies\CommentPolicy;
 use App\Policies\ContentItemPolicy;
+use App\Policies\ForumReplyPolicy;
+use App\Policies\ForumThreadPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -77,12 +81,22 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('content-comments', function (Request $request): Limit {
             return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
         });
+
+        RateLimiter::for('forum-threads', function (Request $request): Limit {
+            return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('forum-replies', function (Request $request): Limit {
+            return Limit::perMinute(20)->by($request->user()?->id ?: $request->ip());
+        });
     }
 
     protected function configurePolicies(): void
     {
         Gate::policy(ContentItem::class, ContentItemPolicy::class);
         Gate::policy(Comment::class, CommentPolicy::class);
+        Gate::policy(ForumThread::class, ForumThreadPolicy::class);
+        Gate::policy(ForumReply::class, ForumReplyPolicy::class);
     }
 
     protected function configureObservers(): void

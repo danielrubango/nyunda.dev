@@ -4,6 +4,7 @@ namespace App\Actions\Seo;
 
 use App\Enums\ContentType;
 use App\Models\ContentTranslation;
+use App\Models\ForumThread;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -38,6 +39,12 @@ class BuildSitemapUrls
                 'lastmod' => null,
                 'changefreq' => 'monthly',
                 'priority' => '0.70',
+            ],
+            [
+                'loc' => route('forum.index'),
+                'lastmod' => null,
+                'changefreq' => 'daily',
+                'priority' => '0.80',
             ],
             [
                 'loc' => route('seo.feed'),
@@ -91,8 +98,22 @@ class BuildSitemapUrls
                 ];
             });
 
+        $forumUrls = ForumThread::query()
+            ->where('is_hidden', false)
+            ->select(['slug', 'updated_at'])
+            ->get()
+            ->map(function (ForumThread $forumThread): array {
+                return [
+                    'loc' => route('forum.show', $forumThread),
+                    'lastmod' => $forumThread->updated_at,
+                    'changefreq' => 'weekly',
+                    'priority' => '0.70',
+                ];
+            });
+
         return $staticUrls
             ->concat($contentUrls)
+            ->concat($forumUrls)
             ->concat($profileUrls)
             ->values();
     }

@@ -15,7 +15,7 @@ test('authenticated user can submit a community link and it stays pending', func
 
     $response = $this->actingAs($user)->post(route('community-links.store'), [
         'locale' => 'fr',
-        'title' => 'Une ressource Laravel a suivre',
+        'title' => 'Une ressource Laravel à suivre',
         'excerpt' => 'Un article utile pour suivre les bonnes pratiques Laravel.',
         'external_url' => 'https://example.com/laravel-article',
         'external_site_name' => 'Example',
@@ -38,7 +38,7 @@ test('authenticated user can submit a community link and it stays pending', func
     $this->assertDatabaseHas('content_translations', [
         'content_item_id' => $contentItem->id,
         'locale' => 'fr',
-        'title' => 'Une ressource Laravel a suivre',
+        'title' => 'Une ressource Laravel à suivre',
         'external_url' => 'https://example.com/laravel-article',
     ]);
 
@@ -120,7 +120,7 @@ test('metadata job updates title and excerpt when they are omitted', function ()
             <html>
                 <head>
                     <meta property="og:title" content="Titre OG complet">
-                    <meta property="og:description" content="Description OG enrichie pour ce lien partage.">
+                    <meta property="og:description" content="Description OG enrichie pour ce lien partagé.">
                     <meta property="og:site_name" content="Example Site">
                     <meta property="og:image" content="https://example.com/image.jpg">
                 </head>
@@ -151,7 +151,7 @@ test('metadata job updates title and excerpt when they are omitted', function ()
     $translation->refresh();
 
     expect($translation->title)->toBe('Titre OG complet')
-        ->and($translation->excerpt)->toBe('Description OG enrichie pour ce lien partage.')
+        ->and($translation->excerpt)->toBe('Description OG enrichie pour ce lien partagé.')
         ->and($translation->external_site_name)->toBe('Example Site')
         ->and($translation->external_og_image_url)->toBe('https://example.com/image.jpg');
 });

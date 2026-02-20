@@ -6,6 +6,9 @@ use App\Http\Controllers\Blog\BlogContentController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\CommunityLinkSubmissionsController;
 use App\Http\Controllers\ConfirmNewsletterController;
+use App\Http\Controllers\Forum\ForumRepliesController;
+use App\Http\Controllers\Forum\ForumThreadsController;
+use App\Http\Controllers\Forum\MarkBestForumReplyController;
 use App\Http\Controllers\LikeContentController;
 use App\Http\Controllers\NewsletterSubscriptionsController;
 use App\Http\Controllers\Profiles\ShowPublicProfileController;
@@ -30,6 +33,9 @@ Route::get('/u/{username}', ShowPublicProfileController::class)
 
 Route::get('/about', AboutPageController::class)
     ->name('about.show');
+
+Route::get('/forum', [ForumThreadsController::class, 'index'])
+    ->name('forum.index');
 
 Route::get('/blog', [BlogContentController::class, 'index'])
     ->name('blog.index');
@@ -59,6 +65,26 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('throttle:community-submissions')
         ->name('community-links.store');
 
+    Route::get('/forum/create', [ForumThreadsController::class, 'create'])
+        ->name('forum.create');
+
+    Route::post('/forum', [ForumThreadsController::class, 'store'])
+        ->middleware('throttle:forum-threads')
+        ->name('forum.store');
+
+    Route::post('/forum/{forumThread:slug}/replies', [ForumRepliesController::class, 'store'])
+        ->middleware('throttle:forum-replies')
+        ->name('forum.replies.store');
+
+    Route::post('/forum/{forumThread:slug}/replies/{forumReply}/best', MarkBestForumReplyController::class)
+        ->name('forum.replies.mark-best');
+
+    Route::patch('/forum/replies/{forumReply}', [ForumRepliesController::class, 'update'])
+        ->name('forum.replies.update');
+
+    Route::delete('/forum/replies/{forumReply}', [ForumRepliesController::class, 'destroy'])
+        ->name('forum.replies.destroy');
+
     Route::post('/content/{contentItem}/comments', [CommentsController::class, 'store'])
         ->middleware('throttle:content-comments')
         ->name('content.comments.store');
@@ -73,6 +99,9 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/comments/{comment}', [CommentsController::class, 'destroy'])
         ->name('comments.destroy');
 });
+
+Route::get('/forum/{forumThread:slug}', [ForumThreadsController::class, 'show'])
+    ->name('forum.show');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])

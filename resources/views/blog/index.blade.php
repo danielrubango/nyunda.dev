@@ -16,6 +16,9 @@
                     <a href="{{ route('about.show') }}" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
                         About
                     </a>
+                    <a href="{{ route('forum.index') }}" class="ml-2 inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
+                        Forum
+                    </a>
                 </div>
                 @auth
                     <div class="mt-4">
