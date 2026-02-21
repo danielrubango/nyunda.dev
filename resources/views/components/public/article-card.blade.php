@@ -63,7 +63,7 @@
             {{ $translation->title }}
         </h3>
 
-        <p class="text-sm text-zinc-600">{{ $excerpt }}</p>
+        <p class="line-clamp-3 text-sm text-zinc-600">{{ $excerpt }}</p>
 
         <div class="mt-auto flex items-end justify-between gap-3">
             <p class="text-xs text-zinc-500">
