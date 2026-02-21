@@ -8,8 +8,8 @@ test('about page uses english copy when accept language is english', function ()
     ])->get(route('about.show'));
 
     $response->assertSuccessful();
-    $response->assertSee('For full background and professional references, see my LinkedIn profile.');
-    $response->assertDontSee('Pour un parcours complet et des références professionnelles, consulte mon profil LinkedIn.');
+    $response->assertSee('I am a Full-Stack Software Developer with over six years of experience in web development and IT systems.');
+    $response->assertDontSee('Je suis un développeur logiciel Full-Stack avec plus de six ans d’expérience en développement web et en systèmes IT.');
 });
 
 test('community link create page uses user preferred locale copy', function () {

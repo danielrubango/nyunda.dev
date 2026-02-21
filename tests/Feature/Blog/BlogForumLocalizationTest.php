@@ -9,7 +9,7 @@ test('blog index renders english labels for english locale', function () {
 
     $response->assertSuccessful();
     $response->assertSee('Internal posts, external references, and community links.');
-    $response->assertSee('Apply filters');
+    $response->assertSee('Search');
     $response->assertSee('Monthly newsletter');
 });
 
