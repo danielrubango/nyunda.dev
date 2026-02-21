@@ -23,8 +23,8 @@ class CommunityLinkSubmissionsController extends Controller
             'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
             'defaultLocale' => $userLocale,
             'seo' => $this->buildSeoMeta->handle(
-                title: 'Soumettre un lien communautaire',
-                description: 'Partage un lien externe avec la communaute NYUNDA.DEV.',
+                title: __('ui.blog.submit_community_link'),
+                description: __('ui.community.description'),
                 canonicalUrl: route('community-links.create'),
             ),
         ]);
@@ -44,7 +44,7 @@ class CommunityLinkSubmissionsController extends Controller
 
         return redirect()
             ->route('blog.index')
-            ->with('status', 'Votre lien communautaire a bien ete soumis pour validation.');
+            ->with('status', __('ui.community.status.submitted'));
     }
 
     protected function resolveUserLocale(): string

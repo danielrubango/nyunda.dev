@@ -11,12 +11,12 @@
             <header class="mb-8 flex items-end justify-between gap-4">
                 <div>
                     <p class="text-xs uppercase tracking-[0.24em] text-zinc-500">{{ config('app.name') }}</p>
-                    <h1 class="mt-3 text-3xl font-semibold tracking-tight">Forum</h1>
-                    <p class="mt-2 text-sm text-zinc-600">Discussions techniques et questions de la communaute.</p>
+                    <h1 class="mt-3 text-3xl font-semibold tracking-tight">{{ __('ui.forum.title') }}</h1>
+                    <p class="mt-2 text-sm text-zinc-600">{{ __('ui.forum.subtitle') }}</p>
                 </div>
                 @auth
                     <a href="{{ route('forum.create') }}" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                        Nouvelle discussion
+                        {{ __('ui.forum.new_thread') }}
                     </a>
                 @endauth
             </header>
@@ -37,7 +37,7 @@
                             <span>•</span>
                             <span>{{ $thread->created_at?->format('Y-m-d H:i') }}</span>
                             <span>•</span>
-                            <span>{{ (int) $thread->replies_count }} reponses</span>
+                            <span>{{ __('ui.forum.replies_count', ['count' => (int) $thread->replies_count]) }}</span>
                         </div>
 
                         <a href="{{ route('forum.show', $thread) }}" class="text-xl font-semibold text-zinc-900 hover:text-zinc-700">
@@ -50,7 +50,7 @@
                     </article>
                 @empty
                     <p class="rounded-xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-                        Aucune discussion pour le moment.
+                        {{ __('ui.forum.no_threads') }}
                     </p>
                 @endforelse
             </section>

@@ -18,8 +18,8 @@ class ConfirmNewsletterController extends Controller
             ->with(
                 $confirmed ? 'status' : 'error',
                 $confirmed
-                    ? 'Votre inscription newsletter est confirmee.'
-                    : 'Le lien de confirmation est invalide ou expire.',
+                    ? __('ui.newsletter.status.confirmed')
+                    : __('ui.newsletter.status.confirmation_invalid'),
             );
     }
 }

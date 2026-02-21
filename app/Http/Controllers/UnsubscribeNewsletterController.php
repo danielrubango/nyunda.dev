@@ -18,8 +18,8 @@ class UnsubscribeNewsletterController extends Controller
             ->with(
                 $unsubscribed ? 'status' : 'error',
                 $unsubscribed
-                    ? 'Vous etes desinscrit de la newsletter.'
-                    : 'Le lien de desinscription est invalide ou expire.',
+                    ? __('ui.newsletter.status.unsubscribed')
+                    : __('ui.newsletter.status.unsubscribe_invalid'),
             );
     }
 }

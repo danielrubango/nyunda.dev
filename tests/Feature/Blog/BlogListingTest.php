@@ -5,6 +5,10 @@ use App\Enums\ContentType;
 use App\Models\ContentItem;
 use App\Models\ContentTranslation;
 
+beforeEach(function (): void {
+    app()->setLocale('fr');
+});
+
 test('blog listing supports locale and type filters', function () {
     $internal = ContentItem::factory()->published()->internalPost()->create();
     $external = ContentItem::factory()->published()->externalPost()->create();

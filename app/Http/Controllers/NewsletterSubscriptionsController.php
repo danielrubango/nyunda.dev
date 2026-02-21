@@ -25,6 +25,6 @@ class NewsletterSubscriptionsController extends Controller
 
         return redirect()
             ->back()
-            ->with('status', 'Si votre email est valide, un lien de confirmation vous a ete envoye.');
+            ->with('status', __('ui.newsletter.status.confirmation_sent'));
     }
 }

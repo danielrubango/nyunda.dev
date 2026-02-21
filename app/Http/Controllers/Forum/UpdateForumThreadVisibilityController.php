@@ -15,6 +15,12 @@ class UpdateForumThreadVisibilityController extends Controller
         ForumThread $forumThread,
         UpdateForumThreadVisibility $updateForumThreadVisibility,
     ): RedirectResponse {
+        $preferredLocale = $request->user()?->preferred_locale;
+
+        if (is_string($preferredLocale) && in_array($preferredLocale, config('app.supported_locales', ['fr', 'en']), true)) {
+            app()->setLocale($preferredLocale);
+        }
+
         $this->authorize('moderate', $forumThread);
 
         $updateForumThreadVisibility->handle(
@@ -24,7 +30,7 @@ class UpdateForumThreadVisibilityController extends Controller
         );
 
         return redirect()->back()->with('status', $request->isHidden()
-            ? 'Discussion masquée.'
-            : 'Discussion affichée.');
+            ? __('ui.forum.status.hidden')
+            : __('ui.forum.status.shown'));
     }
 }

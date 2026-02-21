@@ -10,20 +10,20 @@
         <main class="mx-auto max-w-5xl px-6 py-12">
             <header class="mb-8">
                 <p class="text-xs uppercase tracking-[0.24em] text-zinc-500">{{ config('app.name') }}</p>
-                <h1 class="mt-3 text-3xl font-semibold tracking-tight">Blog</h1>
-                <p class="mt-2 text-sm text-zinc-600">Internal posts, external references, and community links.</p>
+                <h1 class="mt-3 text-3xl font-semibold tracking-tight">{{ __('ui.blog.title') }}</h1>
+                <p class="mt-2 text-sm text-zinc-600">{{ __('ui.blog.subtitle') }}</p>
                 <div class="mt-4">
                     <a href="{{ route('about.show') }}" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                        About
+                        {{ __('ui.blog.about') }}
                     </a>
                     <a href="{{ route('forum.index') }}" class="ml-2 inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                        Forum
+                        {{ __('ui.blog.forum') }}
                     </a>
                 </div>
                 @auth
                     <div class="mt-4">
                         <a href="{{ route('community-links.create') }}" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                            Soumettre un lien communautaire
+                            {{ __('ui.blog.submit_community_link') }}
                         </a>
                     </div>
                 @endauth
@@ -43,9 +43,9 @@
 
             <form method="GET" action="{{ route('blog.index') }}" class="mb-8 grid gap-4 rounded-xl border border-zinc-200 bg-white p-4 md:grid-cols-3">
                 <label class="space-y-2 text-sm">
-                    <span class="block font-medium text-zinc-700">Locale</span>
+                    <span class="block font-medium text-zinc-700">{{ __('ui.blog.filters.locale') }}</span>
                     <select name="locale" class="w-full rounded-md border-zinc-300 text-sm">
-                        <option value="all" @selected($selectedLocale === 'all')>All</option>
+                        <option value="all" @selected($selectedLocale === 'all')>{{ __('ui.blog.filters.all') }}</option>
                         @foreach ($supportedLocales as $locale)
                             <option value="{{ $locale }}" @selected($selectedLocale === $locale)>{{ strtoupper($locale) }}</option>
                         @endforeach
@@ -53,18 +53,18 @@
                 </label>
 
                 <label class="space-y-2 text-sm">
-                    <span class="block font-medium text-zinc-700">Type</span>
+                    <span class="block font-medium text-zinc-700">{{ __('ui.blog.filters.type') }}</span>
                     <select name="type" class="w-full rounded-md border-zinc-300 text-sm">
-                        <option value="">All</option>
-                        <option value="internal_post" @selected($selectedType === 'internal_post')>Internal</option>
-                        <option value="external_post" @selected($selectedType === 'external_post')>External</option>
-                        <option value="community_link" @selected($selectedType === 'community_link')>Community</option>
+                        <option value="">{{ __('ui.blog.filters.all') }}</option>
+                        <option value="internal_post" @selected($selectedType === 'internal_post')>{{ __('ui.blog.filters.internal') }}</option>
+                        <option value="external_post" @selected($selectedType === 'external_post')>{{ __('ui.blog.filters.external') }}</option>
+                        <option value="community_link" @selected($selectedType === 'community_link')>{{ __('ui.blog.filters.community') }}</option>
                     </select>
                 </label>
 
                 <div class="flex items-end">
                     <button type="submit" class="inline-flex h-10 items-center rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                        Apply filters
+                        {{ __('ui.blog.filters.apply') }}
                     </button>
                 </div>
             </form>
@@ -75,8 +75,8 @@
                     : $selectedLocale;
             @endphp
             <section class="mb-8 rounded-xl border border-zinc-200 bg-white p-5">
-                <h2 class="text-base font-semibold text-zinc-900">Newsletter mensuelle</h2>
-                <p class="mt-1 text-sm text-zinc-600">Inscription avec double opt-in.</p>
+                <h2 class="text-base font-semibold text-zinc-900">{{ __('ui.blog.newsletter.title') }}</h2>
+                <p class="mt-1 text-sm text-zinc-600">{{ __('ui.blog.newsletter.description') }}</p>
                 <form method="POST" action="{{ route('newsletter.subscriptions.store') }}" class="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
                     @csrf
                     <input type="hidden" name="locale" value="{{ old('locale', $newsletterLocale) }}">
@@ -89,7 +89,7 @@
                         required
                     >
                     <button type="submit" class="inline-flex items-center justify-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                        S inscrire
+                        {{ __('ui.blog.newsletter.submit') }}
                     </button>
                 </form>
                 @error('email')
@@ -109,11 +109,11 @@
 
                     <article class="rounded-xl border border-zinc-200 bg-white p-5">
                         <div class="mb-3 flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
-                            <span>{{ str_replace('_', ' ', $item->type->value) }}</span>
+                            <span>{{ __('ui.blog.content_types.'.$item->type->value) }}</span>
                             <span>•</span>
                             <span>{{ strtoupper($translation->locale) }}</span>
                             @if ($item->type->value === 'external_post')
-                                <span class="rounded bg-zinc-900 px-2 py-1 text-[10px] tracking-wider text-white">Externe</span>
+                                <span class="rounded bg-zinc-900 px-2 py-1 text-[10px] tracking-wider text-white">{{ __('ui.blog.badge_external') }}</span>
                             @endif
                         </div>
 
@@ -131,12 +131,12 @@
 
                         @if ($item->type->value === 'internal_post' && $item->show_likes)
                             <div class="mt-4 flex items-center gap-3 text-sm text-zinc-700">
-                                <span class="font-medium">Likes: {{ (int) ($item->likes_count ?? 0) }}</span>
+                                <span class="font-medium">{{ __('ui.blog.likes', ['count' => (int) ($item->likes_count ?? 0)]) }}</span>
                                 @auth
                                     <form method="POST" action="{{ route('content.likes.toggle', ['contentItem' => $item]) }}" class="inline">
                                         @csrf
                                         <button type="submit" class="rounded border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-100">
-                                            Like / Unlike
+                                            {{ __('ui.blog.like_toggle') }}
                                         </button>
                                     </form>
                                 @endauth
@@ -144,7 +144,7 @@
                         @endif
                     </article>
                 @empty
-                    <p class="rounded-xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">No published content for the selected filters.</p>
+                    <p class="rounded-xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">{{ __('ui.blog.empty') }}</p>
                 @endforelse
             </section>
         </main>

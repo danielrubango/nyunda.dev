@@ -24,6 +24,12 @@ class BlogContentController extends Controller
 
     public function index(ListBlogContentRequest $request): View
     {
+        $preferredLocale = $request->user()?->preferred_locale;
+
+        if (is_string($preferredLocale) && in_array($preferredLocale, config('app.supported_locales', ['fr', 'en']), true)) {
+            app()->setLocale($preferredLocale);
+        }
+
         $rows = $this->listLocalizedPublishedContentItems->handle(
             filterLocale: $request->localeFilter(),
             userLocale: $request->resolvedUserLocale(),
@@ -36,8 +42,8 @@ class BlogContentController extends Controller
             'selectedType' => $request->typeFilter(),
             'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
             'seo' => $this->buildSeoMeta->handle(
-                title: 'Blog',
-                description: 'Articles techniques, veille Laravel et contenu communautaire.',
+                title: __('ui.blog.title'),
+                description: __('ui.blog.subtitle'),
                 canonicalUrl: $request->fullUrl(),
             ),
         ]);
@@ -46,6 +52,7 @@ class BlogContentController extends Controller
     public function show(string $locale, string $slug): View|RedirectResponse
     {
         abort_unless(in_array($locale, config('app.supported_locales', ['fr', 'en']), true), 404);
+        app()->setLocale($locale);
 
         $translation = $this->getPublishedContentTranslationBySlug->handle($locale, $slug);
 

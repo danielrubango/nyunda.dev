@@ -29,6 +29,8 @@ class ForumThreadsController extends Controller
 
     public function index(): View
     {
+        $this->applyInterfaceLocale();
+
         $threads = ForumThread::query()
             ->where('is_hidden', false)
             ->with('author')
@@ -39,8 +41,8 @@ class ForumThreadsController extends Controller
         return view('forum.index', [
             'threads' => $threads,
             'seo' => $this->buildSeoMeta->handle(
-                title: 'Forum',
-                description: 'Questions, discussions techniques et meilleures reponses.',
+                title: __('ui.forum.title'),
+                description: __('ui.forum.subtitle'),
                 canonicalUrl: route('forum.index'),
             ),
         ]);
@@ -48,6 +50,8 @@ class ForumThreadsController extends Controller
 
     public function show(ForumThread $forumThread): View
     {
+        $this->applyInterfaceLocale();
+
         if ($forumThread->is_hidden && ! $this->canViewHiddenThread($forumThread)) {
             abort(404);
         }
@@ -87,14 +91,16 @@ class ForumThreadsController extends Controller
 
     public function create(): View
     {
+        $this->applyInterfaceLocale();
+
         $this->authorize('create', ForumThread::class);
 
         return view('forum.create', [
             'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
             'defaultLocale' => auth()->user()?->preferred_locale ?? config('app.locale', 'fr'),
             'seo' => $this->buildSeoMeta->handle(
-                title: 'Nouvelle discussion',
-                description: 'Demarrer une nouvelle discussion sur le forum technique.',
+                title: __('ui.forum.create.title'),
+                description: __('ui.forum.create.subtitle'),
                 canonicalUrl: route('forum.create'),
             ),
         ]);
@@ -114,19 +120,21 @@ class ForumThreadsController extends Controller
 
         return redirect()
             ->route('forum.show', $forumThread)
-            ->with('status', 'Discussion créée avec succès.');
+            ->with('status', __('ui.forum.status.created'));
     }
 
     public function edit(ForumThread $forumThread): View
     {
+        $this->applyInterfaceLocale();
+
         $this->authorize('update', $forumThread);
 
         return view('forum.edit', [
             'forumThread' => $forumThread,
             'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
             'seo' => $this->buildSeoMeta->handle(
-                title: 'Modifier la discussion',
-                description: 'Modifier le contenu de votre discussion.',
+                title: __('ui.forum.edit.title'),
+                description: __('ui.forum.edit.subtitle'),
                 canonicalUrl: route('forum.edit', $forumThread),
             ),
         ]);
@@ -143,7 +151,7 @@ class ForumThreadsController extends Controller
 
         return redirect()
             ->route('forum.show', $forumThread)
-            ->with('status', 'Discussion mise à jour avec succès.');
+            ->with('status', __('ui.forum.status.updated'));
     }
 
     public function destroy(ForumThread $forumThread): RedirectResponse
@@ -154,7 +162,7 @@ class ForumThreadsController extends Controller
 
         return redirect()
             ->route('forum.index')
-            ->with('status', 'Discussion supprimée avec succès.');
+            ->with('status', __('ui.forum.status.deleted'));
     }
 
     protected function canViewHiddenThread(ForumThread $forumThread): bool
@@ -171,5 +179,25 @@ class ForumThreadsController extends Controller
         }
 
         return $user->hasRole(UserRole::Admin);
+    }
+
+    protected function applyInterfaceLocale(): void
+    {
+        /** @var User|null $user */
+        $user = auth()->user();
+
+        $locale = $user?->preferred_locale;
+
+        if (is_string($locale) && in_array($locale, config('app.supported_locales', ['fr', 'en']), true)) {
+            app()->setLocale($locale);
+
+            return;
+        }
+
+        $preferredLocale = request()->getPreferredLanguage(config('app.supported_locales', ['fr', 'en']));
+
+        if (is_string($preferredLocale) && $preferredLocale !== '') {
+            app()->setLocale($preferredLocale);
+        }
     }
 }
