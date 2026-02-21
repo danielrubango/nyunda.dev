@@ -27,4 +27,9 @@ class ForumThreadPolicy
     {
         return $user->hasRole(UserRole::Admin) || $forumThread->author_id === $user->id;
     }
+
+    public function moderate(User $user, ForumThread $forumThread): bool
+    {
+        return $user->hasRole(UserRole::Admin);
+    }
 }

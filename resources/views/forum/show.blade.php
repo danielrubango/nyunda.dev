@@ -22,6 +22,16 @@
                 </p>
                 <h1 class="mt-3 text-4xl font-semibold leading-tight">{{ $forumThread->title }}</h1>
                 <div class="mt-4 flex items-center gap-2">
+                    @can('moderate', $forumThread)
+                        <form method="POST" action="{{ route('forum.visibility.update', $forumThread) }}">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="is_hidden" value="{{ $forumThread->is_hidden ? '0' : '1' }}">
+                            <button type="submit" class="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-100">
+                                {{ $forumThread->is_hidden ? 'Afficher la discussion' : 'Masquer la discussion' }}
+                            </button>
+                        </form>
+                    @endcan
                     @can('update', $forumThread)
                         <a href="{{ route('forum.edit', $forumThread) }}" class="inline-flex rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-100">
                             Modifier
@@ -37,6 +47,9 @@
                         </form>
                     @endcan
                 </div>
+                @if ($forumThread->is_hidden)
+                    <p class="mt-2 text-xs font-medium uppercase tracking-wide text-zinc-500">Discussion masquée</p>
+                @endif
             </header>
 
             <article class="prose prose-zinc mt-8 max-w-none">

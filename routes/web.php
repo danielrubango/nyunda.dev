@@ -9,6 +9,7 @@ use App\Http\Controllers\ConfirmNewsletterController;
 use App\Http\Controllers\Forum\ForumRepliesController;
 use App\Http\Controllers\Forum\ForumThreadsController;
 use App\Http\Controllers\Forum\MarkBestForumReplyController;
+use App\Http\Controllers\Forum\UpdateForumThreadVisibilityController;
 use App\Http\Controllers\LikeContentController;
 use App\Http\Controllers\NewsletterSubscriptionsController;
 use App\Http\Controllers\Profiles\ShowPublicProfileController;
@@ -80,6 +81,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/forum/{forumThread:slug}', [ForumThreadsController::class, 'destroy'])
         ->name('forum.destroy');
+
+    Route::patch('/forum/{forumThread:slug}/visibility', UpdateForumThreadVisibilityController::class)
+        ->name('forum.visibility.update');
 
     Route::post('/forum/{forumThread:slug}/replies', [ForumRepliesController::class, 'store'])
         ->middleware('throttle:forum-replies')
