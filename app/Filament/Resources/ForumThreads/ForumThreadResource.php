@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ForumThreads;
 use App\Filament\Resources\ForumThreads\Pages\CreateForumThread;
 use App\Filament\Resources\ForumThreads\Pages\EditForumThread;
 use App\Filament\Resources\ForumThreads\Pages\ListForumThreads;
+use App\Filament\Resources\ForumThreads\RelationManagers\RepliesRelationManager;
 use App\Filament\Resources\ForumThreads\Schemas\ForumThreadForm;
 use App\Filament\Resources\ForumThreads\Tables\ForumThreadsTable;
 use App\Models\ForumThread;
@@ -36,7 +37,9 @@ class ForumThreadResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            RepliesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

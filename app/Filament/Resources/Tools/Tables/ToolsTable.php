@@ -33,7 +33,8 @@ class ToolsTable
             ])
             ->filters([])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->slideOver(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

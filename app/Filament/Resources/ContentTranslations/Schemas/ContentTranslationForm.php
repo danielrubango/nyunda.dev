@@ -7,6 +7,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
@@ -33,6 +35,15 @@ class ContentTranslationForm
                         TextInput::make('title')
                             ->required()
                             ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (Set $set, Get $get, ?string $state, ?string $old): void {
+                                $currentSlug = (string) $get('slug');
+                                $oldSlug = Str::slug((string) $old);
+
+                                if ($currentSlug === '' || $currentSlug === $oldSlug) {
+                                    $set('slug', Str::slug((string) $state));
+                                }
+                            })
                             ->columnSpanFull(),
                         TextInput::make('slug')
                             ->required()

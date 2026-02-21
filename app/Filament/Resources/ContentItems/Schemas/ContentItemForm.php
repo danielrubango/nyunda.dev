@@ -32,7 +32,11 @@ class ContentItemForm
                                     $status->value => Str::headline($status->value),
                                 ],
                             )->all())
-                            ->required(),
+                            ->default(ContentStatus::Draft->value)
+                            ->required()
+                            ->disabled()
+                            ->dehydrated()
+                            ->helperText('Use row actions to transition the status.'),
                         Select::make('author_id')
                             ->relationship('author', 'name')
                             ->searchable()
