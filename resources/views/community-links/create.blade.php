@@ -8,12 +8,12 @@
     </head>
     <body class="min-h-screen bg-zinc-50 text-zinc-900 antialiased">
         <main class="mx-auto max-w-3xl px-6 py-12">
-            <a href="{{ route('blog.index') }}" class="text-sm font-medium text-zinc-600 hover:text-zinc-900">← Retour au blog</a>
+            <a href="{{ route('blog.index') }}" class="text-sm font-medium text-zinc-600 hover:text-zinc-900">{{ __('ui.blog.back') }}</a>
 
             <header class="mt-6">
-                <h1 class="text-3xl font-semibold tracking-tight">Soumettre un lien communautaire</h1>
+                <h1 class="text-3xl font-semibold tracking-tight">{{ __('ui.community.create.title') }}</h1>
                 <p class="mt-2 text-sm text-zinc-600">
-                    Votre soumission sera placee en attente de validation avant publication.
+                    {{ __('ui.community.create.subtitle') }}
                 </p>
             </header>
 
@@ -21,7 +21,7 @@
                 @csrf
 
                 <div class="space-y-2">
-                    <label for="locale" class="block text-sm font-medium text-zinc-700">Langue</label>
+                    <label for="locale" class="block text-sm font-medium text-zinc-700">{{ __('ui.community.fields.locale') }}</label>
                     <select id="locale" name="locale" class="w-full rounded-md border-zinc-300 text-sm">
                         @foreach ($supportedLocales as $locale)
                             <option value="{{ $locale }}" @selected(old('locale', $defaultLocale) === $locale)>{{ strtoupper($locale) }}</option>
@@ -33,23 +33,23 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label for="title" class="block text-sm font-medium text-zinc-700">Titre (optionnel)</label>
-                    <input id="title" name="title" type="text" value="{{ old('title') }}" class="w-full rounded-md border-zinc-300 text-sm" placeholder="Sinon recupere automatiquement depuis le lien">
+                    <label for="title" class="block text-sm font-medium text-zinc-700">{{ __('ui.community.fields.title_optional') }}</label>
+                    <input id="title" name="title" type="text" value="{{ old('title') }}" class="w-full rounded-md border-zinc-300 text-sm" placeholder="{{ __('ui.community.placeholders.title') }}">
                     @error('title')
                         <p class="text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div class="space-y-2">
-                    <label for="excerpt" class="block text-sm font-medium text-zinc-700">Resume court (optionnel)</label>
-                    <textarea id="excerpt" name="excerpt" rows="3" class="w-full rounded-md border-zinc-300 text-sm" placeholder="Sinon recupere automatiquement depuis les metadonnees">{{ old('excerpt') }}</textarea>
+                    <label for="excerpt" class="block text-sm font-medium text-zinc-700">{{ __('ui.community.fields.excerpt_optional') }}</label>
+                    <textarea id="excerpt" name="excerpt" rows="3" class="w-full rounded-md border-zinc-300 text-sm" placeholder="{{ __('ui.community.placeholders.excerpt') }}">{{ old('excerpt') }}</textarea>
                     @error('excerpt')
                         <p class="text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div class="space-y-2">
-                    <label for="external_url" class="block text-sm font-medium text-zinc-700">URL externe</label>
+                    <label for="external_url" class="block text-sm font-medium text-zinc-700">{{ __('ui.community.fields.external_url') }}</label>
                     <input id="external_url" name="external_url" type="url" value="{{ old('external_url') }}" class="w-full rounded-md border-zinc-300 text-sm">
                     @error('external_url')
                         <p class="text-sm text-red-600">{{ $message }}</p>
@@ -57,7 +57,7 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label for="external_site_name" class="block text-sm font-medium text-zinc-700">Nom du site (optionnel)</label>
+                    <label for="external_site_name" class="block text-sm font-medium text-zinc-700">{{ __('ui.community.fields.external_site_name_optional') }}</label>
                     <input id="external_site_name" name="external_site_name" type="text" value="{{ old('external_site_name') }}" class="w-full rounded-md border-zinc-300 text-sm">
                     @error('external_site_name')
                         <p class="text-sm text-red-600">{{ $message }}</p>
@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label for="external_description" class="block text-sm font-medium text-zinc-700">Description externe (optionnel)</label>
+                    <label for="external_description" class="block text-sm font-medium text-zinc-700">{{ __('ui.community.fields.external_description_optional') }}</label>
                     <textarea id="external_description" name="external_description" rows="3" class="w-full rounded-md border-zinc-300 text-sm">{{ old('external_description') }}</textarea>
                     @error('external_description')
                         <p class="text-sm text-red-600">{{ $message }}</p>
@@ -73,7 +73,7 @@
                 </div>
 
                 <button type="submit" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                    Soumettre
+                    {{ __('ui.community.create.submit') }}
                 </button>
             </form>
         </main>

@@ -91,9 +91,52 @@ return [
     ],
     'community' => [
         'description' => 'Partage un lien externe avec la communauté NYUNDA.DEV.',
+        'create' => [
+            'title' => 'Soumettre un lien communautaire',
+            'subtitle' => 'Votre soumission sera placée en attente de validation avant publication.',
+            'submit' => 'Soumettre',
+        ],
+        'fields' => [
+            'locale' => 'Langue',
+            'title_optional' => 'Titre (optionnel)',
+            'excerpt_optional' => 'Résumé court (optionnel)',
+            'external_url' => 'URL externe',
+            'external_site_name_optional' => 'Nom du site (optionnel)',
+            'external_description_optional' => 'Description externe (optionnel)',
+        ],
+        'placeholders' => [
+            'title' => 'Sinon récupéré automatiquement depuis le lien',
+            'excerpt' => 'Sinon récupéré automatiquement depuis les métadonnées',
+        ],
         'status' => [
             'submitted' => 'Votre lien communautaire a bien été soumis pour validation.',
         ],
+    ],
+    'about' => [
+        'title' => 'À propos',
+        'back' => '← Retour au blog',
+        'intro' => 'Développeur PHP/Laravel et spécialiste support IT, je conçois des produits web utiles, fiables et maintenables.',
+        'summary_title' => 'Résumé',
+        'summary_text' => 'Je suis Daniel Rubango, développeur PHP/Laravel et spécialiste support IT avec plus de 6 ans d’expérience. J’aide les équipes à construire des applications web utiles, fiables et maintenables, tout en améliorant les opérations techniques au quotidien (support, sécurité, outils internes). J’aime relier vision produit, exécution pragmatique et expérience utilisateur claire.',
+        'skills_title' => 'Compétences',
+        'skills' => [
+            'Laravel, Livewire, Filament',
+            'Conception de workflows contenu (publication, modération, i18n)',
+            'Tests Pest, refactoring, conventions équipe',
+            'APIs, queues, jobs asynchrones, robustesse en production',
+        ],
+        'experience_title' => 'Expérience',
+        'experience' => [
+            'Pilotage technique de projets de MVP à production',
+            'Structuration de codebases évolutives pour équipe ou solo',
+            'Accompagnement produit avec priorisation orientée impact',
+        ],
+        'linkedin_title' => 'LinkedIn',
+        'linkedin_text' => 'Pour un parcours complet et des références professionnelles, consulte mon profil LinkedIn.',
+        'linkedin_button' => 'Ouvrir LinkedIn',
+    ],
+    'seo' => [
+        'rss_description' => 'Flux RSS des contenus publiés sur :app.',
     ],
     'newsletter' => [
         'status' => [

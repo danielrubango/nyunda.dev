@@ -18,6 +18,7 @@ class CommunityLinkSubmissionsController extends Controller
     public function create(): View
     {
         $userLocale = $this->resolveUserLocale();
+        app()->setLocale($userLocale);
 
         return view('community-links.create', [
             'supportedLocales' => config('app.supported_locales', ['fr', 'en']),

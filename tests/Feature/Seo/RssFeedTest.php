@@ -40,3 +40,25 @@ test('rss feed exposes published content and excludes drafts', function () {
     $response->assertSee('https://example.com/external-article');
     $response->assertDontSee('Draft title');
 });
+
+test('rss feed channel metadata follows preferred locale', function () {
+    $publishedInternalPost = ContentItem::factory()->published()->internalPost()->create();
+    ContentTranslation::factory()->for($publishedInternalPost)->forLocale('fr')->create([
+        'title' => 'Titre interne FR',
+        'slug' => 'titre-interne-fr',
+    ]);
+    ContentTranslation::factory()->for($publishedInternalPost)->forLocale('en')->create([
+        'title' => 'Internal title EN',
+        'slug' => 'internal-title-en',
+    ]);
+
+    $response = $this->withHeaders([
+        'Accept-Language' => 'en',
+    ])->get('/feed.xml');
+
+    $response->assertSuccessful();
+    $response->assertSee('<language>en</language>', false);
+    $response->assertSee('RSS feed for published content on '.config('app.name').'.');
+    $response->assertSee('Internal title EN');
+    $response->assertDontSee('Titre interne FR');
+});

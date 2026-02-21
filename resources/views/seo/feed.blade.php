@@ -3,8 +3,8 @@
     <channel>
         <title>{{ config('app.name') }}</title>
         <link>{{ route('blog.index') }}</link>
-        <description>Flux RSS des contenus publies sur {{ config('app.name') }}.</description>
-        <language>{{ str_replace('_', '-', app()->getLocale()) }}</language>
+        <description>{{ __('ui.seo.rss_description', ['app' => config('app.name')]) }}</description>
+        <language>{{ str_replace('_', '-', $feedLocale ?? app()->getLocale()) }}</language>
         <lastBuildDate>{{ now()->toRssString() }}</lastBuildDate>
 @foreach ($feedItems as $item)
         <item>

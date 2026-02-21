@@ -14,11 +14,18 @@ class RssFeedController extends Controller
 
     public function __invoke(Request $request): Response
     {
+        $preferredLocale = $request->getPreferredLanguage(
+            config('app.supported_locales', ['fr', 'en']),
+        ) ?? (string) config('app.locale', 'fr');
+
+        if ($preferredLocale !== '') {
+            app()->setLocale($preferredLocale);
+        }
+
         return response()
             ->view('seo.feed', [
-                'feedItems' => $this->buildRssFeedItems->handle($request->getPreferredLanguage(
-                    config('app.supported_locales', ['fr', 'en']),
-                )),
+                'feedItems' => $this->buildRssFeedItems->handle($preferredLocale),
+                'feedLocale' => $preferredLocale,
             ])
             ->header('Content-Type', 'application/rss+xml; charset=UTF-8');
     }

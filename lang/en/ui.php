@@ -91,9 +91,52 @@ return [
     ],
     'community' => [
         'description' => 'Share an external link with the NYUNDA.DEV community.',
+        'create' => [
+            'title' => 'Submit a community link',
+            'subtitle' => 'Your submission will remain pending until moderation approval.',
+            'submit' => 'Submit',
+        ],
+        'fields' => [
+            'locale' => 'Language',
+            'title_optional' => 'Title (optional)',
+            'excerpt_optional' => 'Short excerpt (optional)',
+            'external_url' => 'External URL',
+            'external_site_name_optional' => 'Site name (optional)',
+            'external_description_optional' => 'External description (optional)',
+        ],
+        'placeholders' => [
+            'title' => 'Otherwise fetched automatically from the link',
+            'excerpt' => 'Otherwise fetched automatically from metadata',
+        ],
         'status' => [
             'submitted' => 'Your community link was submitted for review.',
         ],
+    ],
+    'about' => [
+        'title' => 'About',
+        'back' => '← Back to blog',
+        'intro' => 'PHP/Laravel developer and IT support specialist building useful, reliable, and maintainable web products.',
+        'summary_title' => 'Summary',
+        'summary_text' => 'I am Daniel Rubango, a PHP/Laravel developer and IT support specialist with more than 6 years of experience. I help teams build useful, reliable, and maintainable web applications while improving day-to-day technical operations (support, security, and internal tools). I like connecting product vision, pragmatic execution, and clear user experience.',
+        'skills_title' => 'Skills',
+        'skills' => [
+            'Laravel, Livewire, Filament',
+            'Content workflow design (publishing, moderation, i18n)',
+            'Pest testing, refactoring, and team conventions',
+            'APIs, queues, asynchronous jobs, production reliability',
+        ],
+        'experience_title' => 'Experience',
+        'experience' => [
+            'Technical leadership from MVP to production',
+            'Structuring scalable codebases for solo and teams',
+            'Product guidance with impact-oriented prioritization',
+        ],
+        'linkedin_title' => 'LinkedIn',
+        'linkedin_text' => 'For full background and professional references, see my LinkedIn profile.',
+        'linkedin_button' => 'Open LinkedIn',
+    ],
+    'seo' => [
+        'rss_description' => 'RSS feed for published content on :app.',
     ],
     'newsletter' => [
         'status' => [
