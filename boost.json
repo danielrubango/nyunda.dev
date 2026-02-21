@@ -8,7 +8,8 @@
     "mcp": true,
     "nightwatch_mcp": false,
     "packages": [
-        "laravel/fortify"
+        "laravel/fortify",
+        "filament/filament"
     ],
     "sail": false,
     "skills": [
