@@ -22,8 +22,6 @@ class ForumRepliesTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->sortable(),
                 TextColumn::make('forumThread.title')
                     ->label('Thread')
                     ->searchable()
@@ -81,8 +79,7 @@ class ForumRepliesTable
             ])
             ->recordActions([
                 ActionGroup::make([
-                    ViewAction::make()
-                        ->slideOver(),
+                    ViewAction::make(),
                     Action::make('toggle_visibility')
                         ->label(fn (ForumReply $record): string => $record->is_hidden ? 'Show' : 'Hide')
                         ->requiresConfirmation()
@@ -121,8 +118,7 @@ class ForumRepliesTable
                                 'best_reply_id' => null,
                             ]);
                         }),
-                    EditAction::make()
-                        ->slideOver(),
+                    EditAction::make(),
                     DeleteAction::make(),
                 ])->label('Actions'),
             ])

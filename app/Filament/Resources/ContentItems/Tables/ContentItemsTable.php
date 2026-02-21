@@ -2,18 +2,15 @@
 
 namespace App\Filament\Resources\ContentItems\Tables;
 
-use App\Actions\Content\TransitionContentItemStatus;
 use App\Enums\ContentStatus;
 use App\Enums\ContentType;
-use App\Models\ContentItem;
-use Filament\Actions\Action;
+use App\Filament\Resources\ContentItems\Support\ContentItemStatusActions;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\ToggleButtons;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -22,18 +19,26 @@ use Illuminate\Support\Str;
 
 class ContentItemsTable
 {
-    public static function configure(Table $table): Table
+    public static function configure(Table $table, ?ContentType $forcedType = null): Table
     {
+        $showTypeColumn = $forcedType === null;
+        $showInteractionColumns = $forcedType === null || $forcedType === ContentType::InternalPost;
+
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->sortable(),
+                TextColumn::make('translations.title')
+                    ->label('Title')
+                    ->listWithLineBreaks()
+                    ->limitList(1)
+                    ->searchable()
+                    ->sortable(false),
                 TextColumn::make('type')
                     ->badge()
                     ->formatStateUsing(fn (ContentType|string $state): string => Str::headline(
                         $state instanceof ContentType ? $state->value : $state,
                     ))
-                    ->sortable(),
+                    ->sortable()
+                    ->visible($showTypeColumn),
                 TextColumn::make('status')
                     ->badge()
                     ->formatStateUsing(fn (ContentStatus|string $state): string => Str::headline(
@@ -49,10 +54,12 @@ class ContentItemsTable
                     ->sortable(),
                 IconColumn::make('show_likes')
                     ->boolean()
-                    ->label('Likes'),
+                    ->label('Likes')
+                    ->visible($showInteractionColumns),
                 IconColumn::make('show_comments')
                     ->boolean()
-                    ->label('Comments'),
+                    ->label('Comments')
+                    ->visible($showInteractionColumns),
                 TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable(),
@@ -72,40 +79,16 @@ class ContentItemsTable
                         fn (ContentType $type): array => [
                             $type->value => Str::headline($type->value),
                         ],
-                    )->all()),
+                    )->all())
+                    ->visible($showTypeColumn),
             ])
             ->recordActions([
                 ActionGroup::make([
                     ViewAction::make(),
-                    Action::make('change_status')
-                        ->label('Change status')
-                        ->color('warning')
-                        ->fillForm(function (ContentItem $record): array {
-                            $currentStatus = $record->status instanceof ContentStatus
-                                ? $record->status->value
-                                : (string) $record->status;
-
-                            return [
-                                'status' => $currentStatus,
-                            ];
-                        })
-                        ->form([
-                            ToggleButtons::make('status')
-                                ->label('Status')
-                                ->inline()
-                                ->options(collect(ContentStatus::cases())->mapWithKeys(
-                                    fn (ContentStatus $status): array => [
-                                        $status->value => Str::headline($status->value),
-                                    ],
-                                )->all())
-                                ->required(),
-                        ])
-                        ->action(function (ContentItem $record, array $data, TransitionContentItemStatus $transitionContentItemStatus): void {
-                            $transitionContentItemStatus->handle(
-                                $record,
-                                ContentStatus::from((string) $data['status']),
-                            );
-                        }),
+                    ContentItemStatusActions::approve(),
+                    ContentItemStatusActions::publish(),
+                    ContentItemStatusActions::unpublish(),
+                    ContentItemStatusActions::reject(),
                     EditAction::make(),
                     DeleteAction::make(),
                 ])->label('Actions'),

@@ -6,11 +6,13 @@ use App\Models\Comment;
 use App\Models\ContentItem;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -38,6 +40,11 @@ class CommentsRelationManager extends RelationManager
     {
         return $schema
             ->components([
+                Select::make('user_id')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 MarkdownEditor::make('body_markdown')
                     ->toolbarButtons([
                         ['bold', 'italic', 'link'],
@@ -59,7 +66,6 @@ class CommentsRelationManager extends RelationManager
             ->components([
                 Section::make('Commentaire')
                     ->schema([
-                        TextEntry::make('id'),
                         TextEntry::make('user.name')
                             ->label('User'),
                         IconEntry::make('is_visible')
@@ -84,10 +90,8 @@ class CommentsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('id')
+            ->recordTitleAttribute('body_markdown')
             ->columns([
-                TextColumn::make('id')
-                    ->sortable(),
                 TextColumn::make('user.name')
                     ->label('User')
                     ->searchable()
@@ -121,12 +125,13 @@ class CommentsRelationManager extends RelationManager
                         };
                     }),
             ])
+            ->headerActions([
+                CreateAction::make(),
+            ])
             ->recordActions([
                 ActionGroup::make([
-                    ViewAction::make()
-                        ->slideOver(),
-                    EditAction::make()
-                        ->slideOver(),
+                    ViewAction::make(),
+                    EditAction::make(),
                     DeleteAction::make(),
                 ])->label('Actions'),
             ])

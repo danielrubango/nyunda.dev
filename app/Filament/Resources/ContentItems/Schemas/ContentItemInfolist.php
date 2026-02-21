@@ -19,7 +19,11 @@ class ContentItemInfolist
             ->components([
                 Section::make('Contenu')
                     ->schema([
-                        TextEntry::make('id'),
+                        TextEntry::make('translations.title')
+                            ->label('Title')
+                            ->listWithLineBreaks()
+                            ->limitList(1)
+                            ->columnSpan(2),
                         TextEntry::make('type')
                             ->badge()
                             ->formatStateUsing(fn (ContentType|string $state): string => Str::headline(

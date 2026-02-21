@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ContentItems\RelationManagers;
 
+use App\Enums\ContentType;
 use App\Models\ContentTranslation;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -72,19 +73,44 @@ class TranslationsRelationManager extends RelationManager
                     ])
                     ->fileAttachmentsDisk('public')
                     ->fileAttachmentsDirectory('content-markdown')
+                    ->visible(fn (): bool => $this->isInternalType())
+                    ->required(fn (): bool => $this->isInternalType())
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function (Set $set, Get $get, ?string $state): void {
+                        if ((string) $get('excerpt') !== '') {
+                            return;
+                        }
+
+                        $plainText = trim((string) Str::of(strip_tags((string) Str::markdown((string) $state)))->squish());
+                        $set('excerpt', Str::limit($plainText, 200));
+                    })
                     ->columnSpanFull(),
                 TextInput::make('external_url')
                     ->url()
                     ->maxLength(2048)
+                    ->visible(fn (): bool => ! $this->isInternalType())
+                    ->required(fn (): bool => ! $this->isInternalType())
                     ->columnSpanFull(),
                 TextInput::make('external_site_name')
+                    ->visible(fn (): bool => ! $this->isInternalType())
                     ->maxLength(255),
                 Textarea::make('external_description')
                     ->rows(3)
+                    ->visible(fn (): bool => ! $this->isInternalType())
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function (Set $set, Get $get, ?string $state): void {
+                        if ((string) $get('excerpt') !== '') {
+                            return;
+                        }
+
+                        $plainText = trim((string) Str::of((string) $state)->squish());
+                        $set('excerpt', Str::limit($plainText, 200));
+                    })
                     ->columnSpanFull(),
                 TextInput::make('external_og_image_url')
                     ->url()
                     ->maxLength(2048)
+                    ->visible(fn (): bool => ! $this->isInternalType())
                     ->columnSpanFull(),
             ])
             ->columns(2);
@@ -146,15 +172,12 @@ class TranslationsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->visible(fn (): bool => count($this->getAvailableLocaleOptions()) > 0)
-                    ->slideOver(),
+                    ->visible(fn (): bool => count($this->getAvailableLocaleOptions()) > 0),
             ])
             ->recordActions([
                 ActionGroup::make([
-                    ViewAction::make()
-                        ->slideOver(),
-                    EditAction::make()
-                        ->slideOver(),
+                    ViewAction::make(),
+                    EditAction::make(),
                     DeleteAction::make(),
                 ])->label('Actions'),
             ])
@@ -186,5 +209,16 @@ class TranslationsRelationManager extends RelationManager
             ->reject(fn (string $locale): bool => $usedLocales->contains($locale))
             ->mapWithKeys(fn (string $locale): array => [$locale => Str::upper($locale)])
             ->all();
+    }
+
+    protected function isInternalType(): bool
+    {
+        $ownerType = $this->getOwnerRecord()->type;
+
+        if ($ownerType instanceof ContentType) {
+            return $ownerType === ContentType::InternalPost;
+        }
+
+        return (string) $ownerType === ContentType::InternalPost->value;
     }
 }

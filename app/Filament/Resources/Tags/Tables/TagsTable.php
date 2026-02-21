@@ -17,8 +17,6 @@ class TagsTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->sortable(),
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
@@ -33,10 +31,8 @@ class TagsTable
             ->filters([])
             ->recordActions([
                 ActionGroup::make([
-                    ViewAction::make()
-                        ->slideOver(),
-                    EditAction::make()
-                        ->slideOver(),
+                    ViewAction::make(),
+                    EditAction::make(),
                     DeleteAction::make(),
                 ])->label('Actions'),
             ])

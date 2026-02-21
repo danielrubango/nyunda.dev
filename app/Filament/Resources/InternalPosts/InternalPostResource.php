@@ -1,36 +1,43 @@
 <?php
 
-namespace App\Filament\Resources\ContentItems;
+namespace App\Filament\Resources\InternalPosts;
 
-use App\Filament\Resources\ContentItems\Pages\CreateContentItem;
-use App\Filament\Resources\ContentItems\Pages\EditContentItem;
-use App\Filament\Resources\ContentItems\Pages\ListContentItems;
-use App\Filament\Resources\ContentItems\Pages\ViewContentItem;
+use App\Enums\ContentType;
 use App\Filament\Resources\ContentItems\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ContentItems\RelationManagers\TranslationsRelationManager;
 use App\Filament\Resources\ContentItems\Schemas\ContentItemForm;
 use App\Filament\Resources\ContentItems\Schemas\ContentItemInfolist;
 use App\Filament\Resources\ContentItems\Tables\ContentItemsTable;
+use App\Filament\Resources\InternalPosts\Pages\CreateInternalPost;
+use App\Filament\Resources\InternalPosts\Pages\EditInternalPost;
+use App\Filament\Resources\InternalPosts\Pages\ListInternalPosts;
+use App\Filament\Resources\InternalPosts\Pages\ViewInternalPost;
 use App\Models\ContentItem;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
-class ContentItemResource extends Resource
+class InternalPostResource extends Resource
 {
     protected static ?string $model = ContentItem::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Editorial';
 
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationLabel(): string
+    {
+        return 'Internal posts';
+    }
+
     public static function form(Schema $schema): Schema
     {
-        return ContentItemForm::configure($schema);
+        return ContentItemForm::configure($schema, ContentType::InternalPost);
     }
 
     public static function infolist(Schema $schema): Schema
@@ -40,7 +47,7 @@ class ContentItemResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return ContentItemsTable::configure($table);
+        return ContentItemsTable::configure($table, ContentType::InternalPost);
     }
 
     public static function getRelations(): array
@@ -51,18 +58,19 @@ class ContentItemResource extends Resource
         ];
     }
 
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
-    }
-
     public static function getPages(): array
     {
         return [
-            'index' => ListContentItems::route('/'),
-            'create' => CreateContentItem::route('/create'),
-            'view' => ViewContentItem::route('/{record}'),
-            'edit' => EditContentItem::route('/{record}/edit'),
+            'index' => ListInternalPosts::route('/'),
+            'create' => CreateInternalPost::route('/create'),
+            'view' => ViewInternalPost::route('/{record}'),
+            'edit' => EditInternalPost::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('type', ContentType::InternalPost->value);
     }
 }

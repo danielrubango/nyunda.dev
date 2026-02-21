@@ -57,7 +57,6 @@ class RepliesRelationManager extends RelationManager
             ->components([
                 Section::make('Reply')
                     ->schema([
-                        TextEntry::make('id'),
                         TextEntry::make('user.name')
                             ->label('User'),
                         IconEntry::make('is_visible')
@@ -86,10 +85,8 @@ class RepliesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('id')
+            ->recordTitleAttribute('body_markdown')
             ->columns([
-                TextColumn::make('id')
-                    ->sortable(),
                 TextColumn::make('user.name')
                     ->label('User')
                     ->searchable()
@@ -109,13 +106,11 @@ class RepliesRelationManager extends RelationManager
                     ->sortable(),
             ])
             ->headerActions([
-                CreateAction::make()
-                    ->slideOver(),
+                CreateAction::make(),
             ])
             ->recordActions([
                 ActionGroup::make([
-                    ViewAction::make()
-                        ->slideOver(),
+                    ViewAction::make(),
                     Action::make('toggle_visibility')
                         ->label(fn (ForumReply $record): string => $record->is_hidden ? 'Show' : 'Hide')
                         ->requiresConfirmation()
@@ -152,8 +147,7 @@ class RepliesRelationManager extends RelationManager
                                 'best_reply_id' => null,
                             ]);
                         }),
-                    EditAction::make()
-                        ->slideOver(),
+                    EditAction::make(),
                     DeleteAction::make(),
                 ])->label('Actions'),
             ])

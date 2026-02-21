@@ -23,8 +23,6 @@ class ForumThreadsTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->sortable(),
                 TextColumn::make('title')
                     ->searchable()
                     ->limit(80)
@@ -43,9 +41,10 @@ class ForumThreadsTable
                     ->boolean()
                     ->trueColor('success')
                     ->falseColor('danger'),
-                TextColumn::make('bestReply.id')
-                    ->label('Best reply #')
-                    ->placeholder('-'),
+                IconColumn::make('has_best_reply')
+                    ->label('Best reply')
+                    ->state(fn (ForumThread $record): bool => $record->best_reply_id !== null)
+                    ->boolean(),
                 TextColumn::make('replies_count')
                     ->counts('replies')
                     ->label('Replies')

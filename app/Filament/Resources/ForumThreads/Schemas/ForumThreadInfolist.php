@@ -17,7 +17,6 @@ class ForumThreadInfolist
             ->components([
                 Section::make('Thread')
                     ->schema([
-                        TextEntry::make('id'),
                         TextEntry::make('title')
                             ->columnSpanFull(),
                         TextEntry::make('slug'),
@@ -32,9 +31,10 @@ class ForumThreadInfolist
                             ->boolean()
                             ->trueColor('success')
                             ->falseColor('danger'),
-                        TextEntry::make('bestReply.id')
-                            ->label('Best reply #')
-                            ->placeholder('-'),
+                        IconEntry::make('has_best_reply')
+                            ->label('Best reply')
+                            ->state(fn (ForumThread $record): bool => $record->best_reply_id !== null)
+                            ->boolean(),
                         TextEntry::make('replies_count')
                             ->label('Replies')
                             ->state(fn (ForumThread $record): int => $record->replies()->count()),

@@ -18,8 +18,7 @@ class ListTags extends ListRecords
                 ->mutateDataUsing(fn (array $data): array => [
                     ...$data,
                     'sort_order' => (Tag::query()->max('sort_order') ?? 0) + 1,
-                ])
-                ->slideOver(),
+                ]),
         ];
     }
 }

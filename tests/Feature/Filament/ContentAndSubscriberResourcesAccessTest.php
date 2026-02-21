@@ -18,24 +18,44 @@ test('admin can access subscriber resource list with enum status', function () {
 
     $response->assertSuccessful();
     $response->assertSee('enum-subscriber@test.local');
-    $response->assertSee((string) $subscriber->id);
 });
 
-test('admin can access content item resource list with enum columns', function () {
+test('admin can access editorial typed resources', function () {
     $admin = User::factory()->admin()->create();
-    $contentItem = ContentItem::factory()->create([
+
+    $internalPost = ContentItem::factory()->create([
+        'type' => ContentType::InternalPost->value,
+        'status' => ContentStatus::Published->value,
+        'author_id' => $admin->id,
+    ]);
+    $externalPost = ContentItem::factory()->create([
         'type' => ContentType::ExternalPost->value,
         'status' => ContentStatus::Published->value,
         'author_id' => $admin->id,
     ]);
+    $communityLink = ContentItem::factory()->create([
+        'type' => ContentType::CommunityLink->value,
+        'status' => ContentStatus::Published->value,
+        'author_id' => $admin->id,
+    ]);
 
-    $response = $this->actingAs($admin)->get('/admin/content-items');
+    $this->actingAs($admin)
+        ->get('/admin/internal-posts')
+        ->assertSuccessful()
+        ->assertSee((string) $internalPost->author->name);
 
-    $response->assertSuccessful();
-    $response->assertSee((string) $contentItem->id);
+    $this->actingAs($admin)
+        ->get('/admin/external-posts')
+        ->assertSuccessful()
+        ->assertSee((string) $externalPost->author->name);
+
+    $this->actingAs($admin)
+        ->get('/admin/community-links')
+        ->assertSuccessful()
+        ->assertSee((string) $communityLink->author->name);
 });
 
-test('content item status tabs filter results', function () {
+test('internal posts status tabs filter results', function () {
     $admin = User::factory()->admin()->create();
     $publishedAuthor = User::factory()->author()->create([
         'name' => 'Author Published Tab',
@@ -56,10 +76,10 @@ test('content item status tabs filter results', function () {
         'author_id' => $draftAuthor->id,
     ]);
 
-    $response = $this->actingAs($admin)->get('/admin/content-items?tab=published');
+    $response = $this->actingAs($admin)->get('/admin/internal-posts?tab=published');
 
     $response->assertSuccessful();
-    $response->assertSee((string) $published->id);
+    $response->assertSee((string) $published->author->name);
     $response->assertSee('Author Published Tab');
     $response->assertDontSee('Author Draft Tab');
 });
@@ -84,7 +104,7 @@ test('subscriber status tabs filter results', function () {
     $response->assertDontSee($confirmed->email);
 });
 
-test('non admin users cannot access subscriber and content item resources', function () {
+test('non admin users cannot access subscriber and editorial resources', function () {
     $author = User::factory()->author()->create();
 
     $this->actingAs($author)
@@ -92,6 +112,14 @@ test('non admin users cannot access subscriber and content item resources', func
         ->assertForbidden();
 
     $this->actingAs($author)
-        ->get('/admin/content-items')
+        ->get('/admin/internal-posts')
+        ->assertForbidden();
+
+    $this->actingAs($author)
+        ->get('/admin/external-posts')
+        ->assertForbidden();
+
+    $this->actingAs($author)
+        ->get('/admin/community-links')
         ->assertForbidden();
 });

@@ -16,10 +16,8 @@ class ContentTranslationsTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->sortable(),
-                TextColumn::make('contentItem.id')
-                    ->label('Content #')
+                TextColumn::make('contentItem.type')
+                    ->label('Content type')
                     ->sortable(),
                 TextColumn::make('locale')
                     ->badge()

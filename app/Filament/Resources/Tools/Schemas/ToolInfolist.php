@@ -12,7 +12,6 @@ class ToolInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('id'),
                 TextEntry::make('name'),
                 TextEntry::make('slug'),
                 TextEntry::make('url')

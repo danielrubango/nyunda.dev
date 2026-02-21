@@ -50,10 +50,8 @@ class SubscribersTable
             ])
             ->recordActions([
                 ActionGroup::make([
-                    ViewAction::make()
-                        ->slideOver(),
-                    EditAction::make()
-                        ->slideOver(),
+                    ViewAction::make(),
+                    EditAction::make(),
                     DeleteAction::make(),
                 ])->label('Actions'),
             ])

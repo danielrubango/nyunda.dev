@@ -13,7 +13,6 @@ class ForumReplyInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('id'),
                 TextEntry::make('forumThread.title')
                     ->label('Thread')
                     ->columnSpan(2),

@@ -18,8 +18,7 @@ class ListTools extends ListRecords
                 ->mutateDataUsing(fn (array $data): array => [
                     ...$data,
                     'sort_order' => (Tool::query()->max('sort_order') ?? 0) + 1,
-                ])
-                ->slideOver(),
+                ]),
         ];
     }
 }
