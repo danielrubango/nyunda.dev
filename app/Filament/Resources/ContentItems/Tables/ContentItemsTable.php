@@ -23,11 +23,15 @@ class ContentItemsTable
                     ->sortable(),
                 TextColumn::make('type')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => Str::headline($state))
+                    ->formatStateUsing(fn (ContentType|string $state): string => Str::headline(
+                        $state instanceof ContentType ? $state->value : $state,
+                    ))
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => Str::headline($state))
+                    ->formatStateUsing(fn (ContentStatus|string $state): string => Str::headline(
+                        $state instanceof ContentStatus ? $state->value : $state,
+                    ))
                     ->sortable(),
                 TextColumn::make('author.name')
                     ->searchable()

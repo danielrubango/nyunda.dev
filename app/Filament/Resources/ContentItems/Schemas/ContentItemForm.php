@@ -5,9 +5,9 @@ namespace App\Filament\Resources\ContentItems\Schemas;
 use App\Enums\ContentStatus;
 use App\Enums\ContentType;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 

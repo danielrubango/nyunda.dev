@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\ForumReplies\Schemas;
 
 use Filament\Forms\Components\MarkdownEditor;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class ForumReplyForm

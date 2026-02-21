@@ -23,7 +23,9 @@ class SubscribersTable
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => Str::headline($state))
+                    ->formatStateUsing(fn (SubscriberStatus|string $state): string => Str::headline(
+                        $state instanceof SubscriberStatus ? $state->value : $state,
+                    ))
                     ->sortable(),
                 TextColumn::make('locale')
                     ->badge()
