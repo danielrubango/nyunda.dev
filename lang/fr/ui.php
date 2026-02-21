@@ -10,6 +10,7 @@ return [
         'about' => 'À propos',
         'account' => 'Mon compte',
         'dashboard' => 'Dashboard',
+        'logout' => 'Déconnexion',
         'login' => 'Connexion',
         'register' => 'Créer un compte',
         'rss' => 'Flux RSS',

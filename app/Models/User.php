@@ -97,6 +97,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(ContentLike::class);
     }
 
+    public function contentReads(): HasMany
+    {
+        return $this->hasMany(ContentRead::class);
+    }
+
     public function forumThreads(): HasMany
     {
         return $this->hasMany(ForumThread::class, 'author_id');

@@ -23,6 +23,7 @@ class ContentItemsTable
     {
         $showTypeColumn = $forcedType === null;
         $showInteractionColumns = $forcedType === null || $forcedType === ContentType::InternalPost;
+        $showReadsColumn = $forcedType === null || $forcedType === ContentType::InternalPost;
 
         return $table
             ->columns([
@@ -60,6 +61,11 @@ class ContentItemsTable
                     ->boolean()
                     ->label('Comments')
                     ->visible($showInteractionColumns),
+                TextColumn::make('reads_count')
+                    ->label('Reads')
+                    ->numeric()
+                    ->sortable()
+                    ->visible($showReadsColumn),
                 TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable(),

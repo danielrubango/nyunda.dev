@@ -28,6 +28,7 @@ class ContentItem extends Model
         'show_likes',
         'show_comments',
         'share_on_publish',
+        'reads_count',
         'is_featured',
     ];
 
@@ -44,6 +45,7 @@ class ContentItem extends Model
             'show_likes' => 'boolean',
             'show_comments' => 'boolean',
             'share_on_publish' => 'boolean',
+            'reads_count' => 'integer',
             'is_featured' => 'boolean',
         ];
     }
@@ -72,6 +74,11 @@ class ContentItem extends Model
     public function likes(): HasMany
     {
         return $this->hasMany(ContentLike::class);
+    }
+
+    public function contentReads(): HasMany
+    {
+        return $this->hasMany(ContentRead::class);
     }
 
     public function socialShareLogs(): HasMany

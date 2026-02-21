@@ -5,6 +5,7 @@ use App\Models\ContentItem;
 use App\Models\ContentTranslation;
 use App\Models\ForumThread;
 use App\Models\Tag;
+use App\Models\User;
 
 test('home page renders key public sections', function () {
     $internal = ContentItem::factory()->published()->internalPost()->create();
@@ -43,6 +44,28 @@ test('home page renders key public sections', function () {
     $response->assertSee('Article externe');
     $response->assertDontSee('Lien communauté');
     $response->assertSee('Mon compte');
+});
+
+test('authenticated non admin user sees account dropdown with logout only', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('home'));
+
+    $response->assertSuccessful();
+    $response->assertSee(__('ui.nav.account'));
+    $response->assertSee(__('ui.nav.logout'));
+    $response->assertDontSee('href="'.route('dashboard').'"', false);
+});
+
+test('authenticated admin user sees account dropdown with dashboard and logout', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->get(route('home'));
+
+    $response->assertSuccessful();
+    $response->assertSee(__('ui.nav.account'));
+    $response->assertSee(__('ui.nav.logout'));
+    $response->assertSee('href="'.route('dashboard').'"', false);
 });
 
 test('links page lists only external links', function () {

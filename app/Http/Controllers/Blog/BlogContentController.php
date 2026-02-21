@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Blog;
 use App\Actions\Content\GetPublishedContentTranslationBySlug;
 use App\Actions\Content\ListLocalizedPublishedContentItems;
 use App\Actions\Content\RenderSafeMarkdown;
+use App\Actions\Content\TrackContentRead;
 use App\Actions\Seo\BuildSeoMeta;
 use App\Enums\ContentType;
 use App\Enums\UserRole;
@@ -13,6 +14,7 @@ use App\Http\Requests\Blog\ListBlogContentRequest;
 use App\Models\ContentTranslation;
 use App\Models\Tag;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
@@ -22,6 +24,7 @@ class BlogContentController extends Controller
         private readonly ListLocalizedPublishedContentItems $listLocalizedPublishedContentItems,
         private readonly GetPublishedContentTranslationBySlug $getPublishedContentTranslationBySlug,
         private readonly RenderSafeMarkdown $renderSafeMarkdown,
+        private readonly TrackContentRead $trackContentRead,
         private readonly BuildSeoMeta $buildSeoMeta,
     ) {}
 
@@ -55,7 +58,7 @@ class BlogContentController extends Controller
         ]);
     }
 
-    public function show(string $locale, string $slug): View|RedirectResponse
+    public function show(Request $request, string $locale, string $slug): View|RedirectResponse
     {
         abort_unless(in_array($locale, config('app.supported_locales', ['fr', 'en']), true), 404);
         app()->setLocale($locale);
@@ -72,6 +75,11 @@ class BlogContentController extends Controller
 
             return redirect()->away($translation->external_url);
         }
+
+        $this->trackContentRead->handle(
+            request: $request,
+            contentItem: $contentItem,
+        );
 
         $contentItem->loadCount('likes');
         $hasLiked = false;

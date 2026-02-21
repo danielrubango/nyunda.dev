@@ -20,10 +20,12 @@ return new class extends Migration
             $table->timestamp('published_at')->nullable();
             $table->boolean('show_likes')->default(true);
             $table->boolean('share_on_publish')->default(false);
+            $table->unsignedBigInteger('reads_count')->default(0);
             $table->timestamps();
 
             $table->index(['status', 'published_at']);
             $table->index(['type', 'status']);
+            $table->index(['reads_count']);
         });
     }
 

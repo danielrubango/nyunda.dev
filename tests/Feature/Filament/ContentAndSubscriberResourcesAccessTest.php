@@ -42,6 +42,7 @@ test('admin can access editorial typed resources', function () {
     $this->actingAs($admin)
         ->get('/admin/internal-posts')
         ->assertSuccessful()
+        ->assertSee('Reads')
         ->assertSee((string) $internalPost->author->name);
 
     $this->actingAs($admin)

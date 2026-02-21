@@ -1,3 +1,5 @@
+@php use App\Enums\UserRole; @endphp
+
 @php
     $navigationItems = [
         ['label' => __('ui.nav.blog'), 'route' => 'blog.index', 'active' => ['blog.index', 'blog.show', 'blog.show.localized'], 'disabled' => false],
@@ -9,7 +11,9 @@
         ->mapWithKeys(fn (string $locale): array => [$locale => strtoupper($locale)])
         ->all();
 
-    $accountUrl = auth()->check() ? route('dashboard') : route('login');
+    $authenticatedUser = auth()->user();
+    $isAuthenticated = $authenticatedUser !== null;
+    $isAdmin = $authenticatedUser?->hasRole(UserRole::Admin) ?? false;
 @endphp
 
 <header class="border-b border-zinc-200 bg-white">
@@ -67,9 +71,33 @@
                 />
             </form>
 
-            <a href="{{ $accountUrl }}" class="border-b border-transparent pb-1 text-sm font-medium text-zinc-700 no-underline transition-colors hover:border-zinc-400 hover:text-zinc-900">
-                {{ __('ui.nav.account') }}
-            </a>
+            @if ($isAuthenticated)
+                <details class="group relative">
+                    <summary class="inline-flex list-none cursor-pointer items-center gap-1 border-b border-transparent pb-1 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-400 hover:text-zinc-900 [&::-webkit-details-marker]:hidden">
+                        <span>{{ __('ui.nav.account') }}</span>
+                        <x-ui.icon name="chevron-down" class="size-4 transition-transform group-open:rotate-180" />
+                    </summary>
+
+                    <div class="absolute right-0 top-8 z-30 min-w-40 border border-zinc-200 bg-white p-2 text-sm shadow-xs">
+                        @if ($isAdmin)
+                            <a href="{{ route('dashboard') }}" class="block px-2 py-1.5 text-zinc-700 no-underline transition-colors hover:bg-zinc-100 hover:text-zinc-900">
+                                {{ __('ui.nav.dashboard') }}
+                            </a>
+                        @endif
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="block w-full px-2 py-1.5 text-left text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900">
+                                {{ __('ui.nav.logout') }}
+                            </button>
+                        </form>
+                    </div>
+                </details>
+            @else
+                <a href="{{ route('login') }}" class="border-b border-transparent pb-1 text-sm font-medium text-zinc-700 no-underline transition-colors hover:border-zinc-400 hover:text-zinc-900">
+                    {{ __('ui.nav.account') }}
+                </a>
+            @endif
         </div>
     </div>
 </header>

@@ -26,6 +26,7 @@ test('admin can access content item view page with relation managers', function 
     $response = $this->actingAs($admin)->get("/admin/content-items/{$contentItem->id}");
 
     $response->assertSuccessful();
+    $response->assertSee('Reads');
 });
 
 test('admin can access forum thread edit page with replies relation', function () {

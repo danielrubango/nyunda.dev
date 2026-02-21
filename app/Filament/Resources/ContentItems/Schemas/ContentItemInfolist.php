@@ -55,6 +55,9 @@ class ContentItemInfolist
                         IconEntry::make('share_on_publish')
                             ->label('Partager à la publication')
                             ->boolean(),
+                        TextEntry::make('reads_count')
+                            ->label('Reads')
+                            ->numeric(),
                         TextEntry::make('approved_at')
                             ->dateTime()
                             ->placeholder('-'),

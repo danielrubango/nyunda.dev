@@ -28,6 +28,7 @@ class ContentItemFactory extends Factory
             'show_likes' => true,
             'show_comments' => true,
             'share_on_publish' => false,
+            'reads_count' => 0,
             'is_featured' => false,
         ];
     }
