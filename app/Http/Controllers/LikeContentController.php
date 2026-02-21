@@ -16,11 +16,13 @@ class LikeContentController extends Controller
     ): RedirectResponse {
         $this->authorize('like', $contentItem);
 
-        $toggleContentLike->handle(
+        $hasLiked = $toggleContentLike->handle(
             user: $request->user(),
             contentItem: $contentItem,
         );
 
-        return redirect()->back();
+        return redirect()
+            ->back()
+            ->with('status', $hasLiked ? __('ui.flash.like_added') : __('ui.flash.like_removed'));
     }
 }

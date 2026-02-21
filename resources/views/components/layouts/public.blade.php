@@ -20,6 +20,7 @@
 
         <div class="flex min-h-screen flex-col">
             <x-public.site-header />
+            <x-ui.toast-stack />
 
             <main id="main-content" class="flex-1 py-10 sm:py-14">
                 {{ $slot }}
@@ -27,5 +28,6 @@
 
             <x-public.site-footer />
         </div>
+        @fluxScripts
     </body>
 </html>

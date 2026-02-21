@@ -5,14 +5,6 @@
             <p class="max-w-3xl text-base text-zinc-600">{{ __('ui.blog.subtitle') }}</p>
         </header>
 
-        @if (session('status'))
-            <x-ui.alert variant="success">{{ session('status') }}</x-ui.alert>
-        @endif
-
-        @if (session('error'))
-            <x-ui.alert variant="error">{{ session('error') }}</x-ui.alert>
-        @endif
-
         @php
             $shouldFocusSearch = request()->query('focus') === 'search';
             $localeOptions = ['all' => __('ui.blog.filters.locale').' : '.__('ui.blog.filters.all')]
@@ -54,7 +46,7 @@
                     <x-ui.select name="tag" :options="$tagOptions" :selected="$selectedTag" class="text-sm" />
 
                     <div class="flex items-end md:justify-end">
-                        <a href="{{ route('blog.index') }}" class="border-b border-transparent pb-1 text-sm font-medium text-zinc-600 no-underline hover:border-zinc-400 hover:text-zinc-900">
+                        <a href="{{ route('blog.index', ['reset' => 1]) }}" class="border-b border-transparent pb-1 text-sm font-medium text-zinc-600 no-underline hover:border-zinc-400 hover:text-zinc-900">
                             {{ __('ui.blog.filters.reset') }}
                         </a>
                     </div>

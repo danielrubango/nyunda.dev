@@ -10,10 +10,6 @@
             </a>
         </header>
 
-        @if (session('status'))
-            <x-ui.alert variant="success">{{ session('status') }}</x-ui.alert>
-        @endif
-
         @php
             $localeOptions = ['all' => __('ui.blog.filters.locale').' : '.__('ui.blog.filters.all')]
                 + collect($supportedLocales)->mapWithKeys(fn (string $locale): array => [$locale => strtoupper($locale)])->all();

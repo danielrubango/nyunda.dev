@@ -7,6 +7,7 @@ use App\Actions\Content\ListLocalizedPublishedContentItems;
 use App\Actions\Content\RenderSafeMarkdown;
 use App\Actions\Seo\BuildSeoMeta;
 use App\Enums\ContentType;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Blog\ListBlogContentRequest;
 use App\Models\ContentTranslation;
@@ -64,7 +65,7 @@ class BlogContentController extends Controller
         abort_if($translation === null, 404);
 
         $contentItem = $translation->contentItem;
-        $contentItem->loadMissing('tags');
+        $contentItem->loadMissing(['tags', 'author']);
 
         if ($contentItem->type !== ContentType::InternalPost) {
             abort_if($translation->external_url === null, 404);
@@ -73,16 +74,28 @@ class BlogContentController extends Controller
         }
 
         $contentItem->loadCount('likes');
+        $hasLiked = false;
+
+        if (auth()->check()) {
+            $hasLiked = $contentItem->likes()
+                ->where('user_id', auth()->id())
+                ->exists();
+        }
 
         /** @var Collection<int, \App\Models\Comment> $comments */
         $comments = collect();
 
         if ($contentItem->show_comments) {
+            $isAdmin = auth()->user()?->hasRole(UserRole::Admin) ?? false;
+
             $contentItem->load([
-                'comments' => fn ($query) => $query
-                    ->where('is_hidden', false)
-                    ->with('user')
-                    ->latest('created_at'),
+                'comments' => function ($query) use ($isAdmin): void {
+                    if (! $isAdmin) {
+                        $query->where('is_hidden', false);
+                    }
+
+                    $query->with('user')->oldest('created_at');
+                },
             ]);
 
             $comments = $contentItem->comments;
@@ -91,6 +104,7 @@ class BlogContentController extends Controller
         return view('blog.show', [
             'contentItem' => $contentItem,
             'translation' => $translation,
+            'hasLiked' => $hasLiked,
             'renderedBody' => $this->renderSafeMarkdown->handle($translation->body_markdown),
             'comments' => $comments,
             'seo' => $this->buildSeoMeta->handle(

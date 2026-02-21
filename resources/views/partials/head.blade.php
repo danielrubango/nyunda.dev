@@ -13,7 +13,7 @@
 <link rel="manifest" href="/site.webmanifest">
 
 <link rel="preconnect" href="https://fonts.bunny.net">
-<link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800|sora:400,500,600,700" rel="stylesheet" />
+<link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800|newsreader:400,500,600,700|source-serif-4:400,500,600,700" rel="stylesheet" />
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @fluxAppearance

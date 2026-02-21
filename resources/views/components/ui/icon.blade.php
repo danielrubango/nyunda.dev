@@ -7,6 +7,47 @@
         <path d="M15.5 15.5L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
         <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.8" />
     </svg>
+@elseif ($name === 'share')
+    <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M16 8L8 12L16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <circle cx="18" cy="7" r="2" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="6" cy="12" r="2" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="18" cy="17" r="2" stroke="currentColor" stroke-width="1.8" />
+    </svg>
+@elseif ($name === 'copy')
+    <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="9" y="9" width="10" height="11" rx="1.5" stroke="currentColor" stroke-width="1.8" />
+        <path d="M6 15V5.5C6 4.67157 6.67157 4 7.5 4H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+    </svg>
+@elseif ($name === 'thumb-up')
+    <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M9 10V20H5V10H9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M9 19H16.2C16.9963 19 17.6944 18.4735 17.9123 17.7076L19.6723 11.5232C19.9359 10.5964 19.2398 9.67773 18.2763 9.67773H13V6.5C13 5.67157 12.3284 5 11.5 5C11.0454 5 10.6166 5.20617 10.3325 5.56L9 7.21875V19Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+@elseif ($name === 'heart')
+    <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 20.2L10.85 19.15C6.2 14.9 3 11.975 3 8.4C3 5.475 5.325 3.2 8.2 3.2C9.825 3.2 11.385 3.975 12 5.2C12.615 3.975 14.175 3.2 15.8 3.2C18.675 3.2 21 5.475 21 8.4C21 11.975 17.8 14.9 13.15 19.15L12 20.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+    </svg>
+@elseif ($name === 'eye')
+    <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M2.1 12.38C2.877 14.394 4.29558 16.0876 6.14 17.19C7.98442 18.2924 10.148 18.7356 12.27 18.45C14.392 18.1644 16.3855 17.1685 18 15.59C19.2432 14.3771 20.1827 13.0366 20.715 11.52C19.345 7.63 15.715 4.53 11.215 4.53C6.715 4.53 3.085 7.63 2.1 12.38Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8" />
+    </svg>
+@elseif ($name === 'eye-off')
+    <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 3L21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M10.6 10.6C10.2373 10.9627 10 11.4627 10 12C10 13.1046 10.8954 14 12 14C12.5373 14 13.0373 13.7627 13.4 13.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M9.9 5.3C10.5839 5.10553 11.2874 5.00753 12 5.01C16.5 5.01 20.13 8.11 21.5 12C20.9677 13.5166 20.0282 14.8571 18.785 15.87" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M6.23 7.53C4.34131 8.63092 2.8871 10.3422 2.1 12.38C2.877 14.394 4.29558 16.0876 6.14 17.19C7.98442 18.2924 10.148 18.7356 12.27 18.45" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+@elseif ($name === 'trash')
+    <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M9 7V5.5C9 4.67157 9.67157 4 10.5 4H13.5C14.3284 4 15 4.67157 15 5.5V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M8 7L8.8 18.2C8.86689 19.1365 9.64756 19.86 10.5864 19.86H13.4136C14.3524 19.86 15.1331 19.1365 15.2 18.2L16 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M10.5 10.5V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M13.5 10.5V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+    </svg>
 @elseif ($name === 'external-link')
     <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M14 4H20V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />

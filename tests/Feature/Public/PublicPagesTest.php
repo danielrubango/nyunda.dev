@@ -177,6 +177,16 @@ test('selected locale persists across public pages', function () {
         ->assertSee('Liens utiles');
 });
 
+test('public layout renders toast container with flashed session message', function () {
+    $response = $this->withSession([
+        'status' => 'Toast test message',
+    ])->get(route('home'));
+
+    $response->assertSuccessful();
+    $response->assertSee('id="ui-toast-root"', false);
+    $response->assertSee('Toast test message');
+});
+
 test('links page supports search filter', function () {
     $firstItem = ContentItem::factory()->published()->externalPost()->create();
     $secondItem = ContentItem::factory()->published()->externalPost()->create();

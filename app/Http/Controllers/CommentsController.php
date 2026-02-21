@@ -9,7 +9,9 @@ use App\Http\Requests\Comment\StoreCommentRequest;
 use App\Http\Requests\Comment\UpdateCommentRequest;
 use App\Models\Comment;
 use App\Models\ContentItem;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class CommentsController extends Controller
 {
@@ -26,14 +28,16 @@ class CommentsController extends Controller
             bodyMarkdown: $request->bodyMarkdown(),
         );
 
-        return redirect()->back();
+        return redirect()
+            ->back()
+            ->with('status', __('ui.flash.comment_added'));
     }
 
     public function update(
         UpdateCommentRequest $request,
         Comment $comment,
         UpdateCommentVisibility $updateCommentVisibility,
-    ): RedirectResponse {
+    ): RedirectResponse|JsonResponse {
         $this->authorize('update', $comment);
 
         $updateCommentVisibility->handle(
@@ -42,15 +46,37 @@ class CommentsController extends Controller
             hiddenById: $request->user()->id,
         );
 
-        return redirect()->back();
+        $message = $request->isHidden()
+            ? __('ui.flash.comment_hidden')
+            : __('ui.flash.comment_shown');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => $message,
+            ]);
+        }
+
+        return redirect()
+            ->back()
+            ->with('status', $message);
     }
 
-    public function destroy(Comment $comment, DeleteComment $deleteComment): RedirectResponse
+    public function destroy(Request $request, Comment $comment, DeleteComment $deleteComment): RedirectResponse|JsonResponse
     {
         $this->authorize('delete', $comment);
 
         $deleteComment->handle($comment);
 
-        return redirect()->back();
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => __('ui.flash.comment_deleted'),
+            ]);
+        }
+
+        return redirect()
+            ->back()
+            ->with('status', __('ui.flash.comment_deleted'));
     }
 }

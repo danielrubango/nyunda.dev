@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Http\Controllers\AboutPageController;
 use App\Http\Controllers\Admin\ExportSubscribersCsvController;
 use App\Http\Controllers\Blog\BlogContentController;
@@ -126,7 +127,17 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/forum/{forumThread:slug}', [ForumThreadsController::class, 'show'])
     ->name('forum.show');
 
-Route::view('dashboard', 'dashboard')
+Route::get('dashboard', function () {
+    $user = auth()->user();
+
+    if (! $user || ! $user->hasRole(UserRole::Admin)) {
+        return redirect()
+            ->route('home')
+            ->with('status', __('ui.flash.connected'));
+    }
+
+    return view('dashboard');
+})
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 

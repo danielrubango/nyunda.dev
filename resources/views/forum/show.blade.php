@@ -5,10 +5,6 @@
                 {{ __('ui.forum.back_forum') }}
             </a>
 
-            @if (session('status'))
-                <x-ui.alert variant="success">{{ session('status') }}</x-ui.alert>
-            @endif
-
             <header class="space-y-4 border-b border-zinc-200 pb-6">
                 <div class="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-zinc-500">
                     <span>{{ strtoupper($forumThread->locale) }}</span>

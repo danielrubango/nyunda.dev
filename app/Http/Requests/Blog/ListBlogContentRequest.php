@@ -8,6 +8,8 @@ use Illuminate\Validation\Rule;
 
 class ListBlogContentRequest extends FormRequest
 {
+    public const string SESSION_KEY = 'blog.filters';
+
     public function authorize(): bool
     {
         return true;
@@ -43,7 +45,48 @@ class ListBlogContentRequest extends FormRequest
                 Rule::exists('tags', 'slug'),
             ],
             'q' => ['nullable', 'string', 'max:120'],
+            'reset' => ['nullable', 'boolean'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->boolean('reset')) {
+            $this->session()->forget(self::SESSION_KEY);
+
+            return;
+        }
+
+        if ($this->hasAny(['locale', 'type', 'tag', 'q'])) {
+            return;
+        }
+
+        $persistedFilters = $this->session()->get(self::SESSION_KEY);
+
+        if (! is_array($persistedFilters)) {
+            return;
+        }
+
+        $this->merge(array_filter([
+            'locale' => $persistedFilters['locale'] ?? null,
+            'type' => $persistedFilters['type'] ?? null,
+            'tag' => $persistedFilters['tag'] ?? null,
+            'q' => $persistedFilters['q'] ?? null,
+        ], fn (mixed $value): bool => is_string($value) && $value !== ''));
+    }
+
+    protected function passedValidation(): void
+    {
+        if ($this->boolean('reset')) {
+            return;
+        }
+
+        $this->session()->put(self::SESSION_KEY, [
+            'locale' => $this->localeSelection(),
+            'type' => $this->typeFilter(),
+            'tag' => $this->tagFilter(),
+            'q' => $this->searchTerm(),
+        ]);
     }
 
     public function localeSelection(): string

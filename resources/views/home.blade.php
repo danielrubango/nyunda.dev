@@ -1,13 +1,5 @@
 <x-layouts.public :seo="$seo">
     <div class="ui-container space-y-10">
-        @if (session('status'))
-            <x-ui.alert variant="success">{{ session('status') }}</x-ui.alert>
-        @endif
-
-        @if (session('error'))
-            <x-ui.alert variant="error">{{ session('error') }}</x-ui.alert>
-        @endif
-
         <section class="space-y-4">
             @if (is_array($featuredRow))
                 <x-public.article-card

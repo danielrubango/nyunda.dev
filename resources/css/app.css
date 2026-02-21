@@ -10,8 +10,8 @@
 
 @theme {
     --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-title: 'Sora', ui-sans-serif, system-ui, sans-serif;
-    --font-reading: var(--font-sans);
+    --font-title: 'Newsreader', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-reading: 'Source Serif 4', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
     --font-ui: var(--font-sans);
 
     --color-zinc-50: #ffffff;
@@ -116,11 +116,11 @@
     }
 
     .article-content {
-        @apply max-w-[75ch] font-reading text-[1.06rem] leading-8 text-zinc-800;
+        @apply max-w-[75ch] font-reading text-[1.05rem] leading-7 text-zinc-800;
     }
 
     .article-content > * + * {
-        @apply mt-6;
+        @apply mt-5;
     }
 
     .article-content h2 {
@@ -133,9 +133,14 @@
         font-family: var(--font-title);
     }
 
+    .article-content h2 + *,
+    .article-content h3 + * {
+        @apply mt-3;
+    }
+
     .article-content ul,
     .article-content ol {
-        @apply space-y-2 ps-6;
+        @apply space-y-1 ps-6;
     }
 
     .article-content ul {
