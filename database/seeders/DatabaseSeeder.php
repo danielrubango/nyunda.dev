@@ -14,11 +14,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        if (app()->isLocal()) {
+            $this->call(LocalDemoSeeder::class);
+
+            return;
+        }
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Daniel Rubango',
+            'email' => 'danielrubango@gmail.com',
             'role' => UserRole::Admin->value,
             'preferred_locale' => 'fr',
         ]);
