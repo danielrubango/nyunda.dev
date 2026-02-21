@@ -31,6 +31,7 @@ class ContentTranslationFactory extends Factory
             'external_description' => null,
             'external_site_name' => null,
             'external_og_image_url' => null,
+            'featured_image_url' => null,
         ];
     }
 

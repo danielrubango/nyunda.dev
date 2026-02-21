@@ -76,6 +76,10 @@ class ContentTranslationForm
                             ->url()
                             ->maxLength(2048)
                             ->columnSpanFull(),
+                        TextInput::make('featured_image_url')
+                            ->url()
+                            ->maxLength(2048)
+                            ->columnSpanFull(),
                         Textarea::make('external_description')
                             ->rows(3)
                             ->columnSpanFull(),

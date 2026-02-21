@@ -112,6 +112,10 @@ class TranslationsRelationManager extends RelationManager
                     ->maxLength(2048)
                     ->visible(fn (): bool => ! $this->isInternalType())
                     ->columnSpanFull(),
+                TextInput::make('featured_image_url')
+                    ->url()
+                    ->maxLength(2048)
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -143,6 +147,10 @@ class TranslationsRelationManager extends RelationManager
                         TextEntry::make('external_site_name'),
                         ImageEntry::make('external_og_image_url')
                             ->label('OG image')
+                            ->defaultImageUrl(null)
+                            ->columnSpanFull(),
+                        ImageEntry::make('featured_image_url')
+                            ->label('Featured image')
                             ->defaultImageUrl(null)
                             ->columnSpanFull(),
                         TextEntry::make('external_description')

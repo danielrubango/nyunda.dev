@@ -1,97 +1,147 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        @include('partials.seo-meta')
-        @vite(['resources/css/app.css'])
-    </head>
-    <body class="min-h-screen bg-white text-zinc-900 antialiased">
-        <main class="mx-auto max-w-3xl px-6 py-12">
-            <a href="{{ route('blog.index') }}" class="text-sm font-medium text-zinc-600 hover:text-zinc-900">{{ __('ui.blog.back') }}</a>
+<x-layouts.public :seo="$seo">
+    <div class="ui-container">
+        <div class="mx-auto max-w-3xl space-y-8">
+            <a href="{{ route('blog.index') }}" class="text-sm font-medium text-zinc-600 no-underline hover:text-brand-700">
+                {{ __('ui.blog.back') }}
+            </a>
 
-            <header class="mt-6 border-b border-zinc-200 pb-6">
-                <p class="text-xs uppercase tracking-[0.24em] text-zinc-500">{{ strtoupper($translation->locale) }}</p>
-                <h1 class="mt-3 text-4xl font-semibold leading-tight">{{ $translation->title }}</h1>
-                <p class="mt-4 text-sm leading-6 text-zinc-600">{{ $translation->excerpt }}</p>
+            <header class="space-y-4 border-b border-zinc-200 pb-6">
+                @if ($translation->featured_image_url)
+                    <img
+                        src="{{ $translation->featured_image_url }}"
+                        alt="{{ $translation->title }}"
+                        width="1200"
+                        height="675"
+                        loading="eager"
+                        class="aspect-video w-full border border-zinc-200 object-cover"
+                    >
+                @endif
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <x-ui.badge variant="internal">{{ __('ui.blog.content_types.internal_post') }}</x-ui.badge>
+                    <span class="text-xs font-medium uppercase tracking-wide text-zinc-500">{{ strtoupper($translation->locale) }}</span>
+                </div>
+
+                <h1 class="font-title text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">{{ $translation->title }}</h1>
+                <p class="max-w-[75ch] text-lg text-zinc-600">{{ $translation->excerpt }}</p>
+                <p class="text-sm text-zinc-500">
+                    {{ __('ui.blog.published_by', [
+                        'date' => $contentItem->published_at?->format('Y-m-d') ?? $contentItem->created_at?->format('Y-m-d'),
+                        'author' => $contentItem->author->name,
+                    ]) }}
+                </p>
             </header>
 
-            <article class="prose prose-zinc mt-8 max-w-none">
+            <article class="article-content">
                 {!! $renderedBody !!}
             </article>
 
-            @if ($contentItem->show_likes)
-                <section class="mt-10 rounded-xl border border-zinc-200 p-5">
-                    <div class="flex items-center gap-3 text-sm text-zinc-700">
-                        <span class="font-medium">{{ __('ui.blog.likes', ['count' => $contentItem->likes_count]) }}</span>
+            <section class="flex flex-wrap items-center gap-4 border-y border-zinc-200 py-5">
+                @if ($contentItem->show_likes)
+                    <div class="flex items-center gap-2 text-sm text-zinc-700">
+                        <span class="font-medium">{{ __('ui.blog.likes', ['count' => (int) $contentItem->likes_count]) }}</span>
                         @auth
-                            <form method="POST" action="{{ route('content.likes.toggle', ['contentItem' => $contentItem]) }}" class="inline">
+                            <form method="POST" action="{{ route('content.likes.toggle', ['contentItem' => $contentItem]) }}">
                                 @csrf
-                                <button type="submit" class="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-100">
+                                <button type="submit" class="border-b border-transparent pb-0.5 text-sm text-zinc-600 hover:border-zinc-400 hover:text-zinc-900">
                                     {{ __('ui.blog.like_toggle') }}
                                 </button>
                             </form>
                         @endauth
                     </div>
-                </section>
-            @endif
+                @endif
 
-            <section class="mt-10">
-                <h2 class="text-xl font-semibold">{{ __('ui.blog.comments.title') }}</h2>
+                <div class="ms-auto flex flex-wrap items-center gap-3 text-sm">
+                    <a
+                        href="{{ 'https://twitter.com/intent/tweet?url='.urlencode(request()->fullUrl()).'&text='.urlencode($translation->title) }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="border-b border-transparent pb-0.5 text-zinc-600 no-underline hover:border-zinc-400 hover:text-zinc-900"
+                    >
+                        {{ __('ui.blog.share.x') }}
+                    </a>
+                    <a
+                        href="{{ 'https://www.linkedin.com/sharing/share-offsite/?url='.urlencode(request()->fullUrl()) }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="border-b border-transparent pb-0.5 text-zinc-600 no-underline hover:border-zinc-400 hover:text-zinc-900"
+                    >
+                        {{ __('ui.blog.share.linkedin') }}
+                    </a>
+                    <a href="{{ request()->fullUrl() }}" class="border-b border-transparent pb-0.5 text-zinc-600 no-underline hover:border-zinc-400 hover:text-zinc-900">
+                        {{ __('ui.blog.share.copy') }}
+                    </a>
+                </div>
+            </section>
+
+            <section class="space-y-5">
+                <h2 class="text-2xl font-semibold tracking-tight text-zinc-900">{{ __('ui.blog.comments.title') }}</h2>
 
                 @if ($contentItem->show_comments)
                     @auth
-                        <form method="POST" action="{{ route('content.comments.store', ['contentItem' => $contentItem]) }}" class="mt-4 space-y-3 rounded-xl border border-zinc-200 p-4">
-                            @csrf
-                            <label for="body_markdown" class="block text-sm font-medium text-zinc-700">{{ __('ui.blog.comments.form_label') }}</label>
-                            <textarea id="body_markdown" name="body_markdown" rows="4" class="w-full rounded-md border-zinc-300 text-sm">{{ old('body_markdown') }}</textarea>
-                            @error('body_markdown')
-                                <p class="text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            <button type="submit" class="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-100">{{ __('ui.blog.comments.publish') }}</button>
-                        </form>
+                        <x-ui.card>
+                            <form method="POST" action="{{ route('content.comments.store', ['contentItem' => $contentItem]) }}" class="space-y-3">
+                                @csrf
+                                <label for="body_markdown" class="block text-sm font-medium text-zinc-700">{{ __('ui.blog.comments.form_label') }}</label>
+                                <textarea
+                                    id="body_markdown"
+                                    name="body_markdown"
+                                    rows="5"
+                                    class="w-full border border-zinc-300 px-3 py-2 text-sm"
+                                    placeholder="{{ __('ui.blog.comments.form_placeholder') }}"
+                                >{{ old('body_markdown') }}</textarea>
+                                @error('body_markdown')
+                                    <p class="text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <button type="submit" class="h-10 border border-brand-700 px-4 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50">
+                                    {{ __('ui.blog.comments.publish') }}
+                                </button>
+                            </form>
+                        </x-ui.card>
                     @else
-                        <p class="mt-4 text-sm text-zinc-600">{{ __('ui.blog.comments.login') }}</p>
+                        <x-ui.alert>{{ __('ui.blog.comments.login') }}</x-ui.alert>
                     @endauth
 
-                    <div class="mt-6 space-y-4">
+                    <div class="space-y-4">
                         @forelse ($comments as $comment)
-                            <article class="rounded-xl border border-zinc-200 p-4">
-                                <p class="text-xs text-zinc-500">
-                                    {{ $comment->user->name }} • {{ $comment->created_at?->format('Y-m-d H:i') }}
-                                </p>
-                                <div class="prose prose-sm prose-zinc mt-3 max-w-none">
-                                    {!! $renderedComments[$comment->id] !!}
-                                </div>
-
-                                @can('update', $comment)
-                                    <div class="mt-4 flex items-center gap-2">
-                                        <form method="POST" action="{{ route('comments.update', ['comment' => $comment]) }}">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="is_hidden" value="1">
-                                            <button type="submit" class="rounded border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-100">
-                                                {{ __('ui.blog.comments.hide') }}
-                                            </button>
-                                        </form>
-                                        <form method="POST" action="{{ route('comments.destroy', ['comment' => $comment]) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="rounded border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-100">
-                                                {{ __('ui.blog.comments.delete') }}
-                                            </button>
-                                        </form>
+                            <x-ui.card as="article">
+                                <div class="space-y-3">
+                                    <p class="text-xs text-zinc-500">
+                                        {{ $comment->user->name }} • {{ $comment->created_at?->format('Y-m-d H:i') }}
+                                    </p>
+                                    <div class="article-content max-w-none text-base">
+                                        {!! $renderedComments[$comment->id] !!}
                                     </div>
-                                @endcan
-                            </article>
+
+                                    @can('update', $comment)
+                                        <div class="flex flex-wrap items-center gap-4 text-sm">
+                                            <form method="POST" action="{{ route('comments.update', ['comment' => $comment]) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="is_hidden" value="1">
+                                                <button type="submit" class="border-b border-transparent pb-0.5 text-zinc-600 hover:border-zinc-400 hover:text-zinc-900">
+                                                    {{ __('ui.blog.comments.hide') }}
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('comments.destroy', ['comment' => $comment]) }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="border-b border-transparent pb-0.5 text-zinc-600 hover:border-zinc-400 hover:text-zinc-900">
+                                                    {{ __('ui.blog.comments.delete') }}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @endcan
+                                </div>
+                            </x-ui.card>
                         @empty
-                            <p class="text-sm text-zinc-600">{{ __('ui.blog.comments.empty') }}</p>
+                            <x-ui.alert>{{ __('ui.blog.comments.empty') }}</x-ui.alert>
                         @endforelse
                     </div>
                 @else
-                    <p class="mt-4 text-sm text-zinc-600">{{ __('ui.blog.comments.disabled') }}</p>
+                    <x-ui.alert>{{ __('ui.blog.comments.disabled') }}</x-ui.alert>
                 @endif
             </section>
-        </main>
-    </body>
-</html>
+        </div>
+    </div>
+</x-layouts.public>

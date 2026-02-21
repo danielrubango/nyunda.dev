@@ -10,23 +10,27 @@ use App\Http\Controllers\Forum\ForumRepliesController;
 use App\Http\Controllers\Forum\ForumThreadsController;
 use App\Http\Controllers\Forum\MarkBestForumReplyController;
 use App\Http\Controllers\Forum\UpdateForumThreadVisibilityController;
+use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\LikeContentController;
+use App\Http\Controllers\LinksPageController;
 use App\Http\Controllers\NewsletterSubscriptionsController;
 use App\Http\Controllers\Profiles\ShowPublicProfileController;
 use App\Http\Controllers\RssFeedController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UnsubscribeNewsletterController;
+use App\Http\Controllers\UpdateLocaleController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', HomePageController::class)->name('home');
 
 Route::get('/sitemap.xml', SitemapController::class)
     ->name('seo.sitemap');
 
 Route::get('/feed.xml', RssFeedController::class)
     ->name('seo.feed');
+
+Route::post('/locale', UpdateLocaleController::class)
+    ->name('locale.update');
 
 Route::get('/u/{username}', ShowPublicProfileController::class)
     ->where('username', '[A-Za-z0-9][A-Za-z0-9_-]{2,39}')
@@ -35,11 +39,17 @@ Route::get('/u/{username}', ShowPublicProfileController::class)
 Route::get('/about', AboutPageController::class)
     ->name('about.show');
 
+Route::get('/links', LinksPageController::class)
+    ->name('links.index');
+
 Route::get('/forum', [ForumThreadsController::class, 'index'])
     ->name('forum.index');
 
 Route::get('/blog', [BlogContentController::class, 'index'])
     ->name('blog.index');
+
+Route::get('/blog/{slug}', [BlogContentController::class, 'showBySlug'])
+    ->name('blog.show.localized');
 
 Route::get('/blog/{locale}/{slug}', [BlogContentController::class, 'show'])
     ->whereIn('locale', config('app.supported_locales', ['fr', 'en']))
@@ -66,37 +76,39 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('throttle:community-submissions')
         ->name('community-links.store');
 
-    Route::get('/forum/create', [ForumThreadsController::class, 'create'])
-        ->name('forum.create');
+    Route::middleware('forum.enabled')->group(function () {
+        Route::get('/forum/create', [ForumThreadsController::class, 'create'])
+            ->name('forum.create');
 
-    Route::post('/forum', [ForumThreadsController::class, 'store'])
-        ->middleware('throttle:forum-threads')
-        ->name('forum.store');
+        Route::post('/forum', [ForumThreadsController::class, 'store'])
+            ->middleware('throttle:forum-threads')
+            ->name('forum.store');
 
-    Route::get('/forum/{forumThread:slug}/edit', [ForumThreadsController::class, 'edit'])
-        ->name('forum.edit');
+        Route::get('/forum/{forumThread:slug}/edit', [ForumThreadsController::class, 'edit'])
+            ->name('forum.edit');
 
-    Route::put('/forum/{forumThread:slug}', [ForumThreadsController::class, 'update'])
-        ->name('forum.update');
+        Route::put('/forum/{forumThread:slug}', [ForumThreadsController::class, 'update'])
+            ->name('forum.update');
 
-    Route::delete('/forum/{forumThread:slug}', [ForumThreadsController::class, 'destroy'])
-        ->name('forum.destroy');
+        Route::delete('/forum/{forumThread:slug}', [ForumThreadsController::class, 'destroy'])
+            ->name('forum.destroy');
 
-    Route::patch('/forum/{forumThread:slug}/visibility', UpdateForumThreadVisibilityController::class)
-        ->name('forum.visibility.update');
+        Route::patch('/forum/{forumThread:slug}/visibility', UpdateForumThreadVisibilityController::class)
+            ->name('forum.visibility.update');
 
-    Route::post('/forum/{forumThread:slug}/replies', [ForumRepliesController::class, 'store'])
-        ->middleware('throttle:forum-replies')
-        ->name('forum.replies.store');
+        Route::post('/forum/{forumThread:slug}/replies', [ForumRepliesController::class, 'store'])
+            ->middleware('throttle:forum-replies')
+            ->name('forum.replies.store');
 
-    Route::post('/forum/{forumThread:slug}/replies/{forumReply}/best', MarkBestForumReplyController::class)
-        ->name('forum.replies.mark-best');
+        Route::post('/forum/{forumThread:slug}/replies/{forumReply}/best', MarkBestForumReplyController::class)
+            ->name('forum.replies.mark-best');
 
-    Route::patch('/forum/replies/{forumReply}', [ForumRepliesController::class, 'update'])
-        ->name('forum.replies.update');
+        Route::patch('/forum/replies/{forumReply}', [ForumRepliesController::class, 'update'])
+            ->name('forum.replies.update');
 
-    Route::delete('/forum/replies/{forumReply}', [ForumRepliesController::class, 'destroy'])
-        ->name('forum.replies.destroy');
+        Route::delete('/forum/replies/{forumReply}', [ForumRepliesController::class, 'destroy'])
+            ->name('forum.replies.destroy');
+    });
 
     Route::post('/content/{contentItem}/comments', [CommentsController::class, 'store'])
         ->middleware('throttle:content-comments')
@@ -114,10 +126,14 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/forum/{forumThread:slug}', [ForumThreadsController::class, 'show'])
+    ->middleware('forum.enabled')
     ->name('forum.show');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+Route::view('/style-guide', 'style-guide')
+    ->name('style-guide');
 
 require __DIR__.'/settings.php';

@@ -9,9 +9,11 @@ use App\Actions\Forum\UpdateForumThread;
 use App\Actions\Seo\BuildSeoMeta;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Forum\ListForumThreadsRequest;
 use App\Http\Requests\Forum\StoreForumThreadRequest;
 use App\Http\Requests\Forum\UpdateForumThreadRequest;
 use App\Models\ForumThread;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
@@ -27,23 +29,49 @@ class ForumThreadsController extends Controller
         private readonly BuildSeoMeta $buildSeoMeta,
     ) {}
 
-    public function index(): View
+    public function index(ListForumThreadsRequest $request): View
     {
         $this->applyInterfaceLocale();
+
+        if (! (bool) config('features.forum_enabled', false)) {
+            return view('forum.coming-soon', [
+                'seo' => $this->buildSeoMeta->handle(
+                    title: __('ui.forum.title'),
+                    description: __('ui.forum.coming_soon_text'),
+                    canonicalUrl: route('forum.index'),
+                ),
+            ]);
+        }
 
         $threads = ForumThread::query()
             ->where('is_hidden', false)
             ->with('author')
             ->withCount(['replies' => fn ($query) => $query->where('is_hidden', false)])
-            ->latest('created_at')
-            ->paginate(20);
+            ->when($request->localeFilter() !== null, function ($query) use ($request): void {
+                $query->where('locale', $request->localeFilter());
+            });
+
+        if ($request->sortFilter() === 'active') {
+            $threads->latest('updated_at');
+        } elseif ($request->sortFilter() === 'replies') {
+            $threads->orderByDesc('replies_count')->latest('created_at');
+        } else {
+            $threads->latest('created_at');
+        }
+
+        $paginatedThreads = $threads->paginate(20)->withQueryString();
 
         return view('forum.index', [
-            'threads' => $threads,
+            'threads' => $paginatedThreads,
+            'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
+            'selectedLocale' => $request->localeSelection(),
+            'selectedSort' => $request->sortFilter(),
+            'selectedTag' => $request->requestedTag(),
+            'availableTags' => Tag::query()->orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug']),
             'seo' => $this->buildSeoMeta->handle(
                 title: __('ui.forum.title'),
                 description: __('ui.forum.subtitle'),
-                canonicalUrl: route('forum.index'),
+                canonicalUrl: $request->fullUrl(),
             ),
         ]);
     }
@@ -183,21 +211,11 @@ class ForumThreadsController extends Controller
 
     protected function applyInterfaceLocale(): void
     {
-        /** @var User|null $user */
-        $user = auth()->user();
+        $supportedLocales = config('app.supported_locales', ['fr', 'en']);
+        $currentLocale = app()->getLocale();
 
-        $locale = $user?->preferred_locale;
-
-        if (is_string($locale) && in_array($locale, config('app.supported_locales', ['fr', 'en']), true)) {
-            app()->setLocale($locale);
-
-            return;
-        }
-
-        $preferredLocale = request()->getPreferredLanguage(config('app.supported_locales', ['fr', 'en']));
-
-        if (is_string($preferredLocale) && $preferredLocale !== '') {
-            app()->setLocale($preferredLocale);
+        if (! in_array($currentLocale, $supportedLocales, true)) {
+            app()->setLocale((string) config('app.locale', 'fr'));
         }
     }
 }

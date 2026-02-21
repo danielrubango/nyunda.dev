@@ -20,7 +20,8 @@ test('internal post can be rendered and markdown is sanitized', function () {
     $response->assertSuccessful();
     $response->assertSee('Heading');
     $response->assertSee('Paragraph');
-    $response->assertDontSee('<script>', false);
+    $response->assertDontSee("<script>alert('xss')</script>", false);
+    $response->assertDontSee("alert('xss')");
 });
 
 test('external post detail route redirects to external url', function () {

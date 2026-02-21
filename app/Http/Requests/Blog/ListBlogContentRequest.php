@@ -37,6 +37,12 @@ class ListBlogContentRequest extends FormRequest
                     ContentType::cases(),
                 )),
             ],
+            'tag' => [
+                'nullable',
+                'string',
+                Rule::exists('tags', 'slug'),
+            ],
+            'q' => ['nullable', 'string', 'max:120'],
         ];
     }
 
@@ -59,15 +65,36 @@ class ListBlogContentRequest extends FormRequest
         return $type === null ? null : (string) $type;
     }
 
-    public function resolvedUserLocale(): string
+    public function tagFilter(): ?string
     {
-        $userLocale = $this->user()?->preferred_locale;
+        $tag = $this->validated('tag');
 
-        if (is_string($userLocale) && $userLocale !== '') {
-            return $userLocale;
+        return $tag === null ? null : (string) $tag;
+    }
+
+    public function searchTerm(): ?string
+    {
+        $search = $this->validated('q');
+
+        if (! is_string($search)) {
+            return null;
         }
 
-        return $this->getPreferredLanguage(config('app.supported_locales', ['fr', 'en']))
+        $normalizedSearch = trim($search);
+
+        return $normalizedSearch === '' ? null : $normalizedSearch;
+    }
+
+    public function resolvedUserLocale(): string
+    {
+        $supportedLocales = config('app.supported_locales', ['fr', 'en']);
+        $appLocale = app()->getLocale();
+
+        if (is_string($appLocale) && in_array($appLocale, $supportedLocales, true)) {
+            return $appLocale;
+        }
+
+        return $this->getPreferredLanguage($supportedLocales)
             ?? (string) config('app.locale', 'fr');
     }
 }

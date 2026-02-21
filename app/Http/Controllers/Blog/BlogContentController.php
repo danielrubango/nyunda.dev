@@ -9,6 +9,8 @@ use App\Actions\Seo\BuildSeoMeta;
 use App\Enums\ContentType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Blog\ListBlogContentRequest;
+use App\Models\ContentTranslation;
+use App\Models\Tag;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -24,23 +26,26 @@ class BlogContentController extends Controller
 
     public function index(ListBlogContentRequest $request): View
     {
-        $preferredLocale = $request->user()?->preferred_locale;
-
-        if (is_string($preferredLocale) && in_array($preferredLocale, config('app.supported_locales', ['fr', 'en']), true)) {
-            app()->setLocale($preferredLocale);
-        }
-
-        $rows = $this->listLocalizedPublishedContentItems->handle(
+        $rows = $this->listLocalizedPublishedContentItems->paginate(
             filterLocale: $request->localeFilter(),
             userLocale: $request->resolvedUserLocale(),
             contentType: $request->typeFilter(),
+            allowedContentTypes: [
+                ContentType::InternalPost->value,
+                ContentType::ExternalPost->value,
+            ],
+            tagSlug: $request->tagFilter(),
+            search: $request->searchTerm(),
         );
 
         return view('blog.index', [
             'rows' => $rows,
             'selectedLocale' => $request->localeSelection(),
             'selectedType' => $request->typeFilter(),
+            'selectedTag' => $request->tagFilter(),
+            'searchTerm' => $request->searchTerm(),
             'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
+            'tags' => Tag::query()->orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug']),
             'seo' => $this->buildSeoMeta->handle(
                 title: __('ui.blog.title'),
                 description: __('ui.blog.subtitle'),
@@ -59,6 +64,7 @@ class BlogContentController extends Controller
         abort_if($translation === null, 404);
 
         $contentItem = $translation->contentItem;
+        $contentItem->loadMissing('tags');
 
         if ($contentItem->type !== ContentType::InternalPost) {
             abort_if($translation->external_url === null, 404);
@@ -94,7 +100,7 @@ class BlogContentController extends Controller
                     'locale' => $translation->locale,
                     'slug' => $translation->slug,
                 ]),
-                imageUrl: $translation->external_og_image_url,
+                imageUrl: $translation->featured_image_url ?: $translation->external_og_image_url,
                 ogType: 'article',
             ),
             'renderedComments' => $comments->mapWithKeys(
@@ -103,5 +109,20 @@ class BlogContentController extends Controller
                 ],
             ),
         ]);
+    }
+
+    public function showBySlug(string $slug): RedirectResponse
+    {
+        $translation = ContentTranslation::query()
+            ->where('slug', $slug)
+            ->whereHas('contentItem', fn ($query) => $query->published())
+            ->first();
+
+        abort_if($translation === null, 404);
+
+        return redirect()->route('blog.show', [
+            'locale' => $translation->locale,
+            'slug' => $translation->slug,
+        ], 301);
     }
 }

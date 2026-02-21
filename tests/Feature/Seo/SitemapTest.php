@@ -27,6 +27,7 @@ test('sitemap exposes static pages and published internal posts', function () {
     $response->assertSee(route('home'));
     $response->assertSee(route('blog.index'));
     $response->assertSee(route('about.show'));
+    $response->assertSee(route('links.index'));
     $response->assertSee(route('blog.show', ['locale' => 'fr', 'slug' => 'sitemap-post']));
     $response->assertDontSee(route('blog.show', ['locale' => 'fr', 'slug' => 'draft-post']));
 });

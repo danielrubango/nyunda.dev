@@ -1,36 +1,71 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        @include('partials.seo-meta')
-        @vite(['resources/css/app.css'])
-    </head>
-    <body class="min-h-screen bg-zinc-50 text-zinc-900 antialiased">
-        <main class="mx-auto max-w-5xl px-6 py-12">
-            <header class="mb-8 flex items-end justify-between gap-4">
-                <div>
-                    <p class="text-xs uppercase tracking-[0.24em] text-zinc-500">{{ config('app.name') }}</p>
-                    <h1 class="mt-3 text-3xl font-semibold tracking-tight">{{ __('ui.forum.title') }}</h1>
-                    <p class="mt-2 text-sm text-zinc-600">{{ __('ui.forum.subtitle') }}</p>
-                </div>
-                @auth
-                    <a href="{{ route('forum.create') }}" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                        {{ __('ui.forum.new_thread') }}
+<x-layouts.public :seo="$seo">
+    <div class="ui-container space-y-8">
+        <header class="flex flex-wrap items-end justify-between gap-4">
+            <div class="space-y-3">
+                <p class="ui-eyebrow">{{ config('app.name') }}</p>
+                <h1 class="ui-section-title">{{ __('ui.forum.title') }}</h1>
+                <p class="max-w-3xl text-base text-zinc-600">{{ __('ui.forum.subtitle') }}</p>
+            </div>
+            <a href="{{ auth()->check() ? route('forum.create') : route('login') }}" class="border-b border-brand-700 pb-1 text-sm font-medium text-brand-700 no-underline">
+                {{ __('ui.forum.ask_question') }}
+            </a>
+        </header>
+
+        @if (session('status'))
+            <x-ui.alert variant="success">{{ session('status') }}</x-ui.alert>
+        @endif
+
+        @php
+            $localeOptions = ['all' => __('ui.blog.filters.all')]
+                + collect($supportedLocales)->mapWithKeys(fn (string $locale): array => [$locale => strtoupper($locale)])->all();
+
+            $sortOptions = [
+                'recent' => __('ui.forum.filters.recent'),
+                'active' => __('ui.forum.filters.active'),
+                'replies' => __('ui.forum.filters.replies'),
+            ];
+
+            $tagOptions = ['' => __('ui.forum.filters.tags_soon')]
+                + $availableTags->mapWithKeys(fn ($tag): array => [$tag->slug => '#'.$tag->name])->all();
+        @endphp
+
+        <x-ui.card>
+            <form method="GET" action="{{ route('forum.index') }}" class="grid gap-4 md:grid-cols-4">
+                <label class="space-y-2 text-sm">
+                    <span class="font-medium text-zinc-700">{{ __('ui.blog.filters.locale') }}</span>
+                    <x-ui.select name="locale" :options="$localeOptions" :selected="$selectedLocale" />
+                </label>
+
+                <label class="space-y-2 text-sm">
+                    <span class="font-medium text-zinc-700">{{ __('ui.forum.filters.sort') }}</span>
+                    <x-ui.select name="sort" :options="$sortOptions" :selected="$selectedSort" />
+                </label>
+
+                <label class="space-y-2 text-sm">
+                    <span class="font-medium text-zinc-700">{{ __('ui.blog.filters.tags') }}</span>
+                    <x-ui.select name="tag" :options="$tagOptions" :selected="$selectedTag" />
+                </label>
+
+                <div class="flex items-end gap-4">
+                    <button type="submit" class="border-b border-brand-700 pb-1 text-sm font-medium text-brand-700">
+                        {{ __('ui.blog.filters.apply') }}
+                    </button>
+                    <a href="{{ route('forum.index') }}" class="border-b border-transparent pb-1 text-sm font-medium text-zinc-600 no-underline hover:border-zinc-400 hover:text-zinc-900">
+                        {{ __('ui.blog.filters.reset') }}
                     </a>
-                @endauth
-            </header>
-
-            @if (session('status'))
-                <div class="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-                    {{ session('status') }}
                 </div>
-            @endif
+            </form>
+        </x-ui.card>
 
-            <section class="space-y-4">
-                @forelse ($threads as $thread)
-                    <article class="rounded-xl border border-zinc-200 bg-white p-5">
-                        <div class="mb-2 flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-zinc-500">
+        @if ($selectedTag)
+            <x-ui.alert>{{ __('ui.forum.filters.tag_placeholder_notice', ['tag' => $selectedTag]) }}</x-ui.alert>
+        @endif
+
+        <section class="space-y-4">
+            @forelse ($threads as $thread)
+                <x-ui.card as="a" href="{{ route('forum.show', $thread) }}" class="group flex h-full flex-col no-underline">
+                    <div class="space-y-3">
+                        <div class="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-zinc-500">
                             <span>{{ strtoupper($thread->locale) }}</span>
                             <span>•</span>
                             <span>{{ $thread->author->name }}</span>
@@ -40,24 +75,18 @@
                             <span>{{ __('ui.forum.replies_count', ['count' => (int) $thread->replies_count]) }}</span>
                         </div>
 
-                        <a href="{{ route('forum.show', $thread) }}" class="text-xl font-semibold text-zinc-900 hover:text-zinc-700">
+                        <h2 class="text-2xl font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700">
                             {{ $thread->title }}
-                        </a>
+                        </h2>
 
-                        <p class="mt-3 text-sm leading-6 text-zinc-600">
-                            {{ \Illuminate\Support\Str::limit(strip_tags($thread->body_markdown), 220) }}
-                        </p>
-                    </article>
-                @empty
-                    <p class="rounded-xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-                        {{ __('ui.forum.no_threads') }}
-                    </p>
-                @endforelse
-            </section>
+                        <p class="mt-auto max-w-[75ch] text-sm text-zinc-600">{{ \Illuminate\Support\Str::limit(strip_tags($thread->body_markdown), 220) }}</p>
+                    </div>
+                </x-ui.card>
+            @empty
+                <x-ui.alert>{{ __('ui.forum.no_threads') }}</x-ui.alert>
+            @endforelse
+        </section>
 
-            <div class="mt-8">
-                {{ $threads->links() }}
-            </div>
-        </main>
-    </body>
-</html>
+        <x-ui.pagination :paginator="$threads" />
+    </div>
+</x-layouts.public>

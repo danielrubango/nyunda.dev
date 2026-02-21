@@ -28,6 +28,7 @@ class ContentItem extends Model
         'show_likes',
         'show_comments',
         'share_on_publish',
+        'is_featured',
     ];
 
     /**
@@ -43,6 +44,7 @@ class ContentItem extends Model
             'show_likes' => 'boolean',
             'show_comments' => 'boolean',
             'share_on_publish' => 'boolean',
+            'is_featured' => 'boolean',
         ];
     }
 

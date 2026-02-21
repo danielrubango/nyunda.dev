@@ -1,152 +1,76 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        @include('partials.seo-meta')
-        @vite(['resources/css/app.css'])
-    </head>
-    <body class="min-h-screen bg-zinc-50 text-zinc-900 antialiased">
-        <main class="mx-auto max-w-5xl px-6 py-12">
-            <header class="mb-8">
-                <p class="text-xs uppercase tracking-[0.24em] text-zinc-500">{{ config('app.name') }}</p>
-                <h1 class="mt-3 text-3xl font-semibold tracking-tight">{{ __('ui.blog.title') }}</h1>
-                <p class="mt-2 text-sm text-zinc-600">{{ __('ui.blog.subtitle') }}</p>
-                <div class="mt-4">
-                    <a href="{{ route('about.show') }}" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                        {{ __('ui.blog.about') }}
-                    </a>
-                    <a href="{{ route('forum.index') }}" class="ml-2 inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                        {{ __('ui.blog.forum') }}
-                    </a>
-                </div>
-                @auth
-                    <div class="mt-4">
-                        <a href="{{ route('community-links.create') }}" class="inline-flex items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                            {{ __('ui.blog.submit_community_link') }}
-                        </a>
-                    </div>
-                @endauth
-            </header>
+<x-layouts.public :seo="$seo">
+    <div class="ui-container space-y-8">
+        <header class="space-y-3">
+            <p class="ui-eyebrow">{{ config('app.name') }}</p>
+            <h1 class="ui-section-title">{{ __('ui.blog.title') }}</h1>
+            <p class="max-w-3xl text-base text-zinc-600">{{ __('ui.blog.subtitle') }}</p>
+        </header>
 
-            @if (session('status'))
-                <div class="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-                    {{ session('status') }}
-                </div>
-            @endif
+        @if (session('status'))
+            <x-ui.alert variant="success">{{ session('status') }}</x-ui.alert>
+        @endif
 
-            @if (session('error'))
-                <div class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                    {{ session('error') }}
-                </div>
-            @endif
+        @if (session('error'))
+            <x-ui.alert variant="error">{{ session('error') }}</x-ui.alert>
+        @endif
 
-            <form method="GET" action="{{ route('blog.index') }}" class="mb-8 grid gap-4 rounded-xl border border-zinc-200 bg-white p-4 md:grid-cols-3">
+        @php
+            $localeOptions = ['all' => __('ui.blog.filters.all')]
+                + collect($supportedLocales)->mapWithKeys(fn (string $locale): array => [$locale => strtoupper($locale)])->all();
+
+            $typeOptions = [
+                '' => __('ui.blog.filters.all'),
+                'internal_post' => __('ui.blog.filters.internal'),
+                'external_post' => __('ui.blog.filters.external'),
+            ];
+
+            $tagOptions = ['' => __('ui.blog.filters.all')]
+                + $tags->mapWithKeys(fn ($tag): array => [$tag->slug => '#'.$tag->name])->all();
+        @endphp
+
+        <x-ui.card>
+            <form method="GET" action="{{ route('blog.index') }}" class="grid gap-4 md:grid-cols-5">
+                <label class="space-y-2 text-sm md:col-span-2">
+                    <span class="block font-medium text-zinc-700">{{ __('ui.blog.filters.search') }}</span>
+                    <x-ui.input name="q" :value="$searchTerm" :placeholder="__('ui.blog.filters.search_placeholder')" />
+                </label>
+
                 <label class="space-y-2 text-sm">
                     <span class="block font-medium text-zinc-700">{{ __('ui.blog.filters.locale') }}</span>
-                    <select name="locale" class="w-full rounded-md border-zinc-300 text-sm">
-                        <option value="all" @selected($selectedLocale === 'all')>{{ __('ui.blog.filters.all') }}</option>
-                        @foreach ($supportedLocales as $locale)
-                            <option value="{{ $locale }}" @selected($selectedLocale === $locale)>{{ strtoupper($locale) }}</option>
-                        @endforeach
-                    </select>
+                    <x-ui.select name="locale" :options="$localeOptions" :selected="$selectedLocale" />
                 </label>
 
                 <label class="space-y-2 text-sm">
                     <span class="block font-medium text-zinc-700">{{ __('ui.blog.filters.type') }}</span>
-                    <select name="type" class="w-full rounded-md border-zinc-300 text-sm">
-                        <option value="">{{ __('ui.blog.filters.all') }}</option>
-                        <option value="internal_post" @selected($selectedType === 'internal_post')>{{ __('ui.blog.filters.internal') }}</option>
-                        <option value="external_post" @selected($selectedType === 'external_post')>{{ __('ui.blog.filters.external') }}</option>
-                        <option value="community_link" @selected($selectedType === 'community_link')>{{ __('ui.blog.filters.community') }}</option>
-                    </select>
+                    <x-ui.select name="type" :options="$typeOptions" :selected="$selectedType" />
                 </label>
 
-                <div class="flex items-end">
-                    <button type="submit" class="inline-flex h-10 items-center rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
+                <label class="space-y-2 text-sm">
+                    <span class="block font-medium text-zinc-700">{{ __('ui.blog.filters.tags') }}</span>
+                    <x-ui.select name="tag" :options="$tagOptions" :selected="$selectedTag" />
+                </label>
+
+                <div class="flex items-end gap-4 md:col-span-5">
+                    <button type="submit" class="border-b border-brand-700 pb-1 text-sm font-medium text-brand-700">
                         {{ __('ui.blog.filters.apply') }}
                     </button>
+                    <a href="{{ route('blog.index') }}" class="border-b border-transparent pb-1 text-sm font-medium text-zinc-600 no-underline hover:border-zinc-400 hover:text-zinc-900">
+                        {{ __('ui.blog.filters.reset') }}
+                    </a>
                 </div>
             </form>
+        </x-ui.card>
 
-            @php
-                $newsletterLocale = $selectedLocale === 'all'
-                    ? (string) config('app.locale', 'fr')
-                    : $selectedLocale;
-            @endphp
-            <section class="mb-8 rounded-xl border border-zinc-200 bg-white p-5">
-                <h2 class="text-base font-semibold text-zinc-900">{{ __('ui.blog.newsletter.title') }}</h2>
-                <p class="mt-1 text-sm text-zinc-600">{{ __('ui.blog.newsletter.description') }}</p>
-                <form method="POST" action="{{ route('newsletter.subscriptions.store') }}" class="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
-                    @csrf
-                    <input type="hidden" name="locale" value="{{ old('locale', $newsletterLocale) }}">
-                    <input
-                        type="email"
-                        name="email"
-                        value="{{ old('email') }}"
-                        placeholder="you@example.com"
-                        class="w-full rounded-md border-zinc-300 text-sm"
-                        required
-                    >
-                    <button type="submit" class="inline-flex items-center justify-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100">
-                        {{ __('ui.blog.newsletter.submit') }}
-                    </button>
-                </form>
-                @error('email')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-                @error('locale')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </section>
+        <section class="grid gap-4 md:grid-cols-2">
+            @forelse ($rows as $row)
+                <x-public.article-card :item="$row['content_item']" :translation="$row['translation']" />
+            @empty
+                <div class="md:col-span-2">
+                    <x-ui.alert>{{ __('ui.blog.empty') }}</x-ui.alert>
+                </div>
+            @endforelse
+        </section>
 
-            <section class="space-y-4">
-                @forelse ($rows as $row)
-                    @php
-                        $item = $row['content_item'];
-                        $translation = $row['translation'];
-                    @endphp
-
-                    <article class="rounded-xl border border-zinc-200 bg-white p-5">
-                        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
-                            <span>{{ __('ui.blog.content_types.'.$item->type->value) }}</span>
-                            <span>•</span>
-                            <span>{{ strtoupper($translation->locale) }}</span>
-                            @if ($item->type->value === 'external_post')
-                                <span class="rounded bg-zinc-900 px-2 py-1 text-[10px] tracking-wider text-white">{{ __('ui.blog.badge_external') }}</span>
-                            @endif
-                        </div>
-
-                        @if ($item->type->value === 'internal_post')
-                            <a href="{{ route('blog.show', ['locale' => $translation->locale, 'slug' => $translation->slug]) }}" class="text-xl font-semibold text-zinc-900 hover:text-zinc-700">
-                                {{ $translation->title }}
-                            </a>
-                        @else
-                            <a href="{{ $translation->external_url }}" target="_blank" rel="noopener noreferrer" class="text-xl font-semibold text-zinc-900 hover:text-zinc-700">
-                                {{ $translation->title }}
-                            </a>
-                        @endif
-
-                        <p class="mt-3 text-sm leading-6 text-zinc-600">{{ $translation->excerpt }}</p>
-
-                        @if ($item->type->value === 'internal_post' && $item->show_likes)
-                            <div class="mt-4 flex items-center gap-3 text-sm text-zinc-700">
-                                <span class="font-medium">{{ __('ui.blog.likes', ['count' => (int) ($item->likes_count ?? 0)]) }}</span>
-                                @auth
-                                    <form method="POST" action="{{ route('content.likes.toggle', ['contentItem' => $item]) }}" class="inline">
-                                        @csrf
-                                        <button type="submit" class="rounded border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-100">
-                                            {{ __('ui.blog.like_toggle') }}
-                                        </button>
-                                    </form>
-                                @endauth
-                            </div>
-                        @endif
-                    </article>
-                @empty
-                    <p class="rounded-xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">{{ __('ui.blog.empty') }}</p>
-                @endforelse
-            </section>
-        </main>
-    </body>
-</html>
+        <x-ui.pagination :paginator="$rows" />
+    </div>
+</x-layouts.public>

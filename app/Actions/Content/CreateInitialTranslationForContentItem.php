@@ -37,6 +37,7 @@ class CreateInitialTranslationForContentItem
             'external_description' => $this->blankToNull($translationData['initial_external_description'] ?? null),
             'external_site_name' => $this->blankToNull($translationData['initial_external_site_name'] ?? null),
             'external_og_image_url' => $this->blankToNull($translationData['initial_external_og_image_url'] ?? null),
+            'featured_image_url' => $this->blankToNull($translationData['initial_featured_image_url'] ?? null),
         ]);
     }
 

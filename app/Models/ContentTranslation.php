@@ -25,6 +25,7 @@ class ContentTranslation extends Model
         'external_description',
         'external_site_name',
         'external_og_image_url',
+        'featured_image_url',
     ];
 
     public function contentItem(): BelongsTo

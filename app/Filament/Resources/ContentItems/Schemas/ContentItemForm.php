@@ -77,6 +77,9 @@ class ContentItemForm
                             ->default(false)
                             ->visible(fn (?ContentItem $record): bool => $record?->status !== ContentStatus::Published)
                             ->dehydrated(fn (?ContentItem $record): bool => $record?->status !== ContentStatus::Published),
+                        Toggle::make('is_featured')
+                            ->label('Featured on home')
+                            ->default(false),
                     ])
                     ->columns(1)
                     ->columnSpan(1),
@@ -152,6 +155,11 @@ class ContentItemForm
                             ->url()
                             ->maxLength(2048)
                             ->visible(fn (Get $get): bool => ! self::isInternalType($get, $forcedType)),
+                        TextInput::make('initial_featured_image_url')
+                            ->label('Featured image')
+                            ->url()
+                            ->maxLength(2048)
+                            ->columnSpanFull(),
                         Textarea::make('initial_external_description')
                             ->label('External description')
                             ->rows(3)

@@ -41,6 +41,12 @@ class BuildSitemapUrls
                 'priority' => '0.70',
             ],
             [
+                'loc' => route('links.index'),
+                'lastmod' => null,
+                'changefreq' => 'daily',
+                'priority' => '0.75',
+            ],
+            [
                 'loc' => route('forum.index'),
                 'lastmod' => null,
                 'changefreq' => 'daily',
@@ -98,18 +104,22 @@ class BuildSitemapUrls
                 ];
             });
 
-        $forumUrls = ForumThread::query()
-            ->where('is_hidden', false)
-            ->select(['slug', 'updated_at'])
-            ->get()
-            ->map(function (ForumThread $forumThread): array {
-                return [
-                    'loc' => route('forum.show', $forumThread),
-                    'lastmod' => $forumThread->updated_at,
-                    'changefreq' => 'weekly',
-                    'priority' => '0.70',
-                ];
-            });
+        $forumUrls = collect();
+
+        if ((bool) config('features.forum_enabled', false)) {
+            $forumUrls = ForumThread::query()
+                ->where('is_hidden', false)
+                ->select(['slug', 'updated_at'])
+                ->get()
+                ->map(function (ForumThread $forumThread): array {
+                    return [
+                        'loc' => route('forum.show', $forumThread),
+                        'lastmod' => $forumThread->updated_at,
+                        'changefreq' => 'weekly',
+                        'priority' => '0.70',
+                    ];
+                });
+        }
 
         return $staticUrls
             ->concat($contentUrls)

@@ -9,41 +9,157 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-title: 'Sora', ui-sans-serif, system-ui, sans-serif;
+    --font-reading: var(--font-sans);
+    --font-ui: var(--font-sans);
 
-    --color-zinc-50: #fafafa;
-    --color-zinc-100: #f5f5f5;
-    --color-zinc-200: #e5e5e5;
-    --color-zinc-300: #d4d4d4;
-    --color-zinc-400: #a3a3a3;
-    --color-zinc-500: #737373;
-    --color-zinc-600: #525252;
-    --color-zinc-700: #404040;
-    --color-zinc-800: #262626;
-    --color-zinc-900: #171717;
-    --color-zinc-950: #0a0a0a;
+    --color-zinc-50: #ffffff;
+    --color-zinc-100: #f8fafc;
+    --color-zinc-200: #e4e7ec;
+    --color-zinc-300: #d0d7e2;
+    --color-zinc-400: #98a2b3;
+    --color-zinc-500: #667085;
+    --color-zinc-600: #475467;
+    --color-zinc-700: #344054;
+    --color-zinc-800: #1d2939;
+    --color-zinc-900: #101828;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
-}
+    --color-brand-50: #eff8ff;
+    --color-brand-100: #d1e9ff;
+    --color-brand-200: #b2ddff;
+    --color-brand-300: #84caff;
+    --color-brand-600: #1570ef;
+    --color-brand-700: #175cd3;
+    --color-brand-800: #1849a9;
 
-@layer theme {
-    .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
-    }
+    --color-accent: var(--color-brand-700);
+    --color-accent-content: var(--color-brand-700);
+    --color-accent-foreground: #ffffff;
 }
 
 @layer base {
-
     *,
     ::after,
     ::before,
     ::backdrop,
     ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
+        border-color: var(--color-zinc-200, currentColor);
+    }
+
+    body {
+        @apply bg-white text-zinc-900 antialiased;
+        font-family: var(--font-ui);
+    }
+
+    p {
+        @apply leading-7 text-zinc-700;
+    }
+
+    a {
+        @apply text-zinc-900 underline-offset-4;
+    }
+
+    a:hover {
+        @apply text-brand-700;
+    }
+
+    button,
+    [type='button'],
+    [type='submit'],
+    input,
+    select,
+    textarea,
+    summary {
+        @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-title);
+    }
+}
+
+@layer components {
+    .ui-container {
+        @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+    }
+
+    .ui-eyebrow {
+        @apply text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500;
+        font-family: var(--font-title);
+    }
+
+    .ui-section-title {
+        @apply text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl;
+        font-family: var(--font-title);
+    }
+
+    .ui-card {
+        @apply rounded-sm border border-zinc-200 bg-white;
+    }
+
+    .ui-card-body {
+        @apply p-5 sm:p-6;
+    }
+
+    .ui-skeleton {
+        @apply animate-pulse rounded-sm bg-zinc-100;
+    }
+
+    .article-content {
+        @apply max-w-[75ch] font-reading text-[1.06rem] leading-8 text-zinc-800;
+    }
+
+    .article-content > * + * {
+        @apply mt-6;
+    }
+
+    .article-content h2 {
+        @apply mt-10 text-2xl font-semibold tracking-tight text-zinc-900;
+        font-family: var(--font-title);
+    }
+
+    .article-content h3 {
+        @apply mt-8 text-xl font-semibold tracking-tight text-zinc-900;
+        font-family: var(--font-title);
+    }
+
+    .article-content ul,
+    .article-content ol {
+        @apply space-y-2 ps-6;
+    }
+
+    .article-content ul {
+        @apply list-disc;
+    }
+
+    .article-content ol {
+        @apply list-decimal;
+    }
+
+    .article-content a {
+        @apply text-brand-700 underline decoration-brand-300 decoration-2 underline-offset-4;
+    }
+
+    .article-content blockquote {
+        @apply border-s-2 border-zinc-300 ps-4 italic text-zinc-600;
+    }
+
+    .article-content code {
+        @apply rounded-sm bg-zinc-100 px-1.5 py-0.5 text-sm text-zinc-800;
+    }
+
+    .article-content pre {
+        @apply overflow-x-auto rounded-sm border border-zinc-200 bg-zinc-900 p-4 text-zinc-100;
+    }
+
+    .article-content pre code {
+        @apply bg-transparent p-0 text-inherit;
     }
 }
 
@@ -52,7 +168,7 @@
 }
 
 [data-flux-label] {
-    @apply  !mb-0 !leading-tight;
+    @apply !mb-0 !leading-tight;
 }
 
 input:focus[data-flux-control],
@@ -60,7 +176,3 @@ textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
-
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
