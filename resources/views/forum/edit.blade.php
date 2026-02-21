@@ -7,6 +7,8 @@
         @vite(['resources/css/app.css'])
     </head>
     <body class="min-h-screen bg-zinc-50 text-zinc-900 antialiased">
+        @include('partials.tag-manager-noscript')
+
         <main class="mx-auto max-w-3xl px-6 py-12">
             <a href="{{ route('forum.show', $forumThread) }}" class="text-sm font-medium text-zinc-600 hover:text-zinc-900">{{ __('ui.forum.back_thread') }}</a>
 

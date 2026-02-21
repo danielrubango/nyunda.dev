@@ -27,12 +27,14 @@ class LocalDemoSeeder extends Seeder
      */
     public function run(): void
     {
+        $adminEmail = (string) config('app.admin_email');
+
         if (ContentItem::query()->count() >= 10) {
             return;
         }
 
         $admin = User::query()->firstOrCreate([
-            'email' => 'danielrubango@gmail.com',
+            'email' => $adminEmail,
         ], [
             'name' => 'Daniel Rubango',
             'password' => 'password',

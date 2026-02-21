@@ -43,10 +43,19 @@ test('public profile page renders canonical metadata', function () {
 
 test('google analytics snippet is rendered when measurement id is configured', function () {
     config()->set('services.analytics.google.measurement_id', 'G-TEST1234');
+    config()->set('services.analytics.google.stream_id', '1234567890');
+    config()->set('services.analytics.google.api_secret', 'secret-should-not-leak');
+    config()->set('services.analytics.google.tag_manager_id', 'GTM-N7KBDBQ');
 
     $response = $this->get('/blog');
 
     $response->assertSuccessful();
+    $response->assertSee("})(window,document,'script','dataLayer','GTM-N7KBDBQ');", false);
+    $response->assertSee('https://www.googletagmanager.com/ns.html?id=GTM-N7KBDBQ', false);
     $response->assertSee('https://www.googletagmanager.com/gtag/js?id=G-TEST1234', false);
     $response->assertSee("gtag('config', 'G-TEST1234');", false);
+    $response->assertSee('window.nyundaAnalytics = {', false);
+    $response->assertSee("measurementId: 'G-TEST1234'", false);
+    $response->assertSee("streamId: '1234567890'", false);
+    $response->assertDontSee('secret-should-not-leak', false);
 });

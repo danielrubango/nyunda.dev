@@ -38,6 +38,9 @@ return [
     'analytics' => [
         'google' => [
             'measurement_id' => env('GOOGLE_ANALYTICS_MEASUREMENT_ID'),
+            'stream_id' => env('GOOGLE_ANALYTICS_STREAM_ID'),
+            'api_secret' => env('GOOGLE_ANALYTICS_API_SECRET'),
+            'tag_manager_id' => env('GOOGLE_TAG_MANAGER_ID'),
         ],
     ],
 

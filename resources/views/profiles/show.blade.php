@@ -7,6 +7,8 @@
         @vite(['resources/css/app.css'])
     </head>
     <body class="min-h-screen bg-white text-zinc-900 antialiased">
+        @include('partials.tag-manager-noscript')
+
         <main class="mx-auto max-w-3xl px-6 py-16">
             <p class="text-xs uppercase tracking-[0.24em] text-zinc-500">{{ config('app.name') }}</p>
             <h1 class="mt-4 text-4xl font-semibold leading-tight">{{ $user->name }}</h1>
