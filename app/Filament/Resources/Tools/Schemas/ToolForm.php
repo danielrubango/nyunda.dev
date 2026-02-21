@@ -35,9 +35,6 @@ class ToolForm
                 TextInput::make('url')
                     ->url()
                     ->maxLength(2048),
-                TextInput::make('sort_order')
-                    ->numeric()
-                    ->default(0),
                 Toggle::make('is_featured')
                     ->default(false),
                 Textarea::make('description')

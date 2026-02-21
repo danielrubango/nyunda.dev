@@ -5,8 +5,10 @@ namespace App\Filament\Resources\ForumThreads;
 use App\Filament\Resources\ForumThreads\Pages\CreateForumThread;
 use App\Filament\Resources\ForumThreads\Pages\EditForumThread;
 use App\Filament\Resources\ForumThreads\Pages\ListForumThreads;
+use App\Filament\Resources\ForumThreads\Pages\ViewForumThread;
 use App\Filament\Resources\ForumThreads\RelationManagers\RepliesRelationManager;
 use App\Filament\Resources\ForumThreads\Schemas\ForumThreadForm;
+use App\Filament\Resources\ForumThreads\Schemas\ForumThreadInfolist;
 use App\Filament\Resources\ForumThreads\Tables\ForumThreadsTable;
 use App\Models\ForumThread;
 use BackedEnum;
@@ -30,6 +32,11 @@ class ForumThreadResource extends Resource
         return ForumThreadForm::configure($schema);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return ForumThreadInfolist::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return ForumThreadsTable::configure($table);
@@ -47,6 +54,7 @@ class ForumThreadResource extends Resource
         return [
             'index' => ListForumThreads::route('/'),
             'create' => CreateForumThread::route('/create'),
+            'view' => ViewForumThread::route('/{record}'),
             'edit' => EditForumThread::route('/{record}/edit'),
         ];
     }

@@ -5,8 +5,11 @@ namespace App\Filament\Resources\ContentItems;
 use App\Filament\Resources\ContentItems\Pages\CreateContentItem;
 use App\Filament\Resources\ContentItems\Pages\EditContentItem;
 use App\Filament\Resources\ContentItems\Pages\ListContentItems;
+use App\Filament\Resources\ContentItems\Pages\ViewContentItem;
+use App\Filament\Resources\ContentItems\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ContentItems\RelationManagers\TranslationsRelationManager;
 use App\Filament\Resources\ContentItems\Schemas\ContentItemForm;
+use App\Filament\Resources\ContentItems\Schemas\ContentItemInfolist;
 use App\Filament\Resources\ContentItems\Tables\ContentItemsTable;
 use App\Models\ContentItem;
 use BackedEnum;
@@ -30,6 +33,11 @@ class ContentItemResource extends Resource
         return ContentItemForm::configure($schema);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return ContentItemInfolist::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return ContentItemsTable::configure($table);
@@ -39,6 +47,7 @@ class ContentItemResource extends Resource
     {
         return [
             TranslationsRelationManager::class,
+            CommentsRelationManager::class,
         ];
     }
 
@@ -47,6 +56,7 @@ class ContentItemResource extends Resource
         return [
             'index' => ListContentItems::route('/'),
             'create' => CreateContentItem::route('/create'),
+            'view' => ViewContentItem::route('/{record}'),
             'edit' => EditContentItem::route('/{record}/edit'),
         ];
     }

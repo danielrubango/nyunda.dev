@@ -22,6 +22,7 @@ class TagFactory extends Factory
         return [
             'name' => Str::title($name),
             'slug' => Str::slug($name),
+            'sort_order' => 0,
         ];
     }
 }

@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\Projects\Tables;
 
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -33,14 +36,20 @@ class ProjectsTable
             ])
             ->filters([])
             ->recordActions([
-                EditAction::make()
-                    ->slideOver(),
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->slideOver(),
+                    EditAction::make()
+                        ->slideOver(),
+                    DeleteAction::make(),
+                ])->label('Actions'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
             ])
+            ->reorderable('sort_order')
             ->defaultSort('sort_order');
     }
 }

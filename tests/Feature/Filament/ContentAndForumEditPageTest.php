@@ -17,6 +17,17 @@ test('admin can access content item edit page with relations', function () {
     $response->assertSuccessful();
 });
 
+test('admin can access content item view page with relation managers', function () {
+    $admin = User::factory()->admin()->create();
+    $contentItem = ContentItem::factory()->create([
+        'author_id' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->get("/admin/content-items/{$contentItem->id}");
+
+    $response->assertSuccessful();
+});
+
 test('admin can access forum thread edit page with replies relation', function () {
     $admin = User::factory()->admin()->create();
     $forumThread = ForumThread::factory()->create([
@@ -24,6 +35,17 @@ test('admin can access forum thread edit page with replies relation', function (
     ]);
 
     $response = $this->actingAs($admin)->get("/admin/forum-threads/{$forumThread->slug}/edit");
+
+    $response->assertSuccessful();
+});
+
+test('admin can access forum thread view page with replies relation', function () {
+    $admin = User::factory()->admin()->create();
+    $forumThread = ForumThread::factory()->create([
+        'author_id' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->get("/admin/forum-threads/{$forumThread->slug}");
 
     $response->assertSuccessful();
 });

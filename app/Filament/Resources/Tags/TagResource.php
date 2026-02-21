@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\Tags;
 
-use App\Filament\Resources\Tags\Pages\CreateTag;
-use App\Filament\Resources\Tags\Pages\EditTag;
 use App\Filament\Resources\Tags\Pages\ListTags;
 use App\Filament\Resources\Tags\Schemas\TagForm;
+use App\Filament\Resources\Tags\Schemas\TagInfolist;
 use App\Filament\Resources\Tags\Tables\TagsTable;
 use App\Models\Tag;
 use BackedEnum;
@@ -29,6 +28,11 @@ class TagResource extends Resource
         return TagForm::configure($schema);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return TagInfolist::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return TagsTable::configure($table);
@@ -43,8 +47,6 @@ class TagResource extends Resource
     {
         return [
             'index' => ListTags::route('/'),
-            'create' => CreateTag::route('/create'),
-            'edit' => EditTag::route('/{record}/edit'),
         ];
     }
 }

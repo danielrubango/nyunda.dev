@@ -4,9 +4,12 @@ namespace App\Filament\Resources\Subscribers\Tables;
 
 use App\Enums\SubscriberStatus;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -46,7 +49,13 @@ class SubscribersTable
                     )->all()),
             ])
             ->recordActions([
-                EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->slideOver(),
+                    EditAction::make()
+                        ->slideOver(),
+                    DeleteAction::make(),
+                ])->label('Actions'),
             ])
             ->headerActions([
                 Action::make('export_csv')

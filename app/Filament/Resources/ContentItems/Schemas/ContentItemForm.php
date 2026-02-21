@@ -47,8 +47,10 @@ class ContentItemForm
                             ->multiple()
                             ->searchable()
                             ->preload(),
-                        DateTimePicker::make('approved_at'),
-                        DateTimePicker::make('published_at'),
+                        DateTimePicker::make('approved_at')
+                            ->native(false),
+                        DateTimePicker::make('published_at')
+                            ->native(false),
                         Toggle::make('show_likes')
                             ->default(true),
                         Toggle::make('show_comments')

@@ -7,9 +7,13 @@ use App\Enums\ContentStatus;
 use App\Enums\ContentType;
 use App\Models\ContentItem;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -71,45 +75,40 @@ class ContentItemsTable
                     )->all()),
             ])
             ->recordActions([
-                Action::make('mark_pending')
-                    ->label('Mark pending')
-                    ->color('warning')
-                    ->visible(fn (ContentItem $record): bool => in_array($record->status, [
-                        ContentStatus::Draft,
-                        ContentStatus::Rejected,
-                    ], true))
-                    ->requiresConfirmation()
-                    ->action(function (ContentItem $record, TransitionContentItemStatus $transitionContentItemStatus): void {
-                        $transitionContentItemStatus->handle($record, ContentStatus::Pending);
-                    }),
-                Action::make('publish')
-                    ->label('Publish')
-                    ->color('success')
-                    ->visible(fn (ContentItem $record): bool => $record->status !== ContentStatus::Published)
-                    ->requiresConfirmation()
-                    ->action(function (ContentItem $record, TransitionContentItemStatus $transitionContentItemStatus): void {
-                        $transitionContentItemStatus->handle($record, ContentStatus::Published);
-                    }),
-                Action::make('reject')
-                    ->label('Reject')
-                    ->color('danger')
-                    ->visible(fn (ContentItem $record): bool => in_array($record->status, [
-                        ContentStatus::Pending,
-                        ContentStatus::Published,
-                    ], true))
-                    ->requiresConfirmation()
-                    ->action(function (ContentItem $record, TransitionContentItemStatus $transitionContentItemStatus): void {
-                        $transitionContentItemStatus->handle($record, ContentStatus::Rejected);
-                    }),
-                Action::make('move_to_draft')
-                    ->label('Move to draft')
-                    ->color('gray')
-                    ->visible(fn (ContentItem $record): bool => $record->status !== ContentStatus::Draft)
-                    ->requiresConfirmation()
-                    ->action(function (ContentItem $record, TransitionContentItemStatus $transitionContentItemStatus): void {
-                        $transitionContentItemStatus->handle($record, ContentStatus::Draft);
-                    }),
-                EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    Action::make('change_status')
+                        ->label('Change status')
+                        ->color('warning')
+                        ->fillForm(function (ContentItem $record): array {
+                            $currentStatus = $record->status instanceof ContentStatus
+                                ? $record->status->value
+                                : (string) $record->status;
+
+                            return [
+                                'status' => $currentStatus,
+                            ];
+                        })
+                        ->form([
+                            ToggleButtons::make('status')
+                                ->label('Status')
+                                ->inline()
+                                ->options(collect(ContentStatus::cases())->mapWithKeys(
+                                    fn (ContentStatus $status): array => [
+                                        $status->value => Str::headline($status->value),
+                                    ],
+                                )->all())
+                                ->required(),
+                        ])
+                        ->action(function (ContentItem $record, array $data, TransitionContentItemStatus $transitionContentItemStatus): void {
+                            $transitionContentItemStatus->handle(
+                                $record,
+                                ContentStatus::from((string) $data['status']),
+                            );
+                        }),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ])->label('Actions'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -6,6 +6,7 @@ use App\Filament\Resources\Subscribers\Pages\CreateSubscriber;
 use App\Filament\Resources\Subscribers\Pages\EditSubscriber;
 use App\Filament\Resources\Subscribers\Pages\ListSubscribers;
 use App\Filament\Resources\Subscribers\Schemas\SubscriberForm;
+use App\Filament\Resources\Subscribers\Schemas\SubscriberInfolist;
 use App\Filament\Resources\Subscribers\Tables\SubscribersTable;
 use App\Models\Subscriber;
 use BackedEnum;
@@ -27,6 +28,11 @@ class SubscriberResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return SubscriberForm::configure($schema);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return SubscriberInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table

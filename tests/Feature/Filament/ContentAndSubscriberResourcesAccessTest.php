@@ -35,6 +35,55 @@ test('admin can access content item resource list with enum columns', function (
     $response->assertSee((string) $contentItem->id);
 });
 
+test('content item status tabs filter results', function () {
+    $admin = User::factory()->admin()->create();
+    $publishedAuthor = User::factory()->author()->create([
+        'name' => 'Author Published Tab',
+    ]);
+    $draftAuthor = User::factory()->author()->create([
+        'name' => 'Author Draft Tab',
+    ]);
+
+    $published = ContentItem::factory()->create([
+        'type' => ContentType::InternalPost->value,
+        'status' => ContentStatus::Published->value,
+        'author_id' => $publishedAuthor->id,
+    ]);
+
+    ContentItem::factory()->create([
+        'type' => ContentType::InternalPost->value,
+        'status' => ContentStatus::Draft->value,
+        'author_id' => $draftAuthor->id,
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/content-items?tab=published');
+
+    $response->assertSuccessful();
+    $response->assertSee((string) $published->id);
+    $response->assertSee('Author Published Tab');
+    $response->assertDontSee('Author Draft Tab');
+});
+
+test('subscriber status tabs filter results', function () {
+    $admin = User::factory()->admin()->create();
+
+    $pending = Subscriber::factory()->create([
+        'email' => 'pending-filter@test.local',
+        'status' => SubscriberStatus::Pending->value,
+    ]);
+
+    $confirmed = Subscriber::factory()->create([
+        'email' => 'confirmed-filter@test.local',
+        'status' => SubscriberStatus::Confirmed->value,
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/subscribers?tab=pending');
+
+    $response->assertSuccessful();
+    $response->assertSee($pending->email);
+    $response->assertDontSee($confirmed->email);
+});
+
 test('non admin users cannot access subscriber and content item resources', function () {
     $author = User::factory()->author()->create();
 

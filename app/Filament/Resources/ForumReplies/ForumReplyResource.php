@@ -6,6 +6,7 @@ use App\Filament\Resources\ForumReplies\Pages\CreateForumReply;
 use App\Filament\Resources\ForumReplies\Pages\EditForumReply;
 use App\Filament\Resources\ForumReplies\Pages\ListForumReplies;
 use App\Filament\Resources\ForumReplies\Schemas\ForumReplyForm;
+use App\Filament\Resources\ForumReplies\Schemas\ForumReplyInfolist;
 use App\Filament\Resources\ForumReplies\Tables\ForumRepliesTable;
 use App\Models\ForumReply;
 use BackedEnum;
@@ -27,6 +28,11 @@ class ForumReplyResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return ForumReplyForm::configure($schema);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return ForumReplyInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table

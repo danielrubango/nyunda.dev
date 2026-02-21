@@ -8,12 +8,13 @@ use App\Filament\Resources\ContentItems\ContentItemResource;
 use App\Models\ContentItem;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\ToggleButtons;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Enums\Width;
 use Illuminate\Support\Str;
 
-class EditContentItem extends EditRecord
+class ViewContentItem extends ViewRecord
 {
     protected static string $resource = ContentItemResource::class;
 
@@ -49,6 +50,7 @@ class EditContentItem extends EditRecord
                         ContentStatus::from((string) $data['status']),
                     );
                 }),
+            EditAction::make(),
             DeleteAction::make(),
         ];
     }

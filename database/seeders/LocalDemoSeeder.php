@@ -50,18 +50,22 @@ class LocalDemoSeeder extends Seeder
         $tagLaravel = Tag::query()->create([
             'name' => 'Laravel',
             'slug' => 'laravel',
+            'sort_order' => 1,
         ]);
         $tagPhp = Tag::query()->create([
             'name' => 'PHP',
             'slug' => 'php',
+            'sort_order' => 2,
         ]);
         $tagAi = Tag::query()->create([
             'name' => 'IA',
             'slug' => 'ia',
+            'sort_order' => 3,
         ]);
         $tagArchitecture = Tag::query()->create([
             'name' => 'Architecture',
             'slug' => 'architecture',
+            'sort_order' => 4,
         ]);
 
         Project::query()->create([

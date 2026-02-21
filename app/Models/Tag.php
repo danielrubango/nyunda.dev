@@ -17,6 +17,7 @@ class Tag extends Model
     protected $fillable = [
         'name',
         'slug',
+        'sort_order',
     ];
 
     public function contentItems(): BelongsToMany

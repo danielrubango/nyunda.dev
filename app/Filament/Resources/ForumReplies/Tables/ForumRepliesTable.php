@@ -4,9 +4,12 @@ namespace App\Filament\Resources\ForumReplies\Tables;
 
 use App\Models\ForumReply;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -30,9 +33,12 @@ class ForumRepliesTable
                     ->label('User')
                     ->searchable()
                     ->sortable(),
-                IconColumn::make('is_hidden')
-                    ->label('Hidden')
-                    ->boolean(),
+                IconColumn::make('is_visible')
+                    ->label('Visible')
+                    ->state(fn (ForumReply $record): bool => ! $record->is_hidden)
+                    ->boolean()
+                    ->trueColor('success')
+                    ->falseColor('danger'),
                 IconColumn::make('is_best_reply')
                     ->label('Best')
                     ->state(fn (ForumReply $record): bool => $record->forumThread?->best_reply_id === $record->id)
@@ -74,45 +80,51 @@ class ForumRepliesTable
                     }),
             ])
             ->recordActions([
-                Action::make('toggle_visibility')
-                    ->label(fn (ForumReply $record): string => $record->is_hidden ? 'Show' : 'Hide')
-                    ->requiresConfirmation()
-                    ->action(function (ForumReply $record): void {
-                        $isCurrentlyHidden = $record->is_hidden;
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->slideOver(),
+                    Action::make('toggle_visibility')
+                        ->label(fn (ForumReply $record): string => $record->is_hidden ? 'Show' : 'Hide')
+                        ->requiresConfirmation()
+                        ->action(function (ForumReply $record): void {
+                            $isCurrentlyHidden = $record->is_hidden;
 
-                        $record->update([
-                            'is_hidden' => ! $isCurrentlyHidden,
-                            'hidden_at' => $isCurrentlyHidden ? null : now(),
-                            'hidden_by_id' => $isCurrentlyHidden ? null : auth()->id(),
-                        ]);
-
-                        if (! $isCurrentlyHidden) {
-                            $record->forumThread?->update([
-                                'best_reply_id' => $record->forumThread?->best_reply_id === $record->id
-                                    ? null
-                                    : $record->forumThread?->best_reply_id,
+                            $record->update([
+                                'is_hidden' => ! $isCurrentlyHidden,
+                                'hidden_at' => $isCurrentlyHidden ? null : now(),
+                                'hidden_by_id' => $isCurrentlyHidden ? null : auth()->id(),
                             ]);
-                        }
-                    }),
-                Action::make('mark_best_reply')
-                    ->label('Mark best reply')
-                    ->visible(fn (ForumReply $record): bool => $record->forumThread?->best_reply_id !== $record->id)
-                    ->requiresConfirmation()
-                    ->action(function (ForumReply $record): void {
-                        $record->forumThread?->update([
-                            'best_reply_id' => $record->id,
-                        ]);
-                    }),
-                Action::make('clear_best_reply')
-                    ->label('Clear best reply')
-                    ->visible(fn (ForumReply $record): bool => $record->forumThread?->best_reply_id === $record->id)
-                    ->requiresConfirmation()
-                    ->action(function (ForumReply $record): void {
-                        $record->forumThread?->update([
-                            'best_reply_id' => null,
-                        ]);
-                    }),
-                EditAction::make(),
+
+                            if (! $isCurrentlyHidden) {
+                                $record->forumThread?->update([
+                                    'best_reply_id' => $record->forumThread?->best_reply_id === $record->id
+                                        ? null
+                                        : $record->forumThread?->best_reply_id,
+                                ]);
+                            }
+                        }),
+                    Action::make('mark_best_reply')
+                        ->label('Mark best reply')
+                        ->visible(fn (ForumReply $record): bool => $record->forumThread?->best_reply_id !== $record->id)
+                        ->requiresConfirmation()
+                        ->action(function (ForumReply $record): void {
+                            $record->forumThread?->update([
+                                'best_reply_id' => $record->id,
+                            ]);
+                        }),
+                    Action::make('clear_best_reply')
+                        ->label('Clear best reply')
+                        ->visible(fn (ForumReply $record): bool => $record->forumThread?->best_reply_id === $record->id)
+                        ->requiresConfirmation()
+                        ->action(function (ForumReply $record): void {
+                            $record->forumThread?->update([
+                                'best_reply_id' => null,
+                            ]);
+                        }),
+                    EditAction::make()
+                        ->slideOver(),
+                    DeleteAction::make(),
+                ])->label('Actions'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

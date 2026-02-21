@@ -28,7 +28,8 @@ class SubscriberForm
                     ->required(),
                 TextInput::make('confirmation_token')
                     ->maxLength(64),
-                DateTimePicker::make('confirmed_at'),
+                DateTimePicker::make('confirmed_at')
+                    ->native(false),
                 Select::make('locale')
                     ->options(collect(config('app.supported_locales', ['fr', 'en']))->mapWithKeys(
                         fn (string $locale): array => [
