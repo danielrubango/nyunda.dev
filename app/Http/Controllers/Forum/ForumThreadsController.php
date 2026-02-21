@@ -33,16 +33,6 @@ class ForumThreadsController extends Controller
     {
         $this->applyInterfaceLocale();
 
-        if (! (bool) config('features.forum_enabled', false)) {
-            return view('forum.coming-soon', [
-                'seo' => $this->buildSeoMeta->handle(
-                    title: __('ui.forum.title'),
-                    description: __('ui.forum.coming_soon_text'),
-                    canonicalUrl: route('forum.index'),
-                ),
-            ]);
-        }
-
         $threads = ForumThread::query()
             ->where('is_hidden', false)
             ->with('author')

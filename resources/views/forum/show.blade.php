@@ -65,7 +65,7 @@
                             @error('body_markdown')
                                 <p class="text-sm text-red-600">{{ $message }}</p>
                             @enderror
-                            <button type="submit" class="h-10 border border-brand-700 px-4 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50">
+                            <button type="submit" class="h-10 border border-brand-700 px-4 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 focus:border-brand-800 focus-visible:border-brand-800">
                                 {{ __('ui.forum.publish_reply') }}
                             </button>
                         </form>

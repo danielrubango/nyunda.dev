@@ -27,7 +27,7 @@ class SubmitCommunityLink
     {
         return DB::transaction(function () use ($author, $submission): ContentItem {
             $contentItem = ContentItem::query()->create([
-                'type' => ContentType::CommunityLink->value,
+                'type' => ContentType::ExternalPost->value,
                 'status' => ContentStatus::Pending->value,
                 'author_id' => $author->id,
                 'show_likes' => false,
@@ -75,7 +75,7 @@ class SubmitCommunityLink
         $baseSlug = Str::slug($title);
 
         if ($baseSlug === '') {
-            $baseSlug = 'community-link';
+            $baseSlug = 'external-link';
         }
 
         $existingSlugs = ContentTranslation::query()
@@ -116,7 +116,7 @@ class SubmitCommunityLink
             return trim($title);
         }
 
-        return 'Lien partage '.$this->resolveHostLabel($externalUrl);
+        return 'Ressource partagee '.$this->resolveHostLabel($externalUrl);
     }
 
     protected function resolveExcerpt(?string $excerpt, string $externalUrl): string
@@ -125,7 +125,7 @@ class SubmitCommunityLink
             return trim($excerpt);
         }
 
-        return 'Soumission communautaire en attente de metadonnees pour '.$this->resolveHostLabel($externalUrl).'.';
+        return 'Ressource externe en attente de metadonnees pour '.$this->resolveHostLabel($externalUrl).'.';
     }
 
     protected function resolveHostLabel(string $externalUrl): string

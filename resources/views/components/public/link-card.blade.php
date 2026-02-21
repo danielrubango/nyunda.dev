@@ -10,6 +10,8 @@
     $domain = is_string($host) ? \Illuminate\Support\Str::of($host)->replaceStart('www.', '')->value() : null;
     $description = $translation->external_description ?: $translation->excerpt;
     $isExternalPost = $item->type === \App\Enums\ContentType::ExternalPost;
+    $cardBorderClasses = $isExternalPost ? 'border-brand-300' : 'border-zinc-300';
+    $cardHoverBackgroundClasses = $isExternalPost ? 'hover:bg-brand-50' : 'hover:bg-zinc-100';
 @endphp
 
 <x-ui.card
@@ -17,15 +19,17 @@
     :href="$translation->external_url"
     target="_blank"
     rel="noopener noreferrer"
-    class="group flex h-full flex-col no-underline"
+    class="group relative flex h-full flex-col no-underline transition-colors {{ $cardBorderClasses }} {{ $cardHoverBackgroundClasses }}"
     data-testid="external-link-card"
 >
+    <x-ui.icon
+        name="external-link"
+        class="pointer-events-none absolute top-5 right-5 size-4 shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+    />
+
     <div class="flex grow flex-col gap-4">
-        <h3 class="text-xl font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700">
-            <span class="inline-flex items-center gap-2">
-                <span>{{ $translation->title }}</span>
-                <x-ui.icon name="external-link" class="size-4 shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
-            </span>
+        <h3 class="pr-8 text-xl font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700">
+            {{ $translation->title }}
         </h3>
 
         @if ($showDescription)

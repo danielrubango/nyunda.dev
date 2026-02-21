@@ -1,15 +1,17 @@
 <?php
 
+use App\Enums\ContentType;
 use App\Models\ContentItem;
 use App\Models\ContentTranslation;
 use App\Models\ForumThread;
 use App\Models\Tag;
-use App\Models\User;
 
 test('home page renders key public sections', function () {
     $internal = ContentItem::factory()->published()->internalPost()->create();
     $external = ContentItem::factory()->published()->externalPost()->create();
-    $community = ContentItem::factory()->published()->communityLink()->create();
+    $legacyCommunity = ContentItem::factory()->published()->create([
+        'type' => ContentType::CommunityLink->value,
+    ]);
 
     ContentTranslation::factory()->for($internal)->forLocale('fr')->create([
         'title' => 'Article interne',
@@ -22,7 +24,7 @@ test('home page renders key public sections', function () {
         'external_url' => 'https://example.com/external-home',
         'slug' => 'article-externe-home',
     ]);
-    ContentTranslation::factory()->for($community)->forLocale('fr')->create([
+    ContentTranslation::factory()->for($legacyCommunity)->forLocale('fr')->create([
         'title' => 'Lien communauté',
         'excerpt' => 'Extrait communauté',
         'external_url' => 'https://example.com/community-home',
@@ -39,12 +41,15 @@ test('home page renders key public sections', function () {
     $response->assertSee('Liens récents');
     $response->assertSee('Article interne');
     $response->assertSee('Article externe');
+    $response->assertDontSee('Lien communauté');
     $response->assertSee('Mon compte');
 });
 
-test('links page lists only external and community links', function () {
+test('links page lists only external links', function () {
     $external = ContentItem::factory()->published()->externalPost()->create();
-    $community = ContentItem::factory()->published()->communityLink()->create();
+    $community = ContentItem::factory()->published()->create([
+        'type' => ContentType::CommunityLink->value,
+    ]);
     $internal = ContentItem::factory()->published()->internalPost()->create();
 
     ContentTranslation::factory()->for($external)->forLocale('fr')->create([
@@ -69,16 +74,9 @@ test('links page lists only external and community links', function () {
 
     $response->assertSuccessful();
     $response->assertSee('External resource');
-    $response->assertSee('Community resource');
+    $response->assertDontSee('Community resource');
     $response->assertDontSee('Internal resource');
-    $response->assertSee('data-testid="community-link-card"', false);
-    $response->assertSee('data-layout="full-width"', false);
-    $response->assertSee('href="https://www.community.dev/community-link"', false);
-    $response->assertDontSee('cdn.community.dev/og.png');
-    $response->assertSee('Partagé le '.$community->published_at?->format('Y-m-d').' — community.dev');
     $response->assertSee('data-testid="external-link-card"', false);
-
-    expect(substr_count((string) $response->getContent(), 'data-layout="full-width"'))->toBe(1);
 });
 
 test('blog index supports tag filter and paginated query string', function () {
@@ -134,28 +132,27 @@ test('blog localized slug route redirects to locale specific route', function ()
     ]));
 });
 
-test('forum shows coming soon page and blocks forum routes when disabled', function () {
-    config()->set('features.forum_enabled', false);
-
-    $thread = ForumThread::factory()->create([
+test('forum index supports locale and sorting filters', function () {
+    ForumThread::factory()->create([
         'locale' => 'fr',
         'title' => 'Thread FR',
         'slug' => 'thread-fr',
     ]);
 
-    $response = $this->get(route('forum.index'));
+    ForumThread::factory()->create([
+        'locale' => 'en',
+        'title' => 'Thread EN',
+        'slug' => 'thread-en',
+    ]);
+
+    $response = $this->get(route('forum.index', [
+        'locale' => 'en',
+        'sort' => 'recent',
+    ]));
 
     $response->assertSuccessful();
-    $response->assertSee('Soon');
-    $response->assertSee('Forum coming soon');
-
-    $this->get(route('forum.show', $thread))->assertNotFound();
-
-    $user = User::factory()->create();
-
-    $this->actingAs($user)
-        ->get(route('forum.create'))
-        ->assertNotFound();
+    $response->assertSee('Thread EN');
+    $response->assertDontSee('Thread FR');
 });
 
 test('selected locale persists across public pages', function () {
@@ -182,7 +179,7 @@ test('selected locale persists across public pages', function () {
 
 test('links page supports search filter', function () {
     $firstItem = ContentItem::factory()->published()->externalPost()->create();
-    $secondItem = ContentItem::factory()->published()->communityLink()->create();
+    $secondItem = ContentItem::factory()->published()->externalPost()->create();
 
     ContentTranslation::factory()->for($firstItem)->forLocale('fr')->create([
         'title' => 'Laravel Queues Guide',

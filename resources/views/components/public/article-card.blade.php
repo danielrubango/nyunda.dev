@@ -30,6 +30,14 @@
         'lg' => 'text-2xl sm:text-3xl',
         default => 'text-xl sm:text-2xl',
     };
+    $titlePaddingClasses = $isExternal ? 'pr-8' : '';
+
+    $cardBorderClasses = $isInternal
+        ? 'border-zinc-300'
+        : 'border-brand-300';
+    $cardHoverBackgroundClasses = $isInternal
+        ? 'hover:bg-zinc-100'
+        : 'hover:bg-brand-50';
 @endphp
 
 <x-ui.card
@@ -37,16 +45,22 @@
     :href="$href"
     :target="$isExternal ? '_blank' : null"
     :rel="$isExternal ? 'noopener noreferrer' : null"
-    class="group flex h-full flex-col no-underline"
+    {{ $attributes->class([
+        'group relative flex h-full flex-col no-underline transition-colors',
+        $cardBorderClasses,
+        $cardHoverBackgroundClasses,
+    ]) }}
 >
+    @if ($isExternal)
+        <x-ui.icon
+            name="external-link"
+            class="pointer-events-none absolute top-5 right-5 size-4 shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+        />
+    @endif
+
     <div class="flex grow flex-col gap-4">
-        <h3 class="{{ $titleClasses }} font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700">
-            <span class="inline-flex items-center gap-2">
-                <span>{{ $translation->title }}</span>
-                @if ($isExternal)
-                    <x-ui.icon name="external-link" class="size-4 shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
-                @endif
-            </span>
+        <h3 class="{{ $titleClasses }} {{ $titlePaddingClasses }} font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700">
+            {{ $translation->title }}
         </h3>
 
         <p class="text-sm text-zinc-600">{{ $excerpt }}</p>

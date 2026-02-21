@@ -76,39 +76,37 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('throttle:community-submissions')
         ->name('community-links.store');
 
-    Route::middleware('forum.enabled')->group(function () {
-        Route::get('/forum/create', [ForumThreadsController::class, 'create'])
-            ->name('forum.create');
+    Route::get('/forum/create', [ForumThreadsController::class, 'create'])
+        ->name('forum.create');
 
-        Route::post('/forum', [ForumThreadsController::class, 'store'])
-            ->middleware('throttle:forum-threads')
-            ->name('forum.store');
+    Route::post('/forum', [ForumThreadsController::class, 'store'])
+        ->middleware('throttle:forum-threads')
+        ->name('forum.store');
 
-        Route::get('/forum/{forumThread:slug}/edit', [ForumThreadsController::class, 'edit'])
-            ->name('forum.edit');
+    Route::get('/forum/{forumThread:slug}/edit', [ForumThreadsController::class, 'edit'])
+        ->name('forum.edit');
 
-        Route::put('/forum/{forumThread:slug}', [ForumThreadsController::class, 'update'])
-            ->name('forum.update');
+    Route::put('/forum/{forumThread:slug}', [ForumThreadsController::class, 'update'])
+        ->name('forum.update');
 
-        Route::delete('/forum/{forumThread:slug}', [ForumThreadsController::class, 'destroy'])
-            ->name('forum.destroy');
+    Route::delete('/forum/{forumThread:slug}', [ForumThreadsController::class, 'destroy'])
+        ->name('forum.destroy');
 
-        Route::patch('/forum/{forumThread:slug}/visibility', UpdateForumThreadVisibilityController::class)
-            ->name('forum.visibility.update');
+    Route::patch('/forum/{forumThread:slug}/visibility', UpdateForumThreadVisibilityController::class)
+        ->name('forum.visibility.update');
 
-        Route::post('/forum/{forumThread:slug}/replies', [ForumRepliesController::class, 'store'])
-            ->middleware('throttle:forum-replies')
-            ->name('forum.replies.store');
+    Route::post('/forum/{forumThread:slug}/replies', [ForumRepliesController::class, 'store'])
+        ->middleware('throttle:forum-replies')
+        ->name('forum.replies.store');
 
-        Route::post('/forum/{forumThread:slug}/replies/{forumReply}/best', MarkBestForumReplyController::class)
-            ->name('forum.replies.mark-best');
+    Route::post('/forum/{forumThread:slug}/replies/{forumReply}/best', MarkBestForumReplyController::class)
+        ->name('forum.replies.mark-best');
 
-        Route::patch('/forum/replies/{forumReply}', [ForumRepliesController::class, 'update'])
-            ->name('forum.replies.update');
+    Route::patch('/forum/replies/{forumReply}', [ForumRepliesController::class, 'update'])
+        ->name('forum.replies.update');
 
-        Route::delete('/forum/replies/{forumReply}', [ForumRepliesController::class, 'destroy'])
-            ->name('forum.replies.destroy');
-    });
+    Route::delete('/forum/replies/{forumReply}', [ForumRepliesController::class, 'destroy'])
+        ->name('forum.replies.destroy');
 
     Route::post('/content/{contentItem}/comments', [CommentsController::class, 'store'])
         ->middleware('throttle:content-comments')
@@ -126,7 +124,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/forum/{forumThread:slug}', [ForumThreadsController::class, 'show'])
-    ->middleware('forum.enabled')
     ->name('forum.show');
 
 Route::view('dashboard', 'dashboard')

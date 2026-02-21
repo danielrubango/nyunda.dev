@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Enums\ContentStatus;
+use App\Enums\ContentType;
 use App\Enums\SubscriberStatus;
+use App\Enums\UserRole;
 use App\Models\Comment;
 use App\Models\ContentItem;
 use App\Models\ContentLike;
@@ -25,70 +27,101 @@ class LocalDemoSeeder extends Seeder
      */
     public function run(): void
     {
-        if (User::query()->where('email', 'danielrubango@gmail.com')->exists()) {
+        if (ContentItem::query()->count() >= 10) {
             return;
         }
 
-        $admin = User::factory()->admin()->withPublicProfile('drubango')->create([
-            'name' => 'Daniel Rubango',
+        $admin = User::query()->firstOrCreate([
             'email' => 'danielrubango@gmail.com',
+        ], [
+            'name' => 'Daniel Rubango',
+            'password' => 'password',
+            'role' => UserRole::Admin->value,
             'preferred_locale' => 'fr',
+            'is_profile_public' => true,
+            'public_profile_slug' => 'drubango',
         ]);
+        $admin->forceFill([
+            'name' => 'Daniel Rubango',
+            'role' => UserRole::Admin->value,
+            'preferred_locale' => 'fr',
+            'is_profile_public' => true,
+            'public_profile_slug' => 'drubango',
+        ])->save();
 
-        $communityUser = User::factory()->create([
-            'name' => 'Junior Dev',
+        $communityUser = User::query()->firstOrCreate([
             'email' => 'user@nyunda.test',
+        ], [
+            'name' => 'Junior Dev',
+            'password' => 'password',
             'preferred_locale' => 'fr',
         ]);
+        $communityUser->forceFill([
+            'name' => 'Junior Dev',
+            'preferred_locale' => 'fr',
+        ])->save();
 
-        $reader = User::factory()->create([
-            'name' => 'Reader One',
+        $reader = User::query()->firstOrCreate([
             'email' => 'reader@nyunda.test',
+        ], [
+            'name' => 'Reader One',
+            'password' => 'password',
             'preferred_locale' => 'en',
         ]);
+        $reader->forceFill([
+            'name' => 'Reader One',
+            'preferred_locale' => 'en',
+        ])->save();
 
-        $tagLaravel = Tag::query()->create([
-            'name' => 'Laravel',
+        $tagLaravel = Tag::query()->firstOrCreate([
             'slug' => 'laravel',
+        ], [
+            'name' => 'Laravel',
             'sort_order' => 1,
         ]);
-        $tagPhp = Tag::query()->create([
-            'name' => 'PHP',
+        $tagPhp = Tag::query()->firstOrCreate([
             'slug' => 'php',
+        ], [
+            'name' => 'PHP',
             'sort_order' => 2,
         ]);
-        $tagAi = Tag::query()->create([
-            'name' => 'IA',
+        $tagAi = Tag::query()->firstOrCreate([
             'slug' => 'ia',
+        ], [
+            'name' => 'IA',
             'sort_order' => 3,
         ]);
-        $tagArchitecture = Tag::query()->create([
-            'name' => 'Architecture',
+        $tagArchitecture = Tag::query()->firstOrCreate([
             'slug' => 'architecture',
+        ], [
+            'name' => 'Architecture',
             'sort_order' => 4,
         ]);
 
-        Project::query()->create([
-            'name' => 'NYUNDA.DEV',
+        Project::query()->firstOrCreate([
             'slug' => 'nyunda-dev',
+        ], [
+            'name' => 'NYUNDA.DEV',
             'description' => 'Blog technique orienté Laravel, PHP et IA.',
             'url' => 'https://nyunda.dev',
             'is_featured' => true,
             'sort_order' => 1,
         ]);
 
-        Tool::query()->create([
-            'name' => 'Laravel',
+        Tool::query()->firstOrCreate([
             'slug' => 'laravel',
+        ], [
+            'name' => 'Laravel',
             'description' => 'Framework principal pour le back-end.',
             'url' => 'https://laravel.com',
             'is_featured' => true,
             'sort_order' => 1,
         ]);
 
-        Tool::query()->create([
-            'name' => 'Filament',
+        Tool::query()->firstOrCreate([
             'slug' => 'filament',
+        ], [
+            'name' => 'Filament',
             'description' => 'Panel admin moderne pour la gestion des contenus.',
             'url' => 'https://filamentphp.com',
             'is_featured' => true,
@@ -241,8 +274,8 @@ class LocalDemoSeeder extends Seeder
             $tagAi->id,
         ]);
 
-        $pendingCommunityLink = ContentItem::factory()
-            ->communityLink()
+        $pendingExternalLink = ContentItem::factory()
+            ->externalPost()
             ->for($communityUser, 'author')
             ->create([
                 'status' => ContentStatus::Pending->value,
@@ -252,11 +285,11 @@ class LocalDemoSeeder extends Seeder
             ]);
 
         ContentTranslation::query()->create([
-            'content_item_id' => $pendingCommunityLink->id,
+            'content_item_id' => $pendingExternalLink->id,
             'locale' => 'fr',
-            'title' => 'Proposition communauté: architecture hexagonale',
-            'slug' => 'proposition-communaute-architecture-hexagonale',
-            'excerpt' => 'Soumission en attente de validation admin.',
+            'title' => 'Proposition externe: architecture hexagonale',
+            'slug' => 'proposition-externe-architecture-hexagonale',
+            'excerpt' => 'Soumission externe en attente de validation admin.',
             'body_markdown' => null,
             'external_url' => 'https://martinfowler.com',
             'external_description' => 'Référence sur les patterns d’architecture.',
@@ -266,8 +299,8 @@ class LocalDemoSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        $publishedCommunityLink = ContentItem::factory()
-            ->communityLink()
+        $publishedExternalLink = ContentItem::factory()
+            ->externalPost()
             ->published()
             ->for($communityUser, 'author')
             ->create([
@@ -277,11 +310,11 @@ class LocalDemoSeeder extends Seeder
             ]);
 
         ContentTranslation::query()->create([
-            'content_item_id' => $publishedCommunityLink->id,
+            'content_item_id' => $publishedExternalLink->id,
             'locale' => 'fr',
-            'title' => 'Lien communauté: bonnes pratiques API REST',
-            'slug' => 'lien-communaute-bonnes-pratiques-api-rest',
-            'excerpt' => 'Lien validé et publié.',
+            'title' => 'Ressource externe: bonnes pratiques API REST',
+            'slug' => 'ressource-externe-bonnes-pratiques-api-rest',
+            'excerpt' => 'Ressource externe validée et publiée.',
             'body_markdown' => null,
             'external_url' => 'https://jsonapi.org',
             'external_description' => 'Spécification JSON:API pour des API cohérentes.',
@@ -290,6 +323,46 @@ class LocalDemoSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        foreach (range(1, 8) as $index) {
+            $isExternal = $index % 2 === 0;
+            $contentItem = ContentItem::factory()
+                ->for($admin, 'author')
+                ->published()
+                ->state([
+                    'type' => $isExternal ? ContentType::ExternalPost->value : ContentType::InternalPost->value,
+                    'show_likes' => ! $isExternal,
+                    'show_comments' => ! $isExternal,
+                ])
+                ->create();
+
+            ContentTranslation::query()->create([
+                'content_item_id' => $contentItem->id,
+                'locale' => 'fr',
+                'title' => $isExternal
+                    ? 'Ressource externe #'.$index.' pour progresser en Laravel'
+                    : 'Article interne #'.$index.' sur Laravel en production',
+                'slug' => $isExternal
+                    ? 'ressource-externe-'.$index.'-laravel'
+                    : 'article-interne-'.$index.'-laravel-production',
+                'excerpt' => $isExternal
+                    ? 'Sélection de ressource externe utile pour aller plus vite.'
+                    : 'Retour concret et synthèse actionnable pour les projets Laravel.',
+                'body_markdown' => $isExternal ? null : "## Note #{$index}\n\nContenu interne de démonstration.\n",
+                'external_url' => $isExternal ? 'https://example.com/resource-'.$index : null,
+                'external_description' => $isExternal ? 'Description externe de démonstration #'.$index : null,
+                'external_site_name' => $isExternal ? 'Example' : null,
+                'external_og_image_url' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            if (! $isExternal) {
+                $contentItem->tags()->sync([$tagLaravel->id, $tagPhp->id]);
+            } else {
+                $contentItem->tags()->sync([$tagLaravel->id, $tagAi->id]);
+            }
+        }
 
         Comment::query()->create([
             'content_item_id' => $publishedInternal->id,

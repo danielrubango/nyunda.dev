@@ -67,11 +67,15 @@
     button,
     [type='button'],
     [type='submit'],
+    [type='reset'],
+    summary {
+        @apply focus-visible:outline-hidden focus-visible:border-zinc-500;
+    }
+
     input,
     select,
-    textarea,
-    summary {
-        @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
+    textarea {
+        @apply focus:outline-hidden focus:border-zinc-500 focus-visible:border-zinc-500;
     }
 
     h1,
@@ -174,5 +178,5 @@
 input:focus[data-flux-control],
 textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
-    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+    @apply outline-hidden border-zinc-500;
 }

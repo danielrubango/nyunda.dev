@@ -58,7 +58,7 @@ class ContentItemFactory extends Factory
     public function communityLink(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => ContentType::CommunityLink->value,
+            'type' => ContentType::ExternalPost->value,
         ]);
     }
 }

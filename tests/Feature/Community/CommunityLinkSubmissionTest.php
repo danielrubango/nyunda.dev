@@ -30,7 +30,7 @@ test('authenticated user can submit a community link and it stays pending', func
         ->first();
 
     expect($contentItem)->not->toBeNull()
-        ->and($contentItem->type)->toBe(ContentType::CommunityLink)
+        ->and($contentItem->type)->toBe(ContentType::ExternalPost)
         ->and($contentItem->status)->toBe(ContentStatus::Pending)
         ->and($contentItem->show_comments)->toBeFalse()
         ->and($contentItem->show_likes)->toBeFalse();
@@ -60,7 +60,7 @@ test('community link submission remains pending for admins too', function () {
 
     $this->assertDatabaseHas('content_items', [
         'author_id' => $admin->id,
-        'type' => ContentType::CommunityLink->value,
+        'type' => ContentType::ExternalPost->value,
         'status' => ContentStatus::Pending->value,
     ]);
 });
@@ -97,8 +97,8 @@ test('community link submission validates required payload', function () {
     ]);
 });
 
-test('pending community links are not listed publicly', function () {
-    $contentItem = ContentItem::factory()->communityLink()->create([
+test('pending external links are not listed publicly', function () {
+    $contentItem = ContentItem::factory()->externalPost()->create([
         'status' => ContentStatus::Pending->value,
     ]);
 

@@ -60,7 +60,7 @@ class HomePageController extends Controller
                 $contentItem = $row['content_item'];
                 $externalUrl = $row['translation']->external_url;
 
-                return in_array($contentItem->type, [ContentType::ExternalPost, ContentType::CommunityLink], true)
+                return $contentItem->type === ContentType::ExternalPost
                     && is_string($externalUrl)
                     && $externalUrl !== '';
             })
@@ -90,7 +90,6 @@ class HomePageController extends Controller
             ->whereIn('type', [
                 ContentType::InternalPost->value,
                 ContentType::ExternalPost->value,
-                ContentType::CommunityLink->value,
             ])
             ->withCount('likes')
             ->with('author')

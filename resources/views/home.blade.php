@@ -14,6 +14,7 @@
                     :item="$featuredRow['content_item']"
                     :translation="$featuredRow['translation']"
                     size="xl"
+                    class="border-2 border-brand-700"
                 />
             @else
                 <x-ui.alert>{{ __('ui.home.empty_featured') }}</x-ui.alert>

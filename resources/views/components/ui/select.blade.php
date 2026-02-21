@@ -10,7 +10,7 @@
         @if (is_string($name) && $name !== '')
             name="{{ $name }}"
         @endif
-        {{ $attributes->class(['h-10 w-full appearance-none rounded-sm border border-zinc-300 bg-white px-3 pe-9 text-sm text-zinc-900']) }}
+        {{ $attributes->class(['h-10 w-full appearance-none rounded-sm border border-zinc-300 bg-white px-3 pe-9 text-sm text-zinc-900 transition-colors']) }}
     >
         @if (is_string($placeholder) && $placeholder !== '')
             <option value="">{{ $placeholder }}</option>

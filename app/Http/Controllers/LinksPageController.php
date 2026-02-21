@@ -23,10 +23,7 @@ class LinksPageController extends Controller
     {
         $query = ContentItem::query()
             ->published()
-            ->whereIn('type', [
-                ContentType::ExternalPost->value,
-                ContentType::CommunityLink->value,
-            ])
+            ->where('type', ContentType::ExternalPost->value)
             ->with('author')
             ->latest('published_at')
             ->latest('id');

@@ -2,7 +2,6 @@
     <div class="ui-container space-y-8">
         <header class="flex flex-wrap items-end justify-between gap-4">
             <div class="space-y-3">
-                <p class="ui-eyebrow">{{ config('app.name') }}</p>
                 <h1 class="ui-section-title">{{ __('ui.forum.title') }}</h1>
                 <p class="max-w-3xl text-base text-zinc-600">{{ __('ui.forum.subtitle') }}</p>
             </div>
@@ -16,40 +15,33 @@
         @endif
 
         @php
-            $localeOptions = ['all' => __('ui.blog.filters.all')]
+            $localeOptions = ['all' => __('ui.blog.filters.locale').' : '.__('ui.blog.filters.all')]
                 + collect($supportedLocales)->mapWithKeys(fn (string $locale): array => [$locale => strtoupper($locale)])->all();
 
             $sortOptions = [
+                '' => __('ui.forum.filters.sort'),
                 'recent' => __('ui.forum.filters.recent'),
                 'active' => __('ui.forum.filters.active'),
                 'replies' => __('ui.forum.filters.replies'),
             ];
 
-            $tagOptions = ['' => __('ui.forum.filters.tags_soon')]
+            $tagOptions = ['' => __('ui.blog.filters.tags')]
                 + $availableTags->mapWithKeys(fn ($tag): array => [$tag->slug => '#'.$tag->name])->all();
+            $selectedSortOption = request()->query('sort', '') === '' ? '' : $selectedSort;
         @endphp
 
         <x-ui.card>
             <form method="GET" action="{{ route('forum.index') }}" class="grid gap-4 md:grid-cols-4">
-                <label class="space-y-2 text-sm">
-                    <span class="font-medium text-zinc-700">{{ __('ui.blog.filters.locale') }}</span>
-                    <x-ui.select name="locale" :options="$localeOptions" :selected="$selectedLocale" />
-                </label>
+                <x-ui.select name="locale" :options="$localeOptions" :selected="$selectedLocale" class="text-sm" />
 
-                <label class="space-y-2 text-sm">
-                    <span class="font-medium text-zinc-700">{{ __('ui.forum.filters.sort') }}</span>
-                    <x-ui.select name="sort" :options="$sortOptions" :selected="$selectedSort" />
-                </label>
+                <x-ui.select name="sort" :options="$sortOptions" :selected="$selectedSortOption" class="text-sm" />
 
-                <label class="space-y-2 text-sm">
-                    <span class="font-medium text-zinc-700">{{ __('ui.blog.filters.tags') }}</span>
-                    <x-ui.select name="tag" :options="$tagOptions" :selected="$selectedTag" />
-                </label>
+                <x-ui.select name="tag" :options="$tagOptions" :selected="$selectedTag" class="text-sm" />
 
                 <div class="flex items-end gap-4">
-                    <button type="submit" class="border-b border-brand-700 pb-1 text-sm font-medium text-brand-700">
+                    <x-ui.button type="submit" size="lg">
                         {{ __('ui.blog.filters.apply') }}
-                    </button>
+                    </x-ui.button>
                     <a href="{{ route('forum.index') }}" class="border-b border-transparent pb-1 text-sm font-medium text-zinc-600 no-underline hover:border-zinc-400 hover:text-zinc-900">
                         {{ __('ui.blog.filters.reset') }}
                     </a>
