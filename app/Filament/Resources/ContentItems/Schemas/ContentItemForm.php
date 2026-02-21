@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\ContentItems\Schemas;
 
+use App\Enums\ContentStatus;
 use App\Enums\ContentType;
+use App\Models\ContentItem;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\MarkdownEditor;
@@ -21,6 +23,7 @@ class ContentItemForm
     public static function configure(Schema $schema, ?ContentType $forcedType = null): Schema
     {
         return $schema
+            ->columns(4)
             ->components([
                 Section::make('Content')
                     ->schema([
@@ -33,17 +36,20 @@ class ContentItemForm
                                     ],
                                 )->all())
                                 ->required()
-                                ->live(),
+                                ->live()
+                                ->columnSpanFull(),
                         Select::make('author_id')
                             ->relationship('author', 'name')
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            ->required()
+                            ->columnSpanFull(),
                         Select::make('tags')
                             ->relationship('tags', 'name')
                             ->multiple()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->columnSpanFull(),
                         DateTimePicker::make('approved_at')
                             ->label('Approved at')
                             ->native(false)
@@ -54,6 +60,11 @@ class ContentItemForm
                             ->native(false)
                             ->readOnly()
                             ->dehydrated(false),
+                    ])
+                    ->columns(2)
+                    ->columnSpan(3),
+                Section::make('Options')
+                    ->schema([
                         Toggle::make('show_likes')
                             ->default(true)
                             ->visible(fn (Get $get): bool => self::isInternalType($get, $forcedType))
@@ -63,9 +74,12 @@ class ContentItemForm
                             ->visible(fn (Get $get): bool => self::isInternalType($get, $forcedType))
                             ->dehydrated(fn (Get $get): bool => self::isInternalType($get, $forcedType)),
                         Toggle::make('share_on_publish')
-                            ->default(false),
+                            ->default(false)
+                            ->visible(fn (?ContentItem $record): bool => $record?->status !== ContentStatus::Published)
+                            ->dehydrated(fn (?ContentItem $record): bool => $record?->status !== ContentStatus::Published),
                     ])
-                    ->columns(3),
+                    ->columns(1)
+                    ->columnSpan(1),
                 Section::make('Default translation')
                     ->visibleOn('create')
                     ->schema([
@@ -153,7 +167,8 @@ class ContentItemForm
                             })
                             ->columnSpanFull(),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->columnSpanFull(),
             ]);
     }
 

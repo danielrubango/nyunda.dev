@@ -13,7 +13,7 @@ class ContentItemStatusActions
     {
         return Action::make('approve')
             ->label('Approve')
-            ->color('success')
+            ->color('gray')
             ->visible(function (ContentItem $record): bool {
                 return $record->status === ContentStatus::Pending
                     && auth()->id() !== $record->author_id;
@@ -65,11 +65,24 @@ class ContentItemStatusActions
     {
         return Action::make('reject')
             ->label('Reject')
-            ->color('danger')
-            ->visible(fn (ContentItem $record): bool => in_array($record->status, [
-                ContentStatus::Pending,
-                ContentStatus::Published,
-            ], true))
+            ->color('gray')
+            ->visible(function (ContentItem $record): bool {
+                if (! in_array($record->status, [
+                    ContentStatus::Pending,
+                    ContentStatus::Published,
+                ], true)) {
+                    return false;
+                }
+
+                if (
+                    $record->status === ContentStatus::Published
+                    && auth()->id() === $record->author_id
+                ) {
+                    return false;
+                }
+
+                return true;
+            })
             ->requiresConfirmation()
             ->action(function (ContentItem $record, TransitionContentItemStatus $transitionContentItemStatus): void {
                 $transitionContentItemStatus->handle($record, ContentStatus::Rejected);
