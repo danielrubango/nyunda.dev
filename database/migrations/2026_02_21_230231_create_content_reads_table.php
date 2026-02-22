@@ -19,9 +19,9 @@ return new class extends Migration
             $table->timestamp('counted_at');
             $table->timestamps();
 
-            $table->index(['content_item_id', 'counted_at']);
-            $table->index(['content_item_id', 'user_id', 'counted_at']);
-            $table->index(['content_item_id', 'visitor_fingerprint', 'counted_at']);
+            $table->index(['content_item_id', 'counted_at'], 'cr_item_counted_idx');
+            $table->index(['content_item_id', 'user_id', 'counted_at'], 'cr_item_user_counted_idx');
+            $table->index(['content_item_id', 'visitor_fingerprint', 'counted_at'], 'cr_item_visitor_counted_idx');
         });
     }
 
