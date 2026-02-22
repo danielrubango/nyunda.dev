@@ -49,6 +49,7 @@ return [
             'community_link' => 'community',
         ],
         'likes' => 'Likes: :count',
+        'reads' => 'Reads: :count',
         'like_toggle' => 'Like / Unlike',
         'published_by' => 'Published on :date by :author',
         'shared_on_domain' => 'Shared on :date — :domain',
@@ -210,6 +211,7 @@ return [
     ],
     'flash' => [
         'connected' => 'You are now signed in.',
+        'forum_coming_soon' => 'The forum page will be available soon.',
         'like_added' => 'Post added to your favorites.',
         'like_removed' => 'Post removed from your favorites.',
         'comment_added' => 'Comment posted successfully.',

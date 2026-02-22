@@ -49,6 +49,7 @@ return [
             'community_link' => 'communauté',
         ],
         'likes' => 'J’aime : :count',
+        'reads' => 'Lectures : :count',
         'like_toggle' => 'J’aime / Je n’aime plus',
         'published_by' => 'Publié le :date par :author',
         'shared_on_domain' => 'Partagé le :date — :domain',
@@ -210,6 +211,7 @@ return [
     ],
     'flash' => [
         'connected' => 'Connexion réussie.',
+        'forum_coming_soon' => 'La page forum sera bientôt disponible.',
         'like_added' => 'Article ajouté à vos favoris.',
         'like_removed' => 'Article retiré de vos favoris.',
         'comment_added' => 'Commentaire publié avec succès.',

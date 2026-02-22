@@ -3,6 +3,10 @@
 use App\Models\ForumThread;
 use App\Models\User;
 
+beforeEach(function (): void {
+    $this->markTestSkipped('Forum routes are temporarily disabled.');
+});
+
 test('guest cannot create forum thread', function () {
     $response = $this->get('/forum/create');
 

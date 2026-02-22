@@ -3,7 +3,6 @@
 use App\Enums\ContentType;
 use App\Models\ContentItem;
 use App\Models\ContentTranslation;
-use App\Models\ForumThread;
 use App\Models\Tag;
 use App\Models\User;
 
@@ -156,27 +155,18 @@ test('blog localized slug route redirects to locale specific route', function ()
     ]));
 });
 
-test('forum index supports locale and sorting filters', function () {
-    ForumThread::factory()->create([
-        'locale' => 'fr',
-        'title' => 'Thread FR',
-        'slug' => 'thread-fr',
-    ]);
+test('forum routes redirect back with a coming soon flash', function () {
+    $fromHomeResponse = $this
+        ->from(route('home'))
+        ->get(route('forum.index'));
 
-    ForumThread::factory()->create([
-        'locale' => 'en',
-        'title' => 'Thread EN',
-        'slug' => 'thread-en',
-    ]);
+    $fromHomeResponse->assertRedirect(route('home'));
+    $fromHomeResponse->assertSessionHas('status', __('ui.flash.forum_coming_soon'));
 
-    $response = $this->get(route('forum.index', [
-        'locale' => 'en',
-        'sort' => 'recent',
-    ]));
+    $directResponse = $this->get(route('forum.index'));
 
-    $response->assertSuccessful();
-    $response->assertSee('Thread EN');
-    $response->assertDontSee('Thread FR');
+    $directResponse->assertRedirect(route('home'));
+    $directResponse->assertSessionHas('status', __('ui.flash.forum_coming_soon'));
 });
 
 test('selected locale persists across public pages', function () {

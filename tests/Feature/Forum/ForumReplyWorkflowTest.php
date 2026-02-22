@@ -4,6 +4,10 @@ use App\Models\ForumReply;
 use App\Models\ForumThread;
 use App\Models\User;
 
+beforeEach(function (): void {
+    $this->markTestSkipped('Forum routes are temporarily disabled.');
+});
+
 test('authenticated user can reply to a forum thread', function () {
     $thread = ForumThread::factory()->create([
         'slug' => 'thread-reply',

@@ -23,11 +23,20 @@
                 </div>
 
                 <h1 class="font-sans text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">{{ $translation->title }}</h1>
-                <p class="text-sm text-zinc-500">
-                    {{ __('ui.blog.published_by', [
-                        'date' => $contentItem->published_at?->format('Y-m-d') ?? $contentItem->created_at?->format('Y-m-d'),
-                        'author' => $contentItem->author->name,
-                    ]) }}
+                <p class="flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+                    <span>
+                        {{ __('ui.blog.published_by', [
+                            'date' => $contentItem->published_at?->format('Y-m-d') ?? $contentItem->created_at?->format('Y-m-d'),
+                            'author' => $contentItem->author->name,
+                        ]) }}
+                    </span>
+                    @if ($isAdmin)
+                        <span class="inline-flex items-center gap-1 font-medium text-zinc-500">
+                            <x-ui.icon name="eye" class="size-4" />
+                            <span>{{ number_format((int) $contentItem->reads_count) }}</span>
+                            <span class="sr-only">{{ __('ui.blog.reads', ['count' => (int) $contentItem->reads_count]) }}</span>
+                        </span>
+                    @endif
                 </p>
             </header>
 

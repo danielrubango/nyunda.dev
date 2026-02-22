@@ -7,10 +7,6 @@ use App\Http\Controllers\Blog\BlogContentController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\CommunityLinkSubmissionsController;
 use App\Http\Controllers\ConfirmNewsletterController;
-use App\Http\Controllers\Forum\ForumRepliesController;
-use App\Http\Controllers\Forum\ForumThreadsController;
-use App\Http\Controllers\Forum\MarkBestForumReplyController;
-use App\Http\Controllers\Forum\UpdateForumThreadVisibilityController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\LikeContentController;
 use App\Http\Controllers\LinksPageController;
@@ -20,6 +16,7 @@ use App\Http\Controllers\RssFeedController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UnsubscribeNewsletterController;
 use App\Http\Controllers\UpdateLocaleController;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomePageController::class)->name('home');
@@ -43,9 +40,6 @@ Route::get('/about', AboutPageController::class)
 Route::get('/links', LinksPageController::class)
     ->name('links.index');
 
-Route::get('/forum', [ForumThreadsController::class, 'index'])
-    ->name('forum.index');
-
 Route::get('/blog', [BlogContentController::class, 'index'])
     ->name('blog.index');
 
@@ -66,6 +60,50 @@ Route::get('/newsletter/confirm/{token}', ConfirmNewsletterController::class)
 Route::get('/newsletter/unsubscribe/{token}', UnsubscribeNewsletterController::class)
     ->name('newsletter.unsubscribe');
 
+$redirectForumUnavailable = static function (): RedirectResponse {
+    return redirect()
+        ->back(fallback: route('home'))
+        ->with('status', __('ui.flash.forum_coming_soon'));
+};
+
+Route::get('/forum', $redirectForumUnavailable)
+    ->name('forum.index');
+
+Route::middleware(['auth'])->group(function () use ($redirectForumUnavailable): void {
+    Route::get('/forum/create', $redirectForumUnavailable)
+        ->name('forum.create');
+
+    Route::post('/forum', $redirectForumUnavailable)
+        ->name('forum.store');
+
+    Route::get('/forum/{forumThread}/edit', $redirectForumUnavailable)
+        ->name('forum.edit');
+
+    Route::put('/forum/{forumThread}', $redirectForumUnavailable)
+        ->name('forum.update');
+
+    Route::delete('/forum/{forumThread}', $redirectForumUnavailable)
+        ->name('forum.destroy');
+
+    Route::patch('/forum/{forumThread}/visibility', $redirectForumUnavailable)
+        ->name('forum.visibility.update');
+
+    Route::post('/forum/{forumThread}/replies', $redirectForumUnavailable)
+        ->name('forum.replies.store');
+
+    Route::post('/forum/{forumThread}/replies/{forumReply}/best', $redirectForumUnavailable)
+        ->name('forum.replies.mark-best');
+
+    Route::patch('/forum/replies/{forumReply}', $redirectForumUnavailable)
+        ->name('forum.replies.update');
+
+    Route::delete('/forum/replies/{forumReply}', $redirectForumUnavailable)
+        ->name('forum.replies.destroy');
+});
+
+Route::get('/forum/{forumThread}', $redirectForumUnavailable)
+    ->name('forum.show');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/subscribers/export', ExportSubscribersCsvController::class)
         ->name('admin.subscribers.export');
@@ -76,38 +114,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/community-links', [CommunityLinkSubmissionsController::class, 'store'])
         ->middleware('throttle:community-submissions')
         ->name('community-links.store');
-
-    Route::get('/forum/create', [ForumThreadsController::class, 'create'])
-        ->name('forum.create');
-
-    Route::post('/forum', [ForumThreadsController::class, 'store'])
-        ->middleware('throttle:forum-threads')
-        ->name('forum.store');
-
-    Route::get('/forum/{forumThread:slug}/edit', [ForumThreadsController::class, 'edit'])
-        ->name('forum.edit');
-
-    Route::put('/forum/{forumThread:slug}', [ForumThreadsController::class, 'update'])
-        ->name('forum.update');
-
-    Route::delete('/forum/{forumThread:slug}', [ForumThreadsController::class, 'destroy'])
-        ->name('forum.destroy');
-
-    Route::patch('/forum/{forumThread:slug}/visibility', UpdateForumThreadVisibilityController::class)
-        ->name('forum.visibility.update');
-
-    Route::post('/forum/{forumThread:slug}/replies', [ForumRepliesController::class, 'store'])
-        ->middleware('throttle:forum-replies')
-        ->name('forum.replies.store');
-
-    Route::post('/forum/{forumThread:slug}/replies/{forumReply}/best', MarkBestForumReplyController::class)
-        ->name('forum.replies.mark-best');
-
-    Route::patch('/forum/replies/{forumReply}', [ForumRepliesController::class, 'update'])
-        ->name('forum.replies.update');
-
-    Route::delete('/forum/replies/{forumReply}', [ForumRepliesController::class, 'destroy'])
-        ->name('forum.replies.destroy');
 
     Route::post('/content/{contentItem}/comments', [CommentsController::class, 'store'])
         ->middleware('throttle:content-comments')
@@ -123,9 +129,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/comments/{comment}', [CommentsController::class, 'destroy'])
         ->name('comments.destroy');
 });
-
-Route::get('/forum/{forumThread:slug}', [ForumThreadsController::class, 'show'])
-    ->name('forum.show');
 
 Route::get('dashboard', function () {
     $user = auth()->user();

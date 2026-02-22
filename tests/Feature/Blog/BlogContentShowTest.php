@@ -86,6 +86,42 @@ test('hide comment action is visible only to admin users', function () {
     $userResponse->assertDontSee(route('comments.update', ['comment' => $comment]));
 });
 
+test('admin can see reads count on internal post page', function () {
+    $admin = User::factory()->admin()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'reads_count' => 0,
+    ]);
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'admin-reads-visible',
+        'title' => 'Admin reads visible',
+        'excerpt' => 'Admin reads excerpt',
+    ]);
+
+    $response = $this->actingAs($admin)->get('/blog/fr/admin-reads-visible');
+
+    $response->assertSuccessful();
+    $response->assertSee(__('ui.blog.reads', ['count' => (int) $contentItem->refresh()->reads_count]));
+});
+
+test('non admin user cannot see reads count on internal post page', function () {
+    $user = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'reads_count' => 0,
+    ]);
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'non-admin-reads-hidden',
+        'title' => 'Non admin reads hidden',
+        'excerpt' => 'Non admin reads excerpt',
+    ]);
+
+    $response = $this->actingAs($user)->get('/blog/fr/non-admin-reads-hidden');
+
+    $response->assertSuccessful();
+    $response->assertDontSee(__('ui.blog.reads', ['count' => (int) $contentItem->refresh()->reads_count]));
+});
+
 test('comment published dates are shown in human readable format', function () {
     Carbon::setTestNow(Carbon::parse('2026-02-21 12:00:00'));
 

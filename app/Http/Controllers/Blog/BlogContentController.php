@@ -83,6 +83,7 @@ class BlogContentController extends Controller
 
         $contentItem->loadCount('likes');
         $hasLiked = false;
+        $isAdmin = auth()->user()?->hasRole(UserRole::Admin) ?? false;
 
         if (auth()->check()) {
             $hasLiked = $contentItem->likes()
@@ -94,8 +95,6 @@ class BlogContentController extends Controller
         $comments = collect();
 
         if ($contentItem->show_comments) {
-            $isAdmin = auth()->user()?->hasRole(UserRole::Admin) ?? false;
-
             $contentItem->load([
                 'comments' => function ($query) use ($isAdmin): void {
                     if (! $isAdmin) {
@@ -113,6 +112,7 @@ class BlogContentController extends Controller
             'contentItem' => $contentItem,
             'translation' => $translation,
             'hasLiked' => $hasLiked,
+            'isAdmin' => $isAdmin,
             'renderedBody' => $this->renderSafeMarkdown->handle($translation->body_markdown),
             'comments' => $comments,
             'seo' => $this->buildSeoMeta->handle(

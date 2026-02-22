@@ -3,6 +3,10 @@
 use App\Models\ForumThread;
 use App\Models\User;
 
+beforeEach(function (): void {
+    $this->markTestSkipped('Forum routes are temporarily disabled.');
+});
+
 test('admin can hide and show a forum thread', function () {
     $thread = ForumThread::factory()->create([
         'is_hidden' => false,
