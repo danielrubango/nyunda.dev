@@ -44,6 +44,7 @@ test('home page renders key public sections', function () {
     $response->assertSee('Article externe');
     $response->assertDontSee('Lien communauté');
     $response->assertSee('Mon compte');
+    $response->assertSee('id="footer-locale-select"', false);
 });
 
 test('authenticated non admin user sees account dropdown with logout only', function () {

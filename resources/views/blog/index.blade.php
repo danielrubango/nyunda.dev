@@ -7,6 +7,11 @@
 
         @php
             $shouldFocusSearch = request()->query('focus') === 'search';
+            $hasActiveFilters = $searchTerm !== ''
+                || $selectedLocale !== 'all'
+                || $selectedType !== ''
+                || $selectedTag !== '';
+            $mobileFiltersInitiallyOpen = $shouldFocusSearch || $hasActiveFilters;
             $localeOptions = ['all' => __('ui.blog.filters.locale').' : '.__('ui.blog.filters.all')]
                 + collect($supportedLocales)->mapWithKeys(fn (string $locale): array => [$locale => strtoupper($locale)])->all();
 
@@ -20,39 +25,53 @@
                 + $tags->mapWithKeys(fn ($tag): array => [$tag->slug => '#'.$tag->name])->all();
         @endphp
 
-        <x-ui.card>
-            <form method="GET" action="{{ route('blog.index') }}" class="space-y-4">
-                <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-                    <label class="space-y-2 text-sm">
-                        <span class="block font-medium text-zinc-700">{{ __('ui.blog.filters.search') }}</span>
-                        <x-ui.input
-                            id="blog-search-input"
-                            name="q"
-                            :value="$searchTerm"
-                            :placeholder="__('ui.blog.filters.search_placeholder')"
-                        />
-                    </label>
+        <div x-data="{ filtersOpen: @js($mobileFiltersInitiallyOpen) }" x-init="if (window.matchMedia('(min-width: 768px)').matches) { filtersOpen = true }" class="space-y-3">
+            <div class="flex md:hidden">
+                <button
+                    type="button"
+                    class="flex size-10 items-center justify-center border border-zinc-300 bg-white text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+                    x-on:click="filtersOpen = ! filtersOpen"
+                    aria-label="{{ __('ui.blog.filters.search_button') }}"
+                >
+                    <x-ui.icon name="search" class="size-4" />
+                    <span class="sr-only">{{ __('ui.blog.filters.search_button') }}</span>
+                </button>
+            </div>
 
-                    <x-ui.button type="submit" size="lg">
-                        {{ __('ui.blog.filters.search_button') }}
-                    </x-ui.button>
-                </div>
+            <x-ui.card x-show="filtersOpen" x-transition.opacity.duration.150ms>
+                <form method="GET" action="{{ route('blog.index') }}" class="space-y-4">
+                    <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                        <label class="space-y-2 text-sm">
+                            <span class="block font-medium text-zinc-700">{{ __('ui.blog.filters.search') }}</span>
+                            <x-ui.input
+                                id="blog-search-input"
+                                name="q"
+                                :value="$searchTerm"
+                                :placeholder="__('ui.blog.filters.search_placeholder')"
+                            />
+                        </label>
 
-                <div class="grid gap-4 md:grid-cols-4 md:items-end">
-                    <x-ui.select name="locale" :options="$localeOptions" :selected="$selectedLocale" class="text-sm" />
-
-                    <x-ui.select name="type" :options="$typeOptions" :selected="$selectedType" class="text-sm" />
-
-                    <x-ui.select name="tag" :options="$tagOptions" :selected="$selectedTag" class="text-sm" />
-
-                    <div class="flex items-end md:justify-end">
-                        <a href="{{ route('blog.index', ['reset' => 1]) }}" class="border-b border-transparent pb-1 text-sm font-medium text-zinc-600 no-underline hover:border-zinc-400 hover:text-zinc-900">
-                            {{ __('ui.blog.filters.reset') }}
-                        </a>
+                        <x-ui.button type="submit" size="lg">
+                            {{ __('ui.blog.filters.search_button') }}
+                        </x-ui.button>
                     </div>
-                </div>
-            </form>
-        </x-ui.card>
+
+                    <div class="grid gap-4 md:grid-cols-4 md:items-end">
+                        <x-ui.select name="locale" :options="$localeOptions" :selected="$selectedLocale" class="text-sm" />
+
+                        <x-ui.select name="type" :options="$typeOptions" :selected="$selectedType" class="text-sm" />
+
+                        <x-ui.select name="tag" :options="$tagOptions" :selected="$selectedTag" class="text-sm" />
+
+                        <div class="flex items-end md:justify-end">
+                            <a href="{{ route('blog.index', ['reset' => 1]) }}" class="border-b border-transparent pb-1 text-sm font-medium text-zinc-600 no-underline hover:border-zinc-400 hover:text-zinc-900">
+                                {{ __('ui.blog.filters.reset') }}
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </x-ui.card>
+        </div>
 
         <section class="grid gap-4 md:grid-cols-2">
             @forelse ($rows as $row)

@@ -2,10 +2,24 @@
 
 use App\Models\User;
 
-test('about page uses english copy when accept language is english', function () {
+test('about page defaults to french copy even when accept language is english', function () {
     $response = $this->withHeaders([
         'Accept-Language' => 'en',
     ])->get(route('about.show'));
+
+    $response->assertSuccessful();
+    $response->assertSee('Je suis un développeur logiciel Full-Stack avec plus de six ans d’expérience en développement web et en systèmes IT.');
+    $response->assertDontSee('I am a Full-Stack Software Developer with over six years of experience in web development and IT systems.');
+});
+
+test('locale can be switched manually from the locale endpoint', function () {
+    $this->from(route('about.show'))
+        ->post(route('locale.update'), [
+            'locale' => 'en',
+        ])
+        ->assertRedirect(route('about.show'));
+
+    $response = $this->get(route('about.show'));
 
     $response->assertSuccessful();
     $response->assertSee('I am a Full-Stack Software Developer with over six years of experience in web development and IT systems.');

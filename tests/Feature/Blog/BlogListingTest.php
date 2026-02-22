@@ -63,8 +63,8 @@ test('all languages mode selects user locale then falls back to french', functio
         'excerpt' => 'Fallback excerpt',
     ]);
 
-    $response = $this->withHeaders([
-        'Accept-Language' => 'en',
+    $response = $this->withSession([
+        'preferred_locale' => 'en',
     ])->get('/blog?locale=all');
 
     $response->assertSuccessful();
@@ -109,6 +109,6 @@ test('blog listing keeps selected filters between requests until reset', functio
 
     $resetResponse = $this->get('/blog?reset=1');
     $resetResponse->assertSuccessful();
-    $resetResponse->assertSee('Internal EN');
-    $resetResponse->assertSee('External EN');
+    $resetResponse->assertSee('Interne FR');
+    $resetResponse->assertSee('Externe FR');
 });

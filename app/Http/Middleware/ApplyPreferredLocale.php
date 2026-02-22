@@ -34,15 +34,13 @@ class ApplyPreferredLocale
         }
 
         if (! is_string($resolvedLocale)) {
-            $preferredBrowserLocale = $request->getPreferredLanguage($supportedLocales);
-
-            if (is_string($preferredBrowserLocale) && in_array($preferredBrowserLocale, $supportedLocales, true)) {
-                $resolvedLocale = $preferredBrowserLocale;
-            }
+            $resolvedLocale = in_array('fr', $supportedLocales, true)
+                ? 'fr'
+                : ((string) config('app.locale', 'fr'));
         }
 
-        if (! is_string($resolvedLocale)) {
-            $resolvedLocale = (string) config('app.locale', 'fr');
+        if (! in_array($resolvedLocale, $supportedLocales, true)) {
+            $resolvedLocale = (string) ($supportedLocales[0] ?? 'fr');
         }
 
         app()->setLocale($resolvedLocale);
