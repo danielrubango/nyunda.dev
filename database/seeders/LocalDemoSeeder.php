@@ -28,6 +28,7 @@ class LocalDemoSeeder extends Seeder
     public function run(): void
     {
         $adminEmail = (string) config('app.admin_email');
+        $adminPassword = (string) config('app.admin_password');
 
         if (ContentItem::query()->count() >= 10) {
             return;
@@ -37,7 +38,7 @@ class LocalDemoSeeder extends Seeder
             'email' => $adminEmail,
         ], [
             'name' => 'Daniel Rubango',
-            'password' => 'password',
+            'password' => $adminPassword,
             'role' => UserRole::Admin->value,
             'preferred_locale' => 'fr',
             'is_profile_public' => true,
@@ -45,6 +46,7 @@ class LocalDemoSeeder extends Seeder
         ]);
         $admin->forceFill([
             'name' => 'Daniel Rubango',
+            'password' => $adminPassword,
             'role' => UserRole::Admin->value,
             'preferred_locale' => 'fr',
             'is_profile_public' => true,

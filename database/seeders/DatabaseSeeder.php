@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $adminEmail = (string) config('app.admin_email');
+        $adminPassword = (string) config('app.admin_password');
 
         if (app()->isLocal()) {
             $this->call(LocalDemoSeeder::class);
@@ -29,13 +30,14 @@ class DatabaseSeeder extends Seeder
             'email' => $adminEmail,
         ], [
             'name' => 'Daniel Rubango',
-            'password' => 'password',
+            'password' => $adminPassword,
             'role' => UserRole::Admin->value,
             'preferred_locale' => 'fr',
         ]);
 
         $admin->forceFill([
             'name' => 'Daniel Rubango',
+            'password' => $adminPassword,
             'role' => UserRole::Admin->value,
             'preferred_locale' => 'fr',
         ])->save();
