@@ -22,7 +22,7 @@
                     <span class="text-xs font-medium uppercase tracking-wide text-zinc-500">{{ strtoupper($translation->locale) }}</span>
                 </div>
 
-                <h1 class="font-title text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">{{ $translation->title }}</h1>
+                <h1 class="font-sans text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">{{ $translation->title }}</h1>
                 <p class="text-sm text-zinc-500">
                     {{ __('ui.blog.published_by', [
                         'date' => $contentItem->published_at?->format('Y-m-d') ?? $contentItem->created_at?->format('Y-m-d'),
@@ -96,7 +96,7 @@
 
             @if ($contentItem->show_comments && $comments->isNotEmpty())
                 <section class="space-y-4">
-                    <h2 class="font-title text-2xl font-semibold tracking-tight text-zinc-900">{{ __('ui.blog.comments.title') }}</h2>
+                    <h2 class="font-sans text-2xl font-semibold tracking-tight text-zinc-900">{{ __('ui.blog.comments.title') }}</h2>
 
                     <x-ui.card :padding="false">
                         <div class="divide-y divide-zinc-200">

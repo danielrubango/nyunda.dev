@@ -59,7 +59,7 @@
     @endif
 
     <div class="flex grow flex-col gap-4">
-        <h3 class="{{ $titleClasses }} {{ $titlePaddingClasses }} font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700">
+        <h3 class="{{ $titleClasses }} {{ $titlePaddingClasses }} font-sans font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700">
             {{ $translation->title }}
         </h3>
 

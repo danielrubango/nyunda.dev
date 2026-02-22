@@ -41,15 +41,15 @@
             <x-ui.card x-show="filtersOpen" x-transition.opacity.duration.150ms>
                 <form method="GET" action="{{ route('blog.index') }}" class="space-y-4">
                     <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-                        <label class="space-y-2 text-sm">
-                            <span class="block font-medium text-zinc-700">{{ __('ui.blog.filters.search') }}</span>
+                        <div class="space-y-2 text-sm">
+                            <label for="blog-search-input" class="sr-only">{{ __('ui.blog.filters.search') }}</label>
                             <x-ui.input
                                 id="blog-search-input"
                                 name="q"
                                 :value="$searchTerm"
                                 :placeholder="__('ui.blog.filters.search_placeholder')"
                             />
-                        </label>
+                        </div>
 
                         <x-ui.button type="submit" size="lg">
                             {{ __('ui.blog.filters.search_button') }}

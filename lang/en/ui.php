@@ -38,7 +38,7 @@ return [
     ],
     'blog' => [
         'title' => 'Blog',
-        'subtitle' => 'Internal posts, external references, and community links.',
+        'subtitle' => 'Internal posts, external references.',
         'about' => 'About',
         'forum' => 'Forum',
         'submit_community_link' => 'Submit a community link',

@@ -100,7 +100,7 @@
 
     .ui-section-title {
         @apply text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl;
-        font-family: var(--font-title);
+        font-family: var(--font-ui);
     }
 
     .ui-card {

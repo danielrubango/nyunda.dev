@@ -16,9 +16,9 @@
     $isAdmin = $authenticatedUser?->hasRole(UserRole::Admin) ?? false;
 @endphp
 
-<header class="border-b border-zinc-200 bg-white">
+<header class="border-b border-zinc-200 bg-white font-sans">
     <div class="ui-container flex flex-wrap items-center justify-between gap-4 py-4 md:flex-nowrap">
-        <a href="{{ route('home') }}" class="order-1 inline-flex items-center gap-2 font-title text-base font-semibold tracking-[0.22em] text-zinc-900 no-underline">
+        <a href="{{ route('home') }}" class="order-1 inline-flex items-center gap-2 font-sans text-base font-semibold tracking-[0.22em] text-zinc-900 no-underline">
             <img src="{{ asset('nyunda-mark.svg') }}" alt="{{ config('app.name') }} logo" class="size-7 shrink-0" />
             <span>{{ strtoupper(config('app.name')) }}</span>
         </a>

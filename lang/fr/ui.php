@@ -38,7 +38,7 @@ return [
     ],
     'blog' => [
         'title' => 'Blog',
-        'subtitle' => 'Articles internes, références externes et liens communautaires.',
+        'subtitle' => 'Articles internes, références externes.',
         'about' => 'À propos',
         'forum' => 'Forum',
         'submit_community_link' => 'Soumettre un lien communautaire',

@@ -9,7 +9,7 @@
         <x-ui.card class="p-5 sm:p-6">
             <div class="flex h-full flex-col gap-4">
                 <div class="space-y-2">
-                    <h2 class="text-lg font-semibold tracking-tight text-zinc-900">{{ __('ui.blog.newsletter.title') }}</h2>
+                    <h2 class="font-sans text-lg font-semibold tracking-tight text-zinc-900">{{ __('ui.blog.newsletter.title') }}</h2>
                     <p class="text-sm text-zinc-600">{{ __('ui.blog.newsletter.description') }}</p>
                 </div>
 
