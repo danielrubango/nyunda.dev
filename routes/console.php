@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('content-reads:prune')
     ->dailyAt('03:00')
     ->withoutOverlapping();
+
+Schedule::command('content-items:publish-scheduled')
+    ->everyMinute()
+    ->withoutOverlapping();

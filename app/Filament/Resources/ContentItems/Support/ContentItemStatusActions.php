@@ -6,6 +6,8 @@ use App\Actions\Content\TransitionContentItemStatus;
 use App\Enums\ContentStatus;
 use App\Models\ContentItem;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DateTimePicker;
+use Illuminate\Support\Carbon;
 
 class ContentItemStatusActions
 {
@@ -43,9 +45,36 @@ class ContentItemStatusActions
 
                 return true;
             })
-            ->requiresConfirmation()
-            ->action(function (ContentItem $record, TransitionContentItemStatus $transitionContentItemStatus): void {
-                $transitionContentItemStatus->handle($record, ContentStatus::Published);
+            ->form([
+                DateTimePicker::make('publish_at')
+                    ->label('Publish at')
+                    ->native(false)
+                    ->seconds(false)
+                    ->timezone(config('app.timezone', 'UTC'))
+                    ->helperText('Leave empty to publish now. Use a future datetime to schedule publication.'),
+            ])
+            ->action(function (array $data, ContentItem $record, TransitionContentItemStatus $transitionContentItemStatus): void {
+                $scheduledAtInput = $data['publish_at'] ?? null;
+                $scheduledAt = $scheduledAtInput instanceof Carbon
+                    ? $scheduledAtInput
+                    : (is_string($scheduledAtInput) && trim($scheduledAtInput) !== ''
+                        ? Carbon::parse($scheduledAtInput, config('app.timezone', 'UTC'))
+                        : null);
+
+                if ($scheduledAt instanceof Carbon && $scheduledAt->isFuture()) {
+                    $transitionContentItemStatus->handle(
+                        $record,
+                        ContentStatus::Pending,
+                        publishedAt: $scheduledAt,
+                    );
+
+                    return;
+                }
+
+                $transitionContentItemStatus->handle(
+                    $record,
+                    ContentStatus::Published,
+                );
             });
     }
 

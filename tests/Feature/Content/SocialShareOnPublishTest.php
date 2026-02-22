@@ -5,6 +5,7 @@ use App\Enums\ContentStatus;
 use App\Jobs\ShareOnSocialNetworksJob;
 use App\Models\ContentItem;
 use App\Models\ContentTranslation;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 
@@ -40,6 +41,32 @@ test('share job is not dispatched when share_on_publish is disabled', function (
     ]);
 
     Queue::assertNotPushed(ShareOnSocialNetworksJob::class);
+});
+
+test('share job is dispatched only when scheduled content actually becomes published', function () {
+    Queue::fake();
+    Carbon::setTestNow(Carbon::parse('2026-02-22 10:00:00'));
+
+    try {
+        $contentItem = ContentItem::factory()->internalPost()->create([
+            'status' => ContentStatus::Pending->value,
+            'share_on_publish' => true,
+            'published_at' => now()->addHour(),
+        ]);
+
+        $this->artisan('content-items:publish-scheduled')->assertSuccessful();
+        Queue::assertNotPushed(ShareOnSocialNetworksJob::class);
+
+        Carbon::setTestNow(now()->addHours(2));
+
+        $this->artisan('content-items:publish-scheduled')->assertSuccessful();
+
+        Queue::assertPushed(ShareOnSocialNetworksJob::class, function (ShareOnSocialNetworksJob $job) use ($contentItem): bool {
+            return $job->contentItemId === $contentItem->id;
+        });
+    } finally {
+        Carbon::setTestNow();
+    }
 });
 
 test('social sharing action logs successful attempts for x and linkedin', function () {

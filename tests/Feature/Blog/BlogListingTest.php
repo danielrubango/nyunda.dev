@@ -4,6 +4,7 @@ use App\Enums\ContentStatus;
 use App\Enums\ContentType;
 use App\Models\ContentItem;
 use App\Models\ContentTranslation;
+use Illuminate\Support\Carbon;
 
 beforeEach(function (): void {
     app()->setLocale('fr');
@@ -111,4 +112,41 @@ test('blog listing keeps selected filters between requests until reset', functio
     $resetResponse->assertSuccessful();
     $resetResponse->assertSee('Interne FR');
     $resetResponse->assertSee('Externe FR');
+});
+
+test('blog listing excludes future scheduled publications until due time', function () {
+    Carbon::setTestNow(Carbon::parse('2026-02-22 10:00:00'));
+
+    try {
+        $futureItem = ContentItem::factory()->internalPost()->create([
+            'status' => ContentStatus::Published->value,
+            'published_at' => now()->addHour(),
+        ]);
+        $visibleItem = ContentItem::factory()->published()->internalPost()->create();
+
+        ContentTranslation::factory()->for($futureItem)->forLocale('fr')->create([
+            'title' => 'Future scheduled title',
+            'excerpt' => 'Future excerpt',
+        ]);
+        ContentTranslation::factory()->for($visibleItem)->forLocale('fr')->create([
+            'title' => 'Visible now title',
+            'excerpt' => 'Visible now excerpt',
+        ]);
+
+        $beforeDueResponse = $this->get('/blog?locale=fr');
+
+        $beforeDueResponse->assertSuccessful();
+        $beforeDueResponse->assertSee('Visible now title');
+        $beforeDueResponse->assertDontSee('Future scheduled title');
+
+        Carbon::setTestNow(now()->addHours(2));
+
+        $afterDueResponse = $this->get('/blog?locale=fr');
+
+        $afterDueResponse->assertSuccessful();
+        $afterDueResponse->assertSee('Visible now title');
+        $afterDueResponse->assertSee('Future scheduled title');
+    } finally {
+        Carbon::setTestNow();
+    }
 });

@@ -88,12 +88,26 @@ class ContentItem extends Model
 
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('status', ContentStatus::Published->value);
+        return $query
+            ->where('status', ContentStatus::Published->value)
+            ->where(function (Builder $nestedQuery): void {
+                $nestedQuery
+                    ->whereNull('published_at')
+                    ->orWhere('published_at', '<=', now());
+            });
     }
 
     public function isPublished(): bool
     {
-        return $this->status === ContentStatus::Published;
+        if ($this->status !== ContentStatus::Published) {
+            return false;
+        }
+
+        if ($this->published_at === null) {
+            return true;
+        }
+
+        return $this->published_at->lte(now());
     }
 
     public function isInternalPost(): bool
