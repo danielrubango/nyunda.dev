@@ -79,11 +79,16 @@ test('hide comment action is visible only to admin users', function () {
     $adminResponse->assertSee(__('ui.blog.comments.hide'));
     $adminResponse->assertSee('x-data="commentActions(', false);
     $adminResponse->assertSee('x-on:submit.prevent="toggleVisibility($event)"', false);
-    $adminResponse->assertSee('x-on:submit.prevent="deleteComment($event)"', false);
+    $adminResponse->assertSee('x-on:submit.prevent="deleteComment($event,', false);
+    $adminResponse->assertSee('data-test="open-comment-delete-confirmation"', false);
+    $adminResponse->assertSee('data-modal="confirm-comment-deletion-'.$comment->id.'"', false);
+    $adminResponse->assertSee(__('ui.blog.comments.confirm_delete_title'));
+    $adminResponse->assertDontSee('group-hover:opacity-100');
 
     $userResponse = $this->actingAs($user)->get('/blog/fr/comment-visibility-post');
     $userResponse->assertSuccessful();
     $userResponse->assertDontSee(route('comments.update', ['comment' => $comment]));
+    $userResponse->assertDontSee(__('ui.blog.comments.confirm_delete_title'));
 });
 
 test('admin can see reads count on internal post page', function () {

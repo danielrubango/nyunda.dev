@@ -54,7 +54,7 @@
     @if ($isExternal)
         <x-ui.icon
             name="external-link"
-            class="pointer-events-none absolute top-5 right-5 size-4 shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            class="pointer-events-none absolute top-5 right-5 size-4 shrink-0"
         />
     @endif
 

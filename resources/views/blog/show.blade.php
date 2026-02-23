@@ -124,6 +124,7 @@
                                 @php
                                     $commentPublishedAt = $comment->created_at;
                                     $commentPublishedLabel = '';
+                                    $commentDeleteModal = 'confirm-comment-deletion-'.$comment->id;
 
                                     if ($commentPublishedAt !== null) {
                                         $commentPublishedLabel = $commentPublishedAt->diffInSeconds(now()) < 60
@@ -151,7 +152,7 @@
                                         <p class="text-xs text-zinc-500">
                                             {{ $comment->user->name }} • {{ $commentPublishedLabel }}
                                         </p>
-                                        <div class="flex items-center gap-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                                        <div class="flex items-center gap-2">
                                             @can('update', $comment)
                                                 <form method="POST" action="{{ route('comments.update', ['comment' => $comment]) }}" x-on:submit.prevent="toggleVisibility($event)">
                                                     @csrf
@@ -174,14 +175,48 @@
                                                 </form>
                                             @endcan
                                             @can('delete', $comment)
-                                                <form method="POST" action="{{ route('comments.destroy', ['comment' => $comment]) }}" x-on:submit.prevent="deleteComment($event)">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="inline-flex size-8 items-center justify-center border border-zinc-300 text-zinc-500 transition-colors hover:border-red-400 hover:text-red-600" title="{{ __('ui.blog.comments.delete') }}" x-bind:disabled="isProcessing">
+                                                <flux:modal.trigger :name="$commentDeleteModal">
+                                                    <button
+                                                        type="button"
+                                                        class="inline-flex size-8 items-center justify-center border border-zinc-300 text-zinc-500 transition-colors hover:border-red-400 hover:text-red-600"
+                                                        title="{{ __('ui.blog.comments.delete') }}"
+                                                        x-bind:disabled="isProcessing"
+                                                        data-test="open-comment-delete-confirmation"
+                                                    >
                                                         <x-ui.icon name="trash" class="size-4" />
                                                         <span class="sr-only">{{ __('ui.blog.comments.delete') }}</span>
                                                     </button>
-                                                </form>
+                                                </flux:modal.trigger>
+
+                                                <flux:modal :name="$commentDeleteModal" class="max-w-md">
+                                                    <div class="space-y-4">
+                                                        <flux:heading size="lg">{{ __('ui.blog.comments.confirm_delete_title') }}</flux:heading>
+
+                                                        <flux:text>
+                                                            {{ __('ui.blog.comments.confirm_delete_body') }}
+                                                        </flux:text>
+
+                                                        <div class="flex items-center justify-end gap-2">
+                                                            <flux:modal.close>
+                                                                <flux:button variant="filled">
+                                                                    {{ __('ui.blog.comments.confirm_delete_cancel') }}
+                                                                </flux:button>
+                                                            </flux:modal.close>
+
+                                                            <form
+                                                                method="POST"
+                                                                action="{{ route('comments.destroy', ['comment' => $comment]) }}"
+                                                                x-on:submit.prevent="deleteComment($event, @js($commentDeleteModal))"
+                                                            >
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <flux:button variant="danger" type="submit" x-bind:disabled="isProcessing" data-test="confirm-comment-delete-button">
+                                                                    {{ __('ui.blog.comments.confirm_delete_confirm') }}
+                                                                </flux:button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </flux:modal>
                                             @endcan
                                         </div>
                                     </div>
@@ -311,6 +346,16 @@
                     }));
                 },
 
+                closeModal(modalName) {
+                    if (typeof modalName !== 'string' || modalName.trim() === '') {
+                        return;
+                    }
+
+                    window.dispatchEvent(new CustomEvent('modal-close', {
+                        detail: { name: modalName },
+                    }));
+                },
+
                 async submitForm(form) {
                     if (!(form instanceof HTMLFormElement) || this.isProcessing) {
                         return false;
@@ -357,7 +402,7 @@
                     this.notify(nextHiddenState ? this.hiddenToast : this.shownToast, 'success');
                 },
 
-                async deleteComment(event) {
+                async deleteComment(event, modalName = null) {
                     const form = event.target;
                     const isSubmitted = await this.submitForm(form);
 
@@ -365,6 +410,7 @@
                         return;
                     }
 
+                    this.closeModal(modalName);
                     this.deleted = true;
                     this.notify(this.deletedToast, 'success');
                 },

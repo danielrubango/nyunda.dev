@@ -221,6 +221,23 @@ test('comment payload must respect validation rules', function () {
     $pendingResponse->assertForbidden();
 });
 
+test('required comment validation message is localized in french', function () {
+    app()->setLocale('fr');
+
+    $user = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create();
+
+    $response = $this->actingAs($user)->post(route('content.comments.store', [
+        'contentItem' => $contentItem,
+    ]), [
+        'body_markdown' => '',
+    ]);
+
+    $response->assertSessionHasErrors([
+        'body_markdown' => __('ui.blog.comments.validation_required'),
+    ]);
+});
+
 test('user cannot comment when comments are disabled on internal post', function () {
     $user = User::factory()->create();
     $contentItem = ContentItem::factory()->published()->internalPost()->create([

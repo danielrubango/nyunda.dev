@@ -44,6 +44,7 @@ test('home page renders key public sections', function () {
     $response->assertDontSee('Lien communauté');
     $response->assertSee('Mon compte');
     $response->assertSee('id="footer-locale-select"', false);
+    $response->assertDontSee('opacity-0 transition-opacity duration-150 group-hover:opacity-100', false);
 });
 
 test('authenticated non admin user sees account dropdown with settings and logout only', function () {
@@ -58,6 +59,8 @@ test('authenticated non admin user sees account dropdown with settings and logou
     $response->assertDontSee('href="'.route('dashboard').'"', false);
     $response->assertSee($user->initials());
     $response->assertSee('rounded-full border border-zinc-300', false);
+    $response->assertSee('data-test="public-account-menu-button"', false);
+    $response->assertSee('data-flux-dropdown', false);
 });
 
 test('authenticated admin user sees account dropdown with dashboard settings and logout', function () {
@@ -72,6 +75,8 @@ test('authenticated admin user sees account dropdown with dashboard settings and
     $response->assertSee('href="'.route('dashboard').'"', false);
     $response->assertSee($admin->initials());
     $response->assertSee('rounded-full border border-zinc-300', false);
+    $response->assertSee('data-test="public-account-menu-button"', false);
+    $response->assertSee('data-flux-dropdown', false);
 });
 
 test('links page lists only external links', function () {
@@ -106,7 +111,10 @@ test('links page lists only external links', function () {
     $response->assertDontSee('Community resource');
     $response->assertDontSee('Internal resource');
     $response->assertSee('data-testid="external-link-card"', false);
+    $response->assertSee('id="links-search-input"', false);
+    $response->assertSee('focus:border-zinc-700 focus-visible:border-zinc-700', false);
     $response->assertSee('class="pr-8 font-sans text-xl font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700"', false);
+    $response->assertDontSee('opacity-0 transition-opacity duration-150 group-hover:opacity-100', false);
 });
 
 test('blog index supports tag filter and paginated query string', function () {
@@ -143,6 +151,8 @@ test('blog index supports tag filter and paginated query string', function () {
     $response->assertSuccessful();
     $response->assertSee('Laravel Post 1');
     $response->assertDontSee('PHP only post');
+    $response->assertSee('id="blog-search-input"', false);
+    $response->assertSee('focus:border-zinc-700 focus-visible:border-zinc-700', false);
     $response->assertSee('tag=laravel', false);
 });
 

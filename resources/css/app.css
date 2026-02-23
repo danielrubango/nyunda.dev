@@ -180,8 +180,50 @@
     @apply !mb-0 !leading-tight;
 }
 
+[data-flux-control] {
+    @apply rounded-sm border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 shadow-none;
+}
+
 input:focus[data-flux-control],
 textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
-    @apply outline-hidden border-zinc-500;
+    @apply outline-hidden border-zinc-500 ring-2 ring-zinc-200/70;
+}
+
+[data-flux-menu] {
+    @apply rounded-sm border-zinc-300 bg-white shadow-xs;
+}
+
+[data-flux-menu-item] {
+    @apply rounded-sm text-zinc-700;
+}
+
+[data-flux-menu-item]:hover,
+[data-flux-menu-item][data-active] {
+    @apply bg-zinc-100 text-zinc-900;
+}
+
+.ui-auth-layout {
+    @apply bg-zinc-50 text-zinc-900;
+}
+
+.ui-auth-layout .ui-auth-card {
+    @apply border-zinc-300 bg-white;
+}
+
+.ui-auth-layout [data-flux-control] {
+    @apply border-zinc-400 bg-white text-zinc-900 placeholder:text-zinc-500;
+}
+
+.ui-auth-layout [data-flux-control]:focus,
+.ui-auth-layout [data-flux-control]:focus-visible {
+    @apply border-brand-700 ring-2 ring-brand-200/80;
+}
+
+.ui-auth-layout [data-flux-link] {
+    @apply text-brand-700 decoration-brand-300;
+}
+
+.ui-auth-layout [data-flux-link]:hover {
+    @apply text-brand-800 decoration-brand-600;
 }
