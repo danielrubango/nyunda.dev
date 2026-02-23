@@ -7,6 +7,8 @@ test('registration screen can be rendered', function () {
     $response->assertSee('Creer un compte');
     $response->assertSee('Vous avez deja un compte ?');
     $response->assertSee('NYUNDA.DEV');
+    $response->assertSee('data-ui-auth-layout', false);
+    $response->assertSee('data-ui-auth-card', false);
     $response->assertDontSee('id="footer-locale-select"', false);
     $response->assertDontSee(__('ui.nav.blog'));
 });

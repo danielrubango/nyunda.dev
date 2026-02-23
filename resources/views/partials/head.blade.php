@@ -16,4 +16,15 @@
 <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800|newsreader:400,500,600,700|source-serif-4:400,500,600,700" rel="stylesheet" />
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
+<script>
+    (() => {
+        try {
+            window.localStorage.setItem('flux.appearance', 'light');
+        } catch (error) {
+            // Ignore localStorage restrictions.
+        }
+
+        document.documentElement.classList.remove('dark');
+    })();
+</script>
 @fluxAppearance

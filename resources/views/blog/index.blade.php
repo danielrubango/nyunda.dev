@@ -48,6 +48,7 @@
                                 name="q"
                                 :value="$searchTerm"
                                 :placeholder="__('ui.blog.filters.search_placeholder')"
+                                class="focus:border-zinc-700 focus-visible:border-zinc-700"
                             />
                         </div>
 

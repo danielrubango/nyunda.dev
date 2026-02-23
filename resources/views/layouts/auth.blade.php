@@ -5,7 +5,7 @@
             'seo' => ['title' => $title ?? config('app.name')],
         ])
     </head>
-    <body class="bg-white text-zinc-900">
+    <body class="ui-auth-layout bg-white text-zinc-900" data-ui-auth-layout>
         @include('partials.tag-manager-noscript')
 
         <x-ui.toast-stack />
@@ -21,7 +21,7 @@
                             </a>
                         </div>
 
-                        <x-ui.card class="p-6 sm:p-8">
+                        <x-ui.card class="ui-auth-card p-6 sm:p-8" data-ui-auth-card>
                             {{ $slot }}
                         </x-ui.card>
                     </div>

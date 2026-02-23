@@ -10,6 +10,8 @@ test('login screen can be rendered', function () {
     $response->assertSee('Connectez-vous a votre compte');
     $response->assertSee('Connexion');
     $response->assertSee('NYUNDA.DEV');
+    $response->assertSee('data-ui-auth-layout', false);
+    $response->assertSee('data-ui-auth-card', false);
     $response->assertDontSee('id="footer-locale-select"', false);
     $response->assertDontSee(__('ui.nav.blog'));
 });

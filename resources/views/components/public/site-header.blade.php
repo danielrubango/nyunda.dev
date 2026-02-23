@@ -76,34 +76,38 @@
             </form>
 
             @if ($isAuthenticated)
-                <details class="group relative">
-                    <summary class="inline-flex list-none cursor-pointer items-center gap-1 border-b border-transparent pb-1 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-400 hover:text-zinc-900 [&::-webkit-details-marker]:hidden">
+                <flux:dropdown position="bottom" align="end" class="relative">
+                    <button
+                        type="button"
+                        class="inline-flex cursor-pointer items-center gap-1 border-b border-transparent pb-1 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-400 hover:text-zinc-900"
+                        data-test="public-account-menu-button"
+                    >
                         <span class="inline-flex size-6 items-center justify-center rounded-full border border-zinc-300 bg-zinc-100 text-[0.65rem] font-semibold uppercase tracking-wide text-zinc-700">
                             {{ $authenticatedUser->initials() }}
                         </span>
                         <span>{{ __('ui.nav.account') }}</span>
-                        <x-ui.icon name="chevron-down" class="size-4 transition-transform group-open:rotate-180" />
-                    </summary>
+                        <x-ui.icon name="chevron-down" class="size-4" />
+                    </button>
 
-                    <div class="absolute right-0 top-8 z-30 min-w-44 border border-zinc-200 bg-white p-2 text-sm shadow-xs">
+                    <flux:menu class="min-w-44">
                         @if ($isAdmin)
-                            <a href="{{ route('dashboard') }}" class="block px-2 py-1.5 text-zinc-700 no-underline transition-colors hover:bg-zinc-100 hover:text-zinc-900">
+                            <flux:menu.item :href="route('dashboard')">
                                 {{ __('ui.nav.dashboard') }}
-                            </a>
+                            </flux:menu.item>
                         @endif
 
-                        <a href="{{ route('profile.edit') }}" class="block px-2 py-1.5 text-zinc-700 no-underline transition-colors hover:bg-zinc-100 hover:text-zinc-900">
+                        <flux:menu.item :href="route('profile.edit')">
                             {{ __('ui.nav.settings') }}
-                        </a>
+                        </flux:menu.item>
 
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" class="w-full">
                             @csrf
-                            <button type="submit" class="block w-full px-2 py-1.5 text-left text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900">
+                            <flux:menu.item as="button" type="submit" class="w-full">
                                 {{ __('ui.nav.logout') }}
-                            </button>
+                            </flux:menu.item>
                         </form>
-                    </div>
-                </details>
+                    </flux:menu>
+                </flux:dropdown>
             @else
                 <a href="{{ route('login') }}" class="border-b border-transparent pb-1 text-sm font-medium text-zinc-700 no-underline transition-colors hover:border-zinc-400 hover:text-zinc-900">
                     {{ __('ui.nav.account') }}

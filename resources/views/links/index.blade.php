@@ -29,7 +29,13 @@
                     <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
                         <div class="space-y-2 text-sm">
                             <label for="links-search-input" class="sr-only">{{ __('ui.blog.filters.search') }}</label>
-                            <x-ui.input id="links-search-input" name="q" :value="$searchTerm" :placeholder="__('ui.blog.filters.search_placeholder')" />
+                            <x-ui.input
+                                id="links-search-input"
+                                name="q"
+                                :value="$searchTerm"
+                                :placeholder="__('ui.blog.filters.search_placeholder')"
+                                class="focus:border-zinc-700 focus-visible:border-zinc-700"
+                            />
                         </div>
 
                         <x-ui.button type="submit" size="lg">

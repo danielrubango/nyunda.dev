@@ -23,6 +23,15 @@ class StoreCommentRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'body_markdown.required' => __('ui.blog.comments.validation_required'),
+            'body_markdown.min' => __('ui.blog.comments.validation_min'),
+            'body_markdown.max' => __('ui.blog.comments.validation_max'),
+        ];
+    }
+
     public function bodyMarkdown(): string
     {
         return (string) $this->validated('body_markdown');
