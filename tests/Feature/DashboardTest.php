@@ -13,6 +13,9 @@ test('admin users can visit the dashboard', function () {
 
     $response = $this->get(route('dashboard'));
     $response->assertOk();
+    $response->assertSee(__('ui.nav.blog'));
+    $response->assertSee(__('ui.nav.links'));
+    $response->assertSee(__('ui.nav.account'));
 });
 
 test('non admin users are redirected home with flash status', function () {

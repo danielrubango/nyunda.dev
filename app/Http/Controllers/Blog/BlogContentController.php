@@ -61,7 +61,6 @@ class BlogContentController extends Controller
     public function show(Request $request, string $locale, string $slug): View|RedirectResponse
     {
         abort_unless(in_array($locale, config('app.supported_locales', ['fr', 'en']), true), 404);
-        app()->setLocale($locale);
 
         $translation = $this->getPublishedContentTranslationBySlug->handle($locale, $slug);
 

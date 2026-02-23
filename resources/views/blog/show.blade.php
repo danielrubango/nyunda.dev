@@ -54,9 +54,17 @@
                         />
                     @else
                         <div class="flex items-center gap-2">
-                            <span class="inline-flex size-9 items-center justify-center border border-zinc-300 text-zinc-400">
-                                <x-ui.icon name="heart" class="size-4" />
-                            </span>
+                            <form method="POST" action="{{ route('content.likes.toggle', ['contentItem' => $contentItem]) }}">
+                                @csrf
+                                <button
+                                    type="submit"
+                                    class="inline-flex size-9 cursor-pointer items-center justify-center border border-zinc-300 text-zinc-500 transition-colors hover:border-zinc-500 hover:text-zinc-700"
+                                    title="{{ __('ui.blog.like_toggle') }}"
+                                >
+                                    <x-ui.icon name="heart" class="size-4" />
+                                    <span class="sr-only">{{ __('ui.blog.like_toggle') }}</span>
+                                </button>
+                            </form>
                             <span class="text-sm font-medium text-zinc-700">{{ (int) $contentItem->likes_count }}</span>
                         </div>
                     @endauth
@@ -103,94 +111,98 @@
                 </div>
             </section>
 
-            @if ($contentItem->show_comments && $comments->isNotEmpty())
+            @if ($contentItem->show_comments)
                 <section class="space-y-4">
-                    <h2 class="font-sans text-2xl font-semibold tracking-tight text-zinc-900">{{ __('ui.blog.comments.title') }}</h2>
+                    <h2 class="ui-section-title">{{ __('ui.blog.comments.title') }}</h2>
 
                     <x-ui.card :padding="false">
-                        <div class="divide-y divide-zinc-200">
-                        @foreach ($comments as $comment)
-                            @php
-                                $commentPublishedAt = $comment->created_at;
-                                $commentPublishedLabel = '';
+                        @if ($comments->isEmpty())
+                            <p class="px-5 py-6 text-sm text-zinc-500 sm:px-6">{{ __('ui.blog.comments.empty') }}</p>
+                        @else
+                            <div class="divide-y divide-zinc-200">
+                            @foreach ($comments as $comment)
+                                @php
+                                    $commentPublishedAt = $comment->created_at;
+                                    $commentPublishedLabel = '';
 
-                                if ($commentPublishedAt !== null) {
-                                    $commentPublishedLabel = $commentPublishedAt->diffInSeconds(now()) < 60
-                                        ? __('ui.blog.comments.just_now')
-                                        : $commentPublishedAt->locale(app()->getLocale())->diffForHumans();
-                                }
-                            @endphp
-                            <article
-                                x-data="commentActions({
-                                    hidden: @js((bool) $comment->is_hidden),
-                                    hiddenLabel: @js(__('ui.blog.comments.hide')),
-                                    shownLabel: @js(__('ui.blog.comments.show')),
-                                    hiddenToast: @js(__('ui.flash.comment_hidden')),
-                                    shownToast: @js(__('ui.flash.comment_shown')),
-                                    deletedToast: @js(__('ui.flash.comment_deleted')),
-                                    failedToast: @js(__('ui.flash.action_failed')),
-                                })"
-                                x-show="!deleted"
-                                x-transition.opacity.duration.150ms
-                                class="group space-y-3 p-5 sm:p-6 {{ $comment->is_hidden ? 'bg-orange-50/70' : '' }}"
-                                :class="hidden ? 'bg-orange-50/70' : ''"
-                                :data-hidden-comment="hidden ? 'true' : null"
-                            >
-                                <div class="flex items-start justify-between gap-3">
-                                    <p class="text-xs text-zinc-500">
-                                        {{ $comment->user->name }} • {{ $commentPublishedLabel }}
-                                    </p>
-                                    <div class="flex items-center gap-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-                                        @can('update', $comment)
-                                            <form method="POST" action="{{ route('comments.update', ['comment' => $comment]) }}" x-on:submit.prevent="toggleVisibility($event)">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="is_hidden" x-bind:value="hidden ? 0 : 1">
-                                                <button
-                                                    type="submit"
-                                                    class="inline-flex h-8 items-center justify-center gap-1 border border-orange-200 bg-orange-50 px-2 text-xs font-medium text-orange-700 transition-colors hover:border-orange-300 hover:bg-orange-100 hover:text-orange-800"
-                                                    x-bind:title="hidden ? shownLabel : hiddenLabel"
-                                                    x-bind:disabled="isProcessing"
-                                                >
-                                                    <span x-show="!hidden">
-                                                        <x-ui.icon name="eye-off" class="size-4" />
-                                                    </span>
-                                                    <span x-show="hidden">
-                                                        <x-ui.icon name="eye" class="size-4" />
-                                                    </span>
-                                                    <span x-text="hidden ? shownLabel : hiddenLabel"></span>
-                                                </button>
-                                            </form>
-                                        @endcan
-                                        @can('delete', $comment)
-                                            <form method="POST" action="{{ route('comments.destroy', ['comment' => $comment]) }}" x-on:submit.prevent="deleteComment($event)">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="inline-flex size-8 items-center justify-center border border-zinc-300 text-zinc-500 transition-colors hover:border-red-400 hover:text-red-600" title="{{ __('ui.blog.comments.delete') }}" x-bind:disabled="isProcessing">
-                                                    <x-ui.icon name="trash" class="size-4" />
-                                                    <span class="sr-only">{{ __('ui.blog.comments.delete') }}</span>
-                                                </button>
-                                            </form>
-                                        @endcan
+                                    if ($commentPublishedAt !== null) {
+                                        $commentPublishedLabel = $commentPublishedAt->diffInSeconds(now()) < 60
+                                            ? __('ui.blog.comments.just_now')
+                                            : $commentPublishedAt->locale(app()->getLocale())->diffForHumans();
+                                    }
+                                @endphp
+                                <article
+                                    x-data="commentActions({
+                                        hidden: @js((bool) $comment->is_hidden),
+                                        hiddenLabel: @js(__('ui.blog.comments.hide')),
+                                        shownLabel: @js(__('ui.blog.comments.show')),
+                                        hiddenToast: @js(__('ui.flash.comment_hidden')),
+                                        shownToast: @js(__('ui.flash.comment_shown')),
+                                        deletedToast: @js(__('ui.flash.comment_deleted')),
+                                        failedToast: @js(__('ui.flash.action_failed')),
+                                    })"
+                                    x-show="!deleted"
+                                    x-transition.opacity.duration.150ms
+                                    class="group space-y-2 p-5 sm:p-6 {{ $comment->is_hidden ? 'bg-orange-50/70' : '' }}"
+                                    :class="hidden ? 'bg-orange-50/70' : ''"
+                                    :data-hidden-comment="hidden ? 'true' : null"
+                                >
+                                    <div class="flex items-start justify-between gap-3">
+                                        <p class="text-xs text-zinc-500">
+                                            {{ $comment->user->name }} • {{ $commentPublishedLabel }}
+                                        </p>
+                                        <div class="flex items-center gap-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                                            @can('update', $comment)
+                                                <form method="POST" action="{{ route('comments.update', ['comment' => $comment]) }}" x-on:submit.prevent="toggleVisibility($event)">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="is_hidden" x-bind:value="hidden ? 0 : 1">
+                                                    <button
+                                                        type="submit"
+                                                        class="inline-flex h-8 items-center justify-center gap-1 border border-orange-200 bg-orange-50 px-2 text-xs font-medium text-orange-700 transition-colors hover:border-orange-300 hover:bg-orange-100 hover:text-orange-800"
+                                                        x-bind:title="hidden ? shownLabel : hiddenLabel"
+                                                        x-bind:disabled="isProcessing"
+                                                    >
+                                                        <span x-show="!hidden">
+                                                            <x-ui.icon name="eye-off" class="size-4" />
+                                                        </span>
+                                                        <span x-show="hidden">
+                                                            <x-ui.icon name="eye" class="size-4" />
+                                                        </span>
+                                                        <span x-text="hidden ? shownLabel : hiddenLabel"></span>
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                            @can('delete', $comment)
+                                                <form method="POST" action="{{ route('comments.destroy', ['comment' => $comment]) }}" x-on:submit.prevent="deleteComment($event)">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="inline-flex size-8 items-center justify-center border border-zinc-300 text-zinc-500 transition-colors hover:border-red-400 hover:text-red-600" title="{{ __('ui.blog.comments.delete') }}" x-bind:disabled="isProcessing">
+                                                        <x-ui.icon name="trash" class="size-4" />
+                                                        <span class="sr-only">{{ __('ui.blog.comments.delete') }}</span>
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="article-content max-w-none text-base">
-                                    {!! $renderedComments[$comment->id] !!}
-                                </div>
-                            </article>
-                        @endforeach
-                        </div>
+                                    <div class="article-content max-w-none text-base">
+                                        {!! $renderedComments[$comment->id] !!}
+                                    </div>
+                                </article>
+                            @endforeach
+                            </div>
+                        @endif
                     </x-ui.card>
 
                     @auth
                         <x-ui.card>
                             <form method="POST" action="{{ route('content.comments.store', ['contentItem' => $contentItem]) }}" class="space-y-3">
                                 @csrf
-                                <label for="body_markdown" class="block text-sm font-medium text-zinc-700">{{ __('ui.blog.comments.form_label') }}</label>
                                 <textarea
                                     id="body_markdown"
                                     name="body_markdown"
                                     rows="5"
+                                    aria-label="{{ __('ui.blog.comments.form_placeholder') }}"
                                     class="w-full border border-zinc-300 px-3 py-2 text-sm"
                                     placeholder="{{ __('ui.blog.comments.form_placeholder') }}"
                                 >{{ old('body_markdown') }}</textarea>

@@ -1,5 +1,7 @@
-<x-layouts::app.sidebar :title="$title ?? null">
-    <flux:main>
-        {{ $slot }}
-    </flux:main>
-</x-layouts::app.sidebar>
+<x-layouts.public :title="$title ?? null">
+    <div class="ui-container">
+        <div class="mx-auto w-full max-w-4xl">
+            {{ $slot }}
+        </div>
+    </div>
+</x-layouts.public>

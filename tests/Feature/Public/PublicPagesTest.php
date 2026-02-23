@@ -46,26 +46,32 @@ test('home page renders key public sections', function () {
     $response->assertSee('id="footer-locale-select"', false);
 });
 
-test('authenticated non admin user sees account dropdown with logout only', function () {
+test('authenticated non admin user sees account dropdown with settings and logout only', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->get(route('home'));
 
     $response->assertSuccessful();
     $response->assertSee(__('ui.nav.account'));
+    $response->assertSee(__('ui.nav.settings'));
     $response->assertSee(__('ui.nav.logout'));
     $response->assertDontSee('href="'.route('dashboard').'"', false);
+    $response->assertSee($user->initials());
+    $response->assertSee('rounded-full border border-zinc-300', false);
 });
 
-test('authenticated admin user sees account dropdown with dashboard and logout', function () {
+test('authenticated admin user sees account dropdown with dashboard settings and logout', function () {
     $admin = User::factory()->admin()->create();
 
     $response = $this->actingAs($admin)->get(route('home'));
 
     $response->assertSuccessful();
     $response->assertSee(__('ui.nav.account'));
+    $response->assertSee(__('ui.nav.settings'));
     $response->assertSee(__('ui.nav.logout'));
     $response->assertSee('href="'.route('dashboard').'"', false);
+    $response->assertSee($admin->initials());
+    $response->assertSee('rounded-full border border-zinc-300', false);
 });
 
 test('links page lists only external links', function () {
@@ -100,6 +106,7 @@ test('links page lists only external links', function () {
     $response->assertDontSee('Community resource');
     $response->assertDontSee('Internal resource');
     $response->assertSee('data-testid="external-link-card"', false);
+    $response->assertSee('class="pr-8 font-sans text-xl font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700"', false);
 });
 
 test('blog index supports tag filter and paginated query string', function () {

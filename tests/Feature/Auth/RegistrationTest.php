@@ -4,6 +4,8 @@ test('registration screen can be rendered', function () {
     $response = $this->get(route('register'));
 
     $response->assertOk();
+    $response->assertSee('Creer un compte');
+    $response->assertSee('Vous avez deja un compte ?');
 });
 
 test('new users can register', function () {

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ContentItem;
+use App\Models\ContentTranslation;
 use App\Models\User;
 
 test('about page defaults to french copy even when accept language is english', function () {
@@ -37,4 +39,72 @@ test('community link create page uses user preferred locale copy', function () {
     $response->assertSee('Submit a community link');
     $response->assertSee('Language');
     $response->assertDontSee('Soumettre un lien communautaire');
+});
+
+test('locale change on article switches to target translation when available', function () {
+    $contentItem = ContentItem::factory()->published()->internalPost()->create();
+
+    $frenchTranslation = ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'article-locale-fr',
+        'title' => 'Article FR',
+        'excerpt' => 'Extrait FR',
+    ]);
+
+    $englishTranslation = ContentTranslation::factory()->for($contentItem)->forLocale('en')->create([
+        'slug' => 'article-locale-en',
+        'title' => 'Article EN',
+        'excerpt' => 'Excerpt EN',
+    ]);
+
+    $response = $this->from(route('blog.show', [
+        'locale' => $frenchTranslation->locale,
+        'slug' => $frenchTranslation->slug,
+    ]))->post(route('locale.update'), [
+        'locale' => 'en',
+        'current_content_locale' => 'fr',
+        'current_content_slug' => $frenchTranslation->slug,
+    ]);
+
+    $response->assertRedirect(route('blog.show', [
+        'locale' => $englishTranslation->locale,
+        'slug' => $englishTranslation->slug,
+    ]));
+    $response->assertSessionHas('preferred_locale', 'en');
+});
+
+test('locale change on article keeps current article when target translation is missing', function () {
+    $contentItem = ContentItem::factory()->published()->internalPost()->create();
+
+    $frenchTranslation = ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'article-locale-fr-only',
+        'title' => 'Article FR uniquement',
+        'excerpt' => 'Extrait FR uniquement',
+    ]);
+
+    $response = $this->from(route('blog.show', [
+        'locale' => $frenchTranslation->locale,
+        'slug' => $frenchTranslation->slug,
+    ]))->post(route('locale.update'), [
+        'locale' => 'en',
+        'current_content_locale' => 'fr',
+        'current_content_slug' => $frenchTranslation->slug,
+    ]);
+
+    $response->assertRedirect(route('blog.show', [
+        'locale' => $frenchTranslation->locale,
+        'slug' => $frenchTranslation->slug,
+    ]));
+    $response->assertSessionHas('preferred_locale', 'en');
+
+    $followedResponse = $this->withSession([
+        'preferred_locale' => 'en',
+    ])->get(route('blog.show', [
+        'locale' => $frenchTranslation->locale,
+        'slug' => $frenchTranslation->slug,
+    ]));
+
+    $followedResponse->assertSuccessful();
+    $followedResponse->assertSee('Links');
+    $followedResponse->assertDontSee('Liens');
+    $followedResponse->assertSee('Article FR uniquement');
 });

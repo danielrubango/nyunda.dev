@@ -7,6 +7,8 @@ test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
 
     $response->assertOk();
+    $response->assertSee('Connectez-vous a votre compte');
+    $response->assertSee('Connexion');
 });
 
 test('users can authenticate using the login screen', function () {

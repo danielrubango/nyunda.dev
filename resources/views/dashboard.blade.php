@@ -1,18 +1,27 @@
-<x-layouts::app :title="__('Dashboard')">
-    <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
-        <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div class="relative aspect-video overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
+<x-layouts.public :title="__('Dashboard')">
+    <div class="ui-container">
+        <div class="mx-auto max-w-4xl space-y-4">
+            <header class="space-y-2">
+                <h1 class="font-sans text-4xl font-semibold tracking-tight text-zinc-900">{{ __('Dashboard') }}</h1>
+                <p class="text-sm text-zinc-600">{{ __('Manage your account and moderation workflows from here.') }}</p>
+            </header>
+
+            <div class="grid gap-4 md:grid-cols-3">
+                <x-ui.card>
+                    <h2 class="text-base font-semibold text-zinc-900">{{ __('Content') }}</h2>
+                    <p class="mt-1 text-sm text-zinc-600">{{ __('Review published posts and pending submissions.') }}</p>
+                </x-ui.card>
+
+                <x-ui.card>
+                    <h2 class="text-base font-semibold text-zinc-900">{{ __('Community') }}</h2>
+                    <p class="mt-1 text-sm text-zinc-600">{{ __('Moderate comments and community interactions.') }}</p>
+                </x-ui.card>
+
+                <x-ui.card>
+                    <h2 class="text-base font-semibold text-zinc-900">{{ __('Newsletter') }}</h2>
+                    <p class="mt-1 text-sm text-zinc-600">{{ __('Track subscriber growth and exports.') }}</p>
+                </x-ui.card>
             </div>
-            <div class="relative aspect-video overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
-            </div>
-            <div class="relative aspect-video overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
-            </div>
-        </div>
-        <div class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-            <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
         </div>
     </div>
-</x-layouts::app>
+</x-layouts.public>

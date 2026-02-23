@@ -28,7 +28,7 @@
     />
 
     <div class="flex grow flex-col gap-4">
-        <h3 class="pr-8 text-xl font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700">
+        <h3 class="pr-8 font-sans text-xl font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700">
             {{ $translation->title }}
         </h3>
 

@@ -10,6 +10,7 @@ return [
         'about' => 'About',
         'account' => 'My account',
         'dashboard' => 'Dashboard',
+        'settings' => 'Settings',
         'logout' => 'Logout',
         'login' => 'Login',
         'register' => 'Register',

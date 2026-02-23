@@ -6,7 +6,18 @@ use Livewire\Livewire;
 test('profile page is displayed', function () {
     $this->actingAs($user = User::factory()->create());
 
-    $this->get(route('profile.edit'))->assertOk();
+    $this->get(route('profile.edit'))
+        ->assertOk()
+        ->assertSee('Profil')
+        ->assertSee('Mettez a jour votre nom et votre adresse e-mail')
+        ->assertDontSee('/settings/appearance');
+});
+
+test('appearance settings route is not available', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->get('/settings/appearance')
+        ->assertNotFound();
 });
 
 test('profile information can be updated', function () {

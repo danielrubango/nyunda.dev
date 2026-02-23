@@ -182,3 +182,47 @@ test('admin can see hidden comments with hidden marker while non admin cannot', 
     $userResponse->assertDontSee('Visible hidden comment body');
     $userResponse->assertDontSee(':data-hidden-comment="hidden ? \'true\' : null"', false);
 });
+
+test('comments section is rendered even when there are no comments', function () {
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'show_comments' => true,
+    ]);
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'comments-empty-visible',
+        'title' => 'Comments empty visible',
+        'excerpt' => 'Comments empty visible excerpt',
+    ]);
+
+    $response = $this->get('/blog/fr/comments-empty-visible');
+
+    $response->assertSuccessful();
+    $response->assertSee(__('ui.blog.comments.title'));
+    $response->assertSee('class="ui-section-title"', false);
+    $response->assertSee(__('ui.blog.comments.empty'));
+    $response->assertSee(__('ui.blog.comments.login'));
+});
+
+test('authenticated comment form has no visible label and comments use tighter spacing', function () {
+    $user = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'show_comments' => true,
+    ]);
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'comments-form-style',
+        'title' => 'Comments form style',
+        'excerpt' => 'Comments form style excerpt',
+    ]);
+
+    Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/blog/fr/comments-form-style');
+
+    $response->assertSuccessful();
+    $response->assertSee('class="group space-y-2 p-5 sm:p-6', false);
+    $response->assertDontSee('<label for="body_markdown"', false);
+    $response->assertSee('aria-label="'.__('ui.blog.comments.form_placeholder').'"', false);
+});
