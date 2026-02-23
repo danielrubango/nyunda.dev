@@ -143,7 +143,7 @@
                                     })"
                                     x-show="!deleted"
                                     x-transition.opacity.duration.150ms
-                                    class="group space-y-2 p-5 sm:p-6 {{ $comment->is_hidden ? 'bg-orange-50/70' : '' }}"
+                                    class="group space-y-1 p-5 sm:p-6 {{ $comment->is_hidden ? 'bg-orange-50/70' : '' }}"
                                     :class="hidden ? 'bg-orange-50/70' : ''"
                                     :data-hidden-comment="hidden ? 'true' : null"
                                 >
@@ -185,7 +185,7 @@
                                             @endcan
                                         </div>
                                     </div>
-                                    <div class="article-content max-w-none text-base">
+                                    <div class="article-content max-w-none font-sans text-base">
                                         {!! $renderedComments[$comment->id] !!}
                                     </div>
                                 </article>

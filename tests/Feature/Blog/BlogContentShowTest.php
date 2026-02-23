@@ -203,7 +203,7 @@ test('comments section is rendered even when there are no comments', function ()
     $response->assertSee(__('ui.blog.comments.login'));
 });
 
-test('authenticated comment form has no visible label and comments use tighter spacing', function () {
+test('authenticated comment form has no visible label and comments use compact sans-serif styling', function () {
     $user = User::factory()->create();
     $contentItem = ContentItem::factory()->published()->internalPost()->create([
         'show_comments' => true,
@@ -222,7 +222,8 @@ test('authenticated comment form has no visible label and comments use tighter s
     $response = $this->actingAs($user)->get('/blog/fr/comments-form-style');
 
     $response->assertSuccessful();
-    $response->assertSee('class="group space-y-2 p-5 sm:p-6', false);
+    $response->assertSee('class="group space-y-1 p-5 sm:p-6', false);
+    $response->assertSee('class="article-content max-w-none font-sans text-base"', false);
     $response->assertDontSee('<label for="body_markdown"', false);
     $response->assertSee('aria-label="'.__('ui.blog.comments.form_placeholder').'"', false);
 });
