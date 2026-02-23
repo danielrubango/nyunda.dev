@@ -9,6 +9,9 @@ test('login screen can be rendered', function () {
     $response->assertOk();
     $response->assertSee('Connectez-vous a votre compte');
     $response->assertSee('Connexion');
+    $response->assertSee('NYUNDA.DEV');
+    $response->assertDontSee('id="footer-locale-select"', false);
+    $response->assertDontSee(__('ui.nav.blog'));
 });
 
 test('users can authenticate using the login screen', function () {
