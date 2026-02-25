@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Comment extends Model
 {
-    /** @use HasFactory<\Database\Factories\CommentFactory> */
-    use HasFactory;
+    /** @use \Illuminate\Database\Eloquent\Factories\HasFactory<\Database\Factories\CommentFactory> */
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
 
     /**
      * @var list<string>
@@ -17,6 +17,7 @@ class Comment extends Model
     protected $fillable = [
         'content_item_id',
         'user_id',
+        'parent_id',
         'body_markdown',
         'is_hidden',
         'hidden_at',
@@ -47,5 +48,20 @@ class Comment extends Model
     public function hiddenBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'hidden_by_id');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Comment::class, 'parent_id');
+    }
+
+    public function replies(): HasMany
+    {
+        return $this->hasMany(Comment::class, 'parent_id')->orderBy('created_at');
+    }
+
+    public function isReply(): bool
+    {
+        return $this->parent_id !== null;
     }
 }

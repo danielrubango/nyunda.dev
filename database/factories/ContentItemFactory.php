@@ -62,4 +62,11 @@ class ContentItemFactory extends Factory
             'type' => ContentType::ExternalPost->value,
         ]);
     }
+
+    public function commentsEnabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'show_comments' => true,
+        ]);
+    }
 }

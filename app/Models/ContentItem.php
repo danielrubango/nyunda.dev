@@ -86,6 +86,11 @@ class ContentItem extends Model
         return $this->hasMany(SocialShareLog::class);
     }
 
+    public function linkVotes(): HasMany
+    {
+        return $this->hasMany(LinkVote::class);
+    }
+
     public function scopePublished(Builder $query): Builder
     {
         return $query

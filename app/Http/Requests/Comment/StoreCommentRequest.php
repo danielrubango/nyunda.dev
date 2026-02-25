@@ -20,6 +20,7 @@ class StoreCommentRequest extends FormRequest
     {
         return [
             'body_markdown' => ['required', 'string', 'min:2', 'max:10000'],
+            'parent_id' => ['nullable', 'integer', 'exists:comments,id'],
         ];
     }
 
@@ -35,5 +36,12 @@ class StoreCommentRequest extends FormRequest
     public function bodyMarkdown(): string
     {
         return (string) $this->validated('body_markdown');
+    }
+
+    public function parentId(): ?int
+    {
+        $parentId = $this->validated('parent_id');
+
+        return $parentId !== null ? (int) $parentId : null;
     }
 }

@@ -15,3 +15,9 @@ Schedule::command('content-reads:prune')
 Schedule::command('content-items:publish-scheduled')
     ->everyMinute()
     ->withoutOverlapping();
+
+// Chaque 1er du mois à 08h : prépare un brouillon newsletter avec les articles du mois écoulé
+Schedule::command('newsletter:prepare-monthly')
+    ->monthlyOn(1, '08:00')
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/newsletter.log'));

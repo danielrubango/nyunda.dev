@@ -26,6 +26,7 @@ class CommentsController extends Controller
             user: $request->user(),
             contentItem: $contentItem,
             bodyMarkdown: $request->bodyMarkdown(),
+            parentId: $request->parentId(),
         );
 
         return redirect()
