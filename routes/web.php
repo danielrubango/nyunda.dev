@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AboutPageController;
 use App\Http\Controllers\Admin\ExportSubscribersCsvController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Blog\BlogContentController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\CommunityLinkSubmissionsController;
@@ -29,6 +30,14 @@ Route::get('/feed.xml', RssFeedController::class)
 
 Route::post('/locale', UpdateLocaleController::class)
     ->name('locale.update');
+
+Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
+    ->whereIn('provider', ['google', 'linkedin'])
+    ->name('oauth.redirect');
+
+Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])
+    ->whereIn('provider', ['google', 'linkedin'])
+    ->name('oauth.callback');
 
 Route::get('/u/{username}', ShowPublicProfileController::class)
     ->where('username', '[A-Za-z0-9][A-Za-z0-9_-]{2,39}')
