@@ -106,6 +106,8 @@ return [
             'reply_to' => 'Reply to :name',
             'cancel_reply' => 'Cancel',
             'reply_published' => 'Reply published successfully.',
+            'shortcut_submit' => 'to publish',
+            'shortcut_cancel' => 'to cancel',
         ],
     ],
     'forum' => [

@@ -144,8 +144,11 @@
                                     })"
                                     x-show="!deleted"
                                     x-transition.opacity.duration.150ms
-                                    class="group space-y-1 p-5 sm:p-6 {{ $comment->is_hidden ? 'bg-orange-50/70' : '' }}"
-                                    :class="hidden ? 'bg-orange-50/70' : ''"
+                                    class="group space-y-1 p-5 sm:p-6"
+                                    :class="{
+                                        'bg-orange-50/70': hidden,
+                                        'opacity-60': isProcessing,
+                                    }"
                                     :data-hidden-comment="hidden ? 'true' : null"
                                 >
                                     {{-- En-tête : auteur à gauche, actions + Répondre à droite --}}
@@ -261,6 +264,8 @@
                                                 method="POST"
                                                 action="{{ route('content.comments.store', ['contentItem' => $contentItem]) }}"
                                                 class="space-y-2"
+                                                x-data="{ submitting: false }"
+                                                x-on:submit="submitting = true"
                                             >
                                                 @csrf
                                                 <input type="hidden" name="parent_id" value="{{ $comment->id }}">
@@ -272,15 +277,22 @@
                                                     aria-label="{{ __('ui.blog.comments.reply_to', ['name' => $comment->user->name]) }}"
                                                     x-ref="replyTextarea"
                                                     x-effect="if (showReply) $nextTick(() => $refs.replyTextarea?.focus())"
+                                                    x-on:keydown.ctrl.enter.prevent="$el.closest('form').requestSubmit()"
+                                                    x-on:keydown.meta.enter.prevent="$el.closest('form').requestSubmit()"
+                                                    x-on:keydown.escape="showReply = false"
                                                 ></textarea>
                                                 @error('body_markdown')
                                                     <p class="text-sm text-red-600">{{ $message }}</p>
                                                 @enderror
-                                                <div class="flex items-center gap-2">
+                                                <div class="flex items-center gap-3">
                                                     <button
                                                         type="submit"
-                                                        class="h-8 border border-brand-700 px-3 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-50"
+                                                        class="inline-flex h-8 items-center gap-2 border border-brand-700 px-3 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-50 disabled:opacity-50"
+                                                        :disabled="submitting"
                                                     >
+                                                        <span x-show="submitting">
+                                                            <svg class="size-3.5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                                        </span>
                                                         {{ __('ui.blog.comments.publish') }}
                                                     </button>
                                                     <button
@@ -290,6 +302,11 @@
                                                     >
                                                         {{ __('ui.blog.comments.cancel_reply') }}
                                                     </button>
+                                                    <p class="hidden text-xs text-zinc-400 sm:block">
+                                                        <kbd class="rounded border border-zinc-300 bg-zinc-100 px-1 py-0.5 font-mono text-xs">Ctrl</kbd>+<kbd class="rounded border border-zinc-300 bg-zinc-100 px-1 py-0.5 font-mono text-xs">↵</kbd>
+                                                        &nbsp;·&nbsp;
+                                                        <kbd class="rounded border border-zinc-300 bg-zinc-100 px-1 py-0.5 font-mono text-xs">Esc</kbd> {{ __('ui.blog.comments.shortcut_cancel') }}
+                                                    </p>
                                                 </div>
                                             </form>
                                         </div>
@@ -321,8 +338,11 @@
                                                     })"
                                                     x-show="!deleted"
                                                     x-transition.opacity.duration.150ms
-                                                    class="border-t border-zinc-200 pl-4 -mr-5 sm:-mr-6 pr-5 sm:pr-6 py-3 first:border-t-0 {{ $reply->is_hidden ? 'bg-orange-50/70' : '' }}"
-                                                    :class="hidden ? 'bg-orange-50/70' : ''"
+                                                    class="border-t border-zinc-200 pl-4 -mr-5 sm:-mr-6 pr-5 sm:pr-6 py-3 first:border-t-0"
+                                                    :class="{
+                                                        'bg-orange-50/70': hidden,
+                                                        'opacity-60': isProcessing,
+                                                    }"
                                                 >
                                                     {{-- En-tête reply : indicateur ↳ à gauche, actions admin à droite --}}
                                                     <div class="flex items-start justify-between gap-3">
@@ -403,22 +423,45 @@
 
                     @auth
                         <x-ui.card>
-                            <form method="POST" action="{{ route('content.comments.store', ['contentItem' => $contentItem]) }}" class="space-y-3">
+                            <form
+                                method="POST"
+                                action="{{ route('content.comments.store', ['contentItem' => $contentItem]) }}"
+                                class="space-y-3"
+                                x-data="{ submitting: false }"
+                                x-on:submit="submitting = true"
+                            >
                                 @csrf
                                 <textarea
                                     id="body_markdown"
                                     name="body_markdown"
                                     rows="5"
                                     aria-label="{{ __('ui.blog.comments.form_placeholder') }}"
-                                    class="w-full border border-zinc-300 px-3 py-2 text-sm"
+                                    class="w-full border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none"
                                     placeholder="{{ __('ui.blog.comments.form_placeholder') }}"
+                                    x-on:keydown.ctrl.enter.prevent="$el.closest('form').requestSubmit()"
+                                    x-on:keydown.meta.enter.prevent="$el.closest('form').requestSubmit()"
                                 >{{ old('body_markdown') }}</textarea>
                                 @error('body_markdown')
                                     <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                                <button type="submit" class="h-10 border border-brand-700 px-4 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 focus:border-brand-800 focus-visible:border-brand-800">
-                                    {{ __('ui.blog.comments.publish') }}
-                                </button>
+                                <div class="flex items-center gap-4">
+                                    <button
+                                        type="submit"
+                                        class="inline-flex h-10 items-center gap-2 border border-brand-700 px-4 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 focus:border-brand-800 focus-visible:border-brand-800 disabled:opacity-50"
+                                        :disabled="submitting"
+                                    >
+                                        <span x-show="submitting">
+                                            <svg class="size-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                        </span>
+                                        {{ __('ui.blog.comments.publish') }}
+                                    </button>
+                                    <p class="hidden text-xs text-zinc-400 sm:block">
+                                        <kbd class="rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-xs">Ctrl</kbd>
+                                        <span class="mx-0.5">+</span>
+                                        <kbd class="rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-xs">↵</kbd>
+                                        {{ __('ui.blog.comments.shortcut_submit') }}
+                                    </p>
+                                </div>
                             </form>
                         </x-ui.card>
                     @else
@@ -584,9 +627,12 @@
                         return;
                     }
 
+                    // Fermer le modal d'abord, puis marquer deleted après l'animation
                     this.closeModal(modalName);
-                    this.deleted = true;
                     this.notify(this.deletedToast, 'success');
+                    window.setTimeout(() => {
+                        this.deleted = true;
+                    }, 300);
                 },
             }));
         });

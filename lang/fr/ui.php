@@ -106,6 +106,8 @@ return [
             'reply_to' => 'Répondre à :name',
             'cancel_reply' => 'Annuler',
             'reply_published' => 'Réponse publiée avec succès.',
+            'shortcut_submit' => 'pour publier',
+            'shortcut_cancel' => 'pour annuler',
         ],
     ],
     'forum' => [
