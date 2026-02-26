@@ -18,11 +18,11 @@ test('admin users can visit the dashboard', function () {
     $response->assertSee(__('ui.nav.account'));
 });
 
-test('non admin users are redirected home with flash status', function () {
+test('non admin users can visit the dashboard', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard'));
-    $response->assertRedirect(route('home'));
-    $response->assertSessionHas('status', __('ui.flash.connected'));
+    $response->assertOk();
+    $response->assertSee(__('ui.nav.account'));
 });

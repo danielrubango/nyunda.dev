@@ -47,16 +47,17 @@ test('home page renders key public sections', function () {
     $response->assertDontSee('opacity-0 transition-opacity duration-150 group-hover:opacity-100', false);
 });
 
-test('authenticated non admin user sees account dropdown with settings and logout only', function () {
+test('authenticated non admin user sees account dropdown with dashboard settings and logout', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->get(route('home'));
 
     $response->assertSuccessful();
     $response->assertSee(__('ui.nav.account'));
+    $response->assertSee(__('ui.nav.dashboard'));
     $response->assertSee(__('ui.nav.settings'));
     $response->assertSee(__('ui.nav.logout'));
-    $response->assertDontSee('href="'.route('dashboard').'"', false);
+    $response->assertSee('href="'.route('dashboard').'"', false);
     $response->assertSee($user->initials());
     $response->assertSee('rounded-full border border-zinc-300', false);
     $response->assertSee('data-test="public-account-menu-button"', false);
