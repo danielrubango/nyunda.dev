@@ -18,11 +18,21 @@ test('private profiles are not publicly accessible', function () {
 test('public profiles are accessible', function () {
     $user = User::factory()->withPublicProfile('john-doe')->create([
         'name' => 'John Doe',
+        'headline' => 'Full Stack Developer',
+        'bio' => 'Je partage des contenus techniques.',
+        'location' => 'Kigali',
+        'website_url' => 'https://example.com',
+        'linkedin_url' => 'https://linkedin.com/in/john-doe',
     ]);
 
     $response = $this->get('/u/'.$user->public_profile_slug);
 
     $response
         ->assertOk()
-        ->assertSee('John Doe');
+        ->assertSee('John Doe')
+        ->assertSee('Full Stack Developer')
+        ->assertSee('Je partage des contenus techniques.')
+        ->assertSee('Kigali')
+        ->assertSee('https://example.com')
+        ->assertSee('https://linkedin.com/in/john-doe');
 });

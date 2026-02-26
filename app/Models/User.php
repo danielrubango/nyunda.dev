@@ -31,6 +31,13 @@ class User extends Authenticatable implements FilamentUser
         'preferred_locale',
         'is_profile_public',
         'public_profile_slug',
+        'headline',
+        'bio',
+        'location',
+        'website_url',
+        'linkedin_url',
+        'x_url',
+        'github_url',
     ];
 
     /**
