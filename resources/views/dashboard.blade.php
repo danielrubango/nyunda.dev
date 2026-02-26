@@ -10,6 +10,9 @@
                 <x-ui.card>
                     <h2 class="text-base font-semibold text-zinc-900">{{ __('Content') }}</h2>
                     <p class="mt-1 text-sm text-zinc-600">{{ __('Review published posts and pending submissions.') }}</p>
+                    <a href="{{ route('dashboard.content.create') }}" class="mt-3 inline-flex border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 no-underline transition-colors hover:bg-zinc-100">
+                        Proposer un contenu
+                    </a>
                 </x-ui.card>
 
                 <x-ui.card>

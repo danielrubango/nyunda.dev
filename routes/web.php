@@ -6,6 +6,7 @@ use App\Http\Controllers\Blog\BlogContentController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\CommunityLinkSubmissionsController;
 use App\Http\Controllers\ConfirmNewsletterController;
+use App\Http\Controllers\Dashboard\UserContentController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\LikeContentController;
 use App\Http\Controllers\LinksPageController;
@@ -134,6 +135,14 @@ Route::get('dashboard', function () {
 })
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+Route::middleware(['auth', 'verified'])->group(function (): void {
+    Route::get('/dashboard/content/create', [UserContentController::class, 'create'])
+        ->name('dashboard.content.create');
+
+    Route::post('/dashboard/content', [UserContentController::class, 'store'])
+        ->name('dashboard.content.store');
+});
 
 Route::view('/style-guide', 'style-guide')
     ->name('style-guide');
