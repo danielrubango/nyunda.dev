@@ -16,6 +16,14 @@ return [
         'register' => 'Register',
         'rss' => 'RSS feed',
     ],
+    'auth' => [
+        'social' => [
+            'divider' => 'Or continue with',
+            'google' => 'Google',
+            'linkedin' => 'LinkedIn',
+            'callback_error' => 'Social sign in failed. Please try again.',
+        ],
+    ],
     'accessibility' => [
         'skip_to_content' => 'Skip to content',
         'tabs' => 'Tabs',

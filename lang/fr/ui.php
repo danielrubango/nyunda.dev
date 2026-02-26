@@ -16,6 +16,14 @@ return [
         'register' => 'Créer un compte',
         'rss' => 'Flux RSS',
     ],
+    'auth' => [
+        'social' => [
+            'divider' => 'Ou continuer avec',
+            'google' => 'Google',
+            'linkedin' => 'LinkedIn',
+            'callback_error' => 'La connexion sociale a echoue. Veuillez reessayer.',
+        ],
+    ],
     'accessibility' => [
         'skip_to_content' => 'Aller au contenu',
         'tabs' => 'Onglets',

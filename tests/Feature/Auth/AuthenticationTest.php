@@ -12,6 +12,10 @@ test('login screen can be rendered', function () {
     $response->assertSee('NYUNDA.DEV');
     $response->assertSee('data-ui-auth-layout', false);
     $response->assertSee('data-ui-auth-card', false);
+    $response->assertSee('data-test="oauth-google-button"', false);
+    $response->assertSee('data-test="oauth-linkedin-button"', false);
+    $response->assertSee(route('oauth.redirect', ['provider' => 'google']), false);
+    $response->assertSee(route('oauth.redirect', ['provider' => 'linkedin']), false);
     $response->assertDontSee('id="footer-locale-select"', false);
     $response->assertDontSee(__('ui.nav.blog'));
 });

@@ -40,7 +40,7 @@ class SocialAuthController extends Controller
 
             return redirect()
                 ->route('login')
-                ->with('oauth_error', __('ui.flash.action_failed'));
+                ->with('oauth_error', __('ui.auth.social.callback_error'));
         }
 
         $providerUserId = (string) $socialUser->getId();
@@ -48,7 +48,7 @@ class SocialAuthController extends Controller
         if ($providerUserId === '') {
             return redirect()
                 ->route('login')
-                ->with('oauth_error', __('ui.flash.action_failed'));
+                ->with('oauth_error', __('ui.auth.social.callback_error'));
         }
 
         $user = $this->resolveOrCreateUser(

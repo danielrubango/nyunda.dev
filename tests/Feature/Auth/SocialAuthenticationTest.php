@@ -121,6 +121,8 @@ test('oauth callback redirects back to login on provider failure', function () {
 
     $response->assertRedirect(route('login', absolute: false));
     $response->assertSessionHas('oauth_error');
+    $this->get(route('login'))
+        ->assertSee(__('ui.auth.social.callback_error'));
     $this->assertGuest();
 });
 
