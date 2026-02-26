@@ -284,5 +284,5 @@ test('child comments do not render the reply icon component in their header', fu
 
     $response->assertSuccessful();
     $response->assertDontSee('size-3 shrink-0 text-zinc-300', false);
-    $response->assertSee('&hookrightarrow;', false);
+    $response->assertDontSee('&hookrightarrow;', false);
 });
