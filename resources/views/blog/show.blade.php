@@ -148,12 +148,27 @@
                                     :class="hidden ? 'bg-orange-50/70' : ''"
                                     :data-hidden-comment="hidden ? 'true' : null"
                                 >
-                                    {{-- En-tête du commentaire --}}
+                                    {{-- En-tête : auteur à gauche, actions + Répondre à droite --}}
                                     <div class="flex items-start justify-between gap-3">
                                         <p class="text-xs text-zinc-500">
                                             {{ $comment->user->name }} • {{ $commentPublishedLabel }}
                                         </p>
                                         <div class="flex items-center gap-2">
+                                            @auth
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex h-8 items-center gap-1 border px-2 text-xs font-medium transition-colors"
+                                                    :class="showReply
+                                                        ? 'border-brand-300 bg-brand-50 text-brand-700 hover:border-brand-400 hover:bg-brand-100'
+                                                        : 'border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-700'"
+                                                    x-on:click="showReply = !showReply"
+                                                    :aria-expanded="showReply ? 'true' : 'false'"
+                                                    title="{{ __('ui.blog.comments.reply') }}"
+                                                >
+                                                    <x-ui.icon name="corner-down-right" class="size-3.5" />
+                                                    <span>{{ __('ui.blog.comments.reply') }}</span>
+                                                </button>
+                                            @endauth
                                             @can('update', $comment)
                                                 <form method="POST" action="{{ route('comments.update', ['comment' => $comment]) }}" x-on:submit.prevent="toggleVisibility($event)">
                                                     @csrf
@@ -227,22 +242,8 @@
                                         {!! $renderedComments[$comment->id] !!}
                                     </div>
 
-                                    {{-- Bouton Répondre (authentifié uniquement) --}}
+                                    {{-- Formulaire inline de réponse --}}
                                     @auth
-                                        <div class="pt-1">
-                                            <button
-                                                type="button"
-                                                class="inline-flex items-center gap-1 text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-700"
-                                                :class="showReply ? 'text-zinc-700' : 'text-zinc-400'"
-                                                x-on:click="showReply = !showReply"
-                                                :aria-expanded="showReply ? 'true' : 'false'"
-                                            >
-                                                <x-ui.icon name="corner-down-right" class="size-3.5" />
-                                                {{ __('ui.blog.comments.reply') }}
-                                            </button>
-                                        </div>
-
-                                        {{-- Formulaire inline de réponse --}}
                                         <div
                                             x-show="showReply"
                                             x-transition:enter="transition ease-out duration-150"
@@ -323,9 +324,13 @@
                                                     class="border-t border-zinc-100 py-3 first:border-t-0 {{ $reply->is_hidden ? 'bg-orange-50/50' : '' }}"
                                                     :class="hidden ? 'bg-orange-50/50' : ''"
                                                 >
+                                                    {{-- En-tête reply : indicateur ↳ à gauche, actions admin à droite --}}
                                                     <div class="flex items-start justify-between gap-3">
-                                                        <p class="text-xs text-zinc-400">
-                                                            {{ $reply->user->name }} • {{ $replyPublishedLabel }}
+                                                        <p class="flex items-center gap-1 text-xs text-zinc-400">
+                                                            <x-ui.icon name="corner-down-right" class="size-3 shrink-0 text-zinc-300" />
+                                                            <span class="font-medium text-zinc-500">{{ $reply->user->name }}</span>
+                                                            <span class="text-zinc-300">•</span>
+                                                            <span>{{ $replyPublishedLabel }}</span>
                                                         </p>
                                                         <div class="flex items-center gap-2">
                                                             @can('update', $reply)
@@ -382,6 +387,7 @@
                                                             @endcan
                                                         </div>
                                                     </div>
+                                                    {{-- Corps de la réponse --}}
                                                     <div class="mt-1 article-content max-w-none font-sans text-sm">
                                                         {!! $renderedComments[$reply->id] ?? '' !!}
                                                     </div>
