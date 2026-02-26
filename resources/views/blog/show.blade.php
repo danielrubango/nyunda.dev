@@ -321,7 +321,7 @@
                                                     })"
                                                     x-show="!deleted"
                                                     x-transition.opacity.duration.150ms
-                                                    class="border-t border-zinc-200 pl-4 pr-2 py-3 first:border-t-0 {{ $reply->is_hidden ? 'bg-orange-50/70' : '' }}"
+                                                    class="border-t border-zinc-200 pl-4 -mr-5 sm:-mr-6 pr-5 sm:pr-6 py-3 first:border-t-0 {{ $reply->is_hidden ? 'bg-orange-50/70' : '' }}"
                                                     :class="hidden ? 'bg-orange-50/70' : ''"
                                                 >
                                                     {{-- En-tête reply : indicateur ↳ à gauche, actions admin à droite --}}
