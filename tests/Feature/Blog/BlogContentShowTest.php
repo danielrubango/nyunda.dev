@@ -232,3 +232,29 @@ test('authenticated comment form has no visible label and comments use compact s
     $response->assertDontSee('<label for="body_markdown"', false);
     $response->assertSee('aria-label="'.__('ui.blog.comments.form_placeholder').'"', false);
 });
+
+test('reply button displays an icon for authenticated users', function () {
+    $user = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'show_comments' => true,
+    ]);
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'comments-reply-icon',
+        'title' => 'Comments reply icon',
+        'excerpt' => 'Comments reply icon excerpt',
+    ]);
+
+    Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/blog/fr/comments-reply-icon');
+
+    $response->assertSuccessful();
+    $response->assertSeeInOrder([
+        'title="'.__('ui.blog.comments.reply').'"',
+        'd="M7 5V11C7 12.1046 7.89543 13 9 13H17"',
+        __('ui.blog.comments.reply'),
+    ], false);
+});

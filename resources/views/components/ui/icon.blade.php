@@ -58,6 +58,11 @@
     <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
+@elseif ($name === 'corner-down-right')
+    <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M7 5V11C7 12.1046 7.89543 13 9 13H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M13 9L17 13L13 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
 @elseif ($name === 'linkedin')
     <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <rect x="4" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.8" />
