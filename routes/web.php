@@ -137,11 +137,18 @@ Route::get('dashboard', function () {
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
+    Route::get('/dashboard/content', [UserContentController::class, 'index'])
+        ->name('dashboard.content.index');
+
     Route::get('/dashboard/content/create', [UserContentController::class, 'create'])
         ->name('dashboard.content.create');
 
     Route::post('/dashboard/content', [UserContentController::class, 'store'])
         ->name('dashboard.content.store');
+
+    Route::get('/dashboard/activity/comments', function (): RedirectResponse {
+        return redirect()->route('dashboard.content.index');
+    })->name('dashboard.activity.comments');
 });
 
 Route::view('/style-guide', 'style-guide')
