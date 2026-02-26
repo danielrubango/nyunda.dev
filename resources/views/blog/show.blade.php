@@ -144,8 +144,8 @@
                                     })"
                                     x-show="!deleted"
                                     x-transition.opacity.duration.150ms
-                                    class="group space-y-1 p-5 sm:p-6 {{ $comment->is_hidden ? 'border-l-4 border-orange-300 bg-orange-50' : '' }}"
-                                    :class="hidden ? 'border-l-4 border-orange-300 bg-orange-50' : ''"
+                                    class="group space-y-1 p-5 sm:p-6 {{ $comment->is_hidden ? 'bg-orange-50/70' : '' }}"
+                                    :class="hidden ? 'bg-orange-50/70' : ''"
                                     :data-hidden-comment="hidden ? 'true' : null"
                                 >
                                     {{-- En-tête : auteur à gauche, actions + Répondre à droite --}}
@@ -297,7 +297,7 @@
 
                                     {{-- Replies imbriquées (1 niveau) --}}
                                     @if ($comment->replies->isNotEmpty())
-                                        <div class="mt-4 space-y-0 border-l-2 border-zinc-300 pl-4">
+                                        <div class="mt-4 space-y-0 border-l-2 border-zinc-300">
                                             @foreach ($comment->replies as $reply)
                                                 @php
                                                     $replyPublishedAt = $reply->created_at;
@@ -321,8 +321,8 @@
                                                     })"
                                                     x-show="!deleted"
                                                     x-transition.opacity.duration.150ms
-                                                    class="border-t border-zinc-200 py-3 first:border-t-0 {{ $reply->is_hidden ? 'border-l-4 border-orange-300 bg-orange-50' : '' }}"
-                                                    :class="hidden ? 'border-l-4 border-orange-300 bg-orange-50' : ''"
+                                                    class="border-t border-zinc-200 pl-4 pr-2 py-3 first:border-t-0 {{ $reply->is_hidden ? 'bg-orange-50/70' : '' }}"
+                                                    :class="hidden ? 'bg-orange-50/70' : ''"
                                                 >
                                                     {{-- En-tête reply : indicateur ↳ à gauche, actions admin à droite --}}
                                                     <div class="flex items-start justify-between gap-3">
