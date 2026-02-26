@@ -119,7 +119,7 @@
                         @if ($comments->isEmpty())
                             <p class="px-5 py-6 text-sm text-zinc-500 sm:px-6">{{ __('ui.blog.comments.empty') }}</p>
                         @else
-                            <div class="divide-y divide-zinc-200">
+                            <div class="divide-y divide-zinc-300">
                             @foreach ($comments as $comment)
                                 @php
                                     $commentPublishedAt = $comment->created_at;
@@ -252,7 +252,7 @@
                                             x-transition:leave="transition ease-in duration-100"
                                             x-transition:leave-start="opacity-100 translate-y-0"
                                             x-transition:leave-end="opacity-0 -translate-y-1"
-                                            class="mt-3 border-l-2 border-zinc-200 pl-4"
+                                            class="mt-3 border-l-2 border-zinc-400 pl-4"
                                         >
                                             <p class="mb-2 text-xs font-medium text-zinc-500">
                                                 {{ __('ui.blog.comments.reply_to', ['name' => $comment->user->name]) }}
@@ -297,7 +297,7 @@
 
                                     {{-- Replies imbriquées (1 niveau) --}}
                                     @if ($comment->replies->isNotEmpty())
-                                        <div class="mt-4 space-y-0 border-l-2 border-zinc-100 pl-4">
+                                        <div class="mt-4 space-y-0 border-l-2 border-zinc-300 pl-4">
                                             @foreach ($comment->replies as $reply)
                                                 @php
                                                     $replyPublishedAt = $reply->created_at;
@@ -321,7 +321,7 @@
                                                     })"
                                                     x-show="!deleted"
                                                     x-transition.opacity.duration.150ms
-                                                    class="border-t border-zinc-100 py-3 first:border-t-0 {{ $reply->is_hidden ? 'bg-orange-50/50' : '' }}"
+                                                    class="border-t border-zinc-200 py-3 first:border-t-0 {{ $reply->is_hidden ? 'bg-orange-50/50' : '' }}"
                                                     :class="hidden ? 'bg-orange-50/50' : ''"
                                                 >
                                                     {{-- En-tête reply : indicateur ↳ à gauche, actions admin à droite --}}
