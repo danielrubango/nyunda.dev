@@ -538,7 +538,7 @@
                     this.deleteModal.url = url;
                     this.deleteModal.commentId = commentId;
                     this.deleteModal.isProcessing = false;
-                    window.dispatchEvent(new CustomEvent('modal-show', { detail: { name: 'confirm-comment-delete' } }));
+                    document.dispatchEvent(new CustomEvent('modal-show', { detail: { name: 'confirm-comment-delete' } }));
                 },
 
                 async confirmDelete() {
@@ -558,7 +558,7 @@
                         });
                         if (!resp.ok) throw new Error();
                         const id = this.deleteModal.commentId;
-                        window.dispatchEvent(new CustomEvent('modal-close', { detail: { name: 'confirm-comment-delete' } }));
+                        document.dispatchEvent(new CustomEvent('modal-close', { detail: { name: 'confirm-comment-delete' } }));
                         window.dispatchEvent(new CustomEvent('comment:deleted', { detail: { id } }));
                         window.dispatchEvent(new CustomEvent('ui-toast', {
                             detail: { message: this.deletedToast, variant: 'success' },

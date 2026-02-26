@@ -118,6 +118,8 @@ test('comment author can open delete modal even when first comment belongs to an
     $response->assertSee(__('ui.blog.comments.confirm_delete_title'));
     $response->assertSee('data-test="open-comment-delete-confirmation"', false);
     $response->assertSee(route('comments.destroy', ['comment' => $ownComment]), false);
+    $response->assertSee("document.dispatchEvent(new CustomEvent('modal-show'", false);
+    $response->assertSee("document.dispatchEvent(new CustomEvent('modal-close'", false);
 });
 
 test('admin can see reads count on internal post page', function () {
