@@ -30,6 +30,7 @@
 
             <x-public.site-footer />
         </div>
+        @stack('scripts')
         @fluxScripts
     </body>
 </html>

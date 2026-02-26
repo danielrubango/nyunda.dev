@@ -155,6 +155,12 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::post('/dashboard/content', [UserContentController::class, 'store'])
         ->name('dashboard.content.store');
 
+    Route::get('/dashboard/content/{contentItem}/edit', [UserContentController::class, 'edit'])
+        ->name('dashboard.content.edit');
+
+    Route::put('/dashboard/content/{contentItem}', [UserContentController::class, 'update'])
+        ->name('dashboard.content.update');
+
     Route::get('/dashboard/activity/comments', function (): RedirectResponse {
         return redirect()->route('dashboard.content.index');
     })->name('dashboard.activity.comments');

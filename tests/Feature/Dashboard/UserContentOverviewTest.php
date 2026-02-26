@@ -70,6 +70,9 @@ test('dashboard content index shows personal rows stats and status labels', func
     $response->assertSee('En attente d acceptation');
     $response->assertSee('Rejete');
     $response->assertSee('21');
+    $response->assertSee(route('dashboard.content.edit', ['contentItem' => $published]), false);
+    $response->assertSee('data-test="dashboard-content-datatable"', false);
+    $response->assertSee('← Retour au dashboard');
 });
 
 test('dashboard content index supports status filter', function () {

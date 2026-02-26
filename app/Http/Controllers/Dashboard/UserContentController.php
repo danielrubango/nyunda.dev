@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Actions\Content\CreateDashboardContentSubmission;
+use App\Actions\Content\UpdateDashboardContentSubmission;
 use App\Enums\ContentStatus;
 use App\Enums\ContentType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\StoreDashboardContentRequest;
+use App\Http\Requests\Dashboard\UpdateDashboardContentRequest;
 use App\Models\Comment;
 use App\Models\ContentItem;
 use App\Models\User;
@@ -62,9 +64,11 @@ class UserContentController extends Controller
                     'item' => $item,
                     'title' => $translation?->title ?? 'Sans titre',
                     'status_label' => $this->resolveStatusLabel($item),
+                    'status_variant' => $this->resolveStatusVariant($item),
                     'comments_count' => (int) $item->comments_count,
                     'interaction_count' => $interactionCount,
                     'reads_count' => (int) $item->reads_count,
+                    'edit_url' => route('dashboard.content.edit', ['contentItem' => $item]),
                 ];
             });
 
@@ -117,6 +121,26 @@ class UserContentController extends Controller
         ]);
     }
 
+    public function edit(Request $request, ContentItem $contentItem): View
+    {
+        $contentItem = $this->resolveOwnedContentItem($request, $contentItem);
+        $supportedLocales = config('app.supported_locales', ['fr', 'en']);
+
+        /** @var User $user */
+        $user = $request->user();
+
+        $editableTranslation = $contentItem->translations
+            ->firstWhere('locale', $user->preferred_locale)
+            ?? $contentItem->translations->first();
+
+        return view('dashboard.content.edit', [
+            'contentItem' => $contentItem,
+            'translation' => $editableTranslation,
+            'supportedLocales' => $supportedLocales,
+            'defaultLocale' => $editableTranslation?->locale ?? $user->preferred_locale,
+        ]);
+    }
+
     public function store(
         StoreDashboardContentRequest $request,
         CreateDashboardContentSubmission $createDashboardContentSubmission,
@@ -132,6 +156,23 @@ class UserContentController extends Controller
         return redirect()
             ->route('dashboard')
             ->with('status', 'Contenu soumis avec succes.');
+    }
+
+    public function update(
+        UpdateDashboardContentRequest $request,
+        ContentItem $contentItem,
+        UpdateDashboardContentSubmission $updateDashboardContentSubmission,
+    ): RedirectResponse {
+        $contentItem = $this->resolveOwnedContentItem($request, $contentItem);
+
+        $updateDashboardContentSubmission->handle(
+            contentItem: $contentItem,
+            submission: $request->submissionData(),
+        );
+
+        return redirect()
+            ->route('dashboard.content.index')
+            ->with('status', 'Contenu mis a jour avec succes.');
     }
 
     protected function resolveStatusLabel(ContentItem $contentItem): string
@@ -153,5 +194,36 @@ class UserContentController extends Controller
         }
 
         return 'Brouillon';
+    }
+
+    protected function resolveStatusVariant(ContentItem $contentItem): string
+    {
+        if ($contentItem->status === ContentStatus::Published) {
+            return 'success';
+        }
+
+        if ($contentItem->status === ContentStatus::Pending && $contentItem->published_at !== null && $contentItem->published_at->isFuture()) {
+            return 'info';
+        }
+
+        if ($contentItem->status === ContentStatus::Pending) {
+            return 'warning';
+        }
+
+        if ($contentItem->status === ContentStatus::Rejected) {
+            return 'danger';
+        }
+
+        return 'neutral';
+    }
+
+    protected function resolveOwnedContentItem(Request $request, ContentItem $contentItem): ContentItem
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($contentItem->author_id === $user->id, 404);
+
+        return $contentItem->load('translations');
     }
 }
