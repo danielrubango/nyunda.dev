@@ -96,15 +96,41 @@ class BlogContentController extends Controller
         if ($contentItem->show_comments) {
             $contentItem->load([
                 'comments' => function ($query) use ($isAdmin): void {
+                    // Seulement les commentaires racine
+                    $query->whereNull('parent_id');
+
                     if (! $isAdmin) {
                         $query->where('is_hidden', false);
                     }
 
-                    $query->with('user')->oldest('created_at');
+                    $query
+                        ->with([
+                            'user',
+                            'replies' => function ($replyQuery) use ($isAdmin): void {
+                                if (! $isAdmin) {
+                                    $replyQuery->where('is_hidden', false);
+                                }
+                                $replyQuery->with('user')->oldest('created_at');
+                            },
+                        ])
+                        ->oldest('created_at');
                 },
             ]);
 
             $comments = $contentItem->comments;
+        }
+
+        // Render le markdown de tous les commentaires + leurs replies
+        $renderedComments = $comments->mapWithKeys(
+            fn ($comment): array => [
+                $comment->id => $this->renderSafeMarkdown->handle($comment->body_markdown),
+            ],
+        );
+
+        foreach ($comments as $comment) {
+            foreach ($comment->replies as $reply) {
+                $renderedComments[$reply->id] = $this->renderSafeMarkdown->handle($reply->body_markdown);
+            }
         }
 
         return view('blog.show', [
@@ -114,6 +140,7 @@ class BlogContentController extends Controller
             'isAdmin' => $isAdmin,
             'renderedBody' => $this->renderSafeMarkdown->handle($translation->body_markdown),
             'comments' => $comments,
+            'renderedComments' => $renderedComments,
             'seo' => $this->buildSeoMeta->handle(
                 title: $translation->title,
                 description: $translation->excerpt,
@@ -123,11 +150,6 @@ class BlogContentController extends Controller
                 ]),
                 imageUrl: $translation->featured_image_url ?: $translation->external_og_image_url,
                 ogType: 'article',
-            ),
-            'renderedComments' => $comments->mapWithKeys(
-                fn ($comment): array => [
-                    $comment->id => $this->renderSafeMarkdown->handle($comment->body_markdown),
-                ],
             ),
         ]);
     }
