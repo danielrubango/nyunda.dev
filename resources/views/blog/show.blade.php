@@ -112,7 +112,13 @@
             </section>
 
             @if ($contentItem->show_comments)
-                <section class="space-y-4">
+                <section
+                    class="space-y-4"
+                    x-data="commentSection({
+                        deletedToast: @js(__('ui.flash.comment_deleted')),
+                        failedToast: @js(__('ui.flash.action_failed')),
+                    })"
+                >
                     <h2 class="ui-section-title">{{ __('ui.blog.comments.title') }}</h2>
 
                     <x-ui.card :padding="false">
@@ -135,15 +141,16 @@
                                 <article
                                     x-data="commentActions({
                                         hidden: @js((bool) $comment->is_hidden),
+                                        id: @js($comment->id),
                                         hiddenLabel: @js(__('ui.blog.comments.hide')),
                                         shownLabel: @js(__('ui.blog.comments.show')),
                                         hiddenToast: @js(__('ui.flash.comment_hidden')),
                                         shownToast: @js(__('ui.flash.comment_shown')),
-                                        deletedToast: @js(__('ui.flash.comment_deleted')),
                                         failedToast: @js(__('ui.flash.action_failed')),
                                     })"
                                     x-show="!deleted"
                                     x-transition.opacity.duration.150ms
+                                    x-on:comment:deleted.window="if ($event.detail.id === id) deleted = true"
                                     class="group space-y-1 p-5 sm:p-6"
                                     :class="{
                                         'bg-orange-50/70': hidden,
@@ -194,48 +201,17 @@
                                                 </form>
                                             @endcan
                                             @can('delete', $comment)
-                                                <flux:modal.trigger :name="$commentDeleteModal">
-                                                    <button
-                                                        type="button"
-                                                        class="inline-flex size-8 items-center justify-center border border-zinc-300 text-zinc-500 transition-colors hover:border-red-400 hover:text-red-600"
-                                                        title="{{ __('ui.blog.comments.delete') }}"
-                                                        x-bind:disabled="isProcessing"
-                                                        data-test="open-comment-delete-confirmation"
-                                                    >
-                                                        <x-ui.icon name="trash" class="size-4" />
-                                                        <span class="sr-only">{{ __('ui.blog.comments.delete') }}</span>
-                                                    </button>
-                                                </flux:modal.trigger>
-
-                                                <flux:modal :name="$commentDeleteModal" class="max-w-md">
-                                                    <div class="space-y-4">
-                                                        <flux:heading size="lg">{{ __('ui.blog.comments.confirm_delete_title') }}</flux:heading>
-
-                                                        <flux:text>
-                                                            {{ __('ui.blog.comments.confirm_delete_body') }}
-                                                        </flux:text>
-
-                                                        <div class="flex items-center justify-end gap-2">
-                                                            <flux:modal.close>
-                                                                <flux:button variant="filled">
-                                                                    {{ __('ui.blog.comments.confirm_delete_cancel') }}
-                                                                </flux:button>
-                                                            </flux:modal.close>
-
-                                                            <form
-                                                                method="POST"
-                                                                action="{{ route('comments.destroy', ['comment' => $comment]) }}"
-                                                                x-on:submit.prevent="deleteComment($event, @js($commentDeleteModal))"
-                                                            >
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <flux:button variant="danger" type="submit" x-bind:disabled="isProcessing" data-test="confirm-comment-delete-button">
-                                                                    {{ __('ui.blog.comments.confirm_delete_confirm') }}
-                                                                </flux:button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </flux:modal>
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex size-8 items-center justify-center border border-zinc-300 text-zinc-500 transition-colors hover:border-red-400 hover:text-red-600"
+                                                    title="{{ __('ui.blog.comments.delete') }}"
+                                                    x-bind:disabled="isProcessing"
+                                                    data-test="open-comment-delete-confirmation"
+                                                    x-on:click="$dispatch('comment:request-delete', { url: '{{ route('comments.destroy', ['comment' => $comment]) }}', commentId: @js($comment->id) })"
+                                                >
+                                                    <x-ui.icon name="trash" class="size-4" />
+                                                    <span class="sr-only">{{ __('ui.blog.comments.delete') }}</span>
+                                                </button>
                                             @endcan
                                         </div>
                                     </div>
@@ -329,15 +305,16 @@
                                                 <article
                                                     x-data="commentActions({
                                                         hidden: @js((bool) $reply->is_hidden),
+                                                        id: @js($reply->id),
                                                         hiddenLabel: @js(__('ui.blog.comments.hide')),
                                                         shownLabel: @js(__('ui.blog.comments.show')),
                                                         hiddenToast: @js(__('ui.flash.comment_hidden')),
                                                         shownToast: @js(__('ui.flash.comment_shown')),
-                                                        deletedToast: @js(__('ui.flash.comment_deleted')),
                                                         failedToast: @js(__('ui.flash.action_failed')),
                                                     })"
                                                     x-show="!deleted"
                                                     x-transition.opacity.duration.150ms
+                                                    x-on:comment:deleted.window="if ($event.detail.id === id) deleted = true"
                                                     class="border-t border-zinc-200 pl-4 -mr-5 sm:-mr-6 pr-5 sm:pr-6 py-3 first:border-t-0"
                                                     :class="{
                                                         'bg-orange-50/70': hidden,
@@ -371,39 +348,16 @@
                                                                 </form>
                                                             @endcan
                                                             @can('delete', $reply)
-                                                                <flux:modal.trigger :name="$replyDeleteModal">
-                                                                    <button
-                                                                        type="button"
-                                                                        class="inline-flex size-7 items-center justify-center border border-zinc-300 text-zinc-400 transition-colors hover:border-red-400 hover:text-red-600"
-                                                                        title="{{ __('ui.blog.comments.delete') }}"
-                                                                        x-bind:disabled="isProcessing"
-                                                                    >
-                                                                        <x-ui.icon name="trash" class="size-3.5" />
-                                                                        <span class="sr-only">{{ __('ui.blog.comments.delete') }}</span>
-                                                                    </button>
-                                                                </flux:modal.trigger>
-                                                                <flux:modal :name="$replyDeleteModal" class="max-w-md">
-                                                                    <div class="space-y-4">
-                                                                        <flux:heading size="lg">{{ __('ui.blog.comments.confirm_delete_title') }}</flux:heading>
-                                                                        <flux:text>{{ __('ui.blog.comments.confirm_delete_body') }}</flux:text>
-                                                                        <div class="flex items-center justify-end gap-2">
-                                                                            <flux:modal.close>
-                                                                                <flux:button variant="filled">{{ __('ui.blog.comments.confirm_delete_cancel') }}</flux:button>
-                                                                            </flux:modal.close>
-                                                                            <form
-                                                                                method="POST"
-                                                                                action="{{ route('comments.destroy', ['comment' => $reply]) }}"
-                                                                                x-on:submit.prevent="deleteComment($event, @js($replyDeleteModal))"
-                                                                            >
-                                                                                @csrf
-                                                                                @method('DELETE')
-                                                                                <flux:button variant="danger" type="submit" x-bind:disabled="isProcessing">
-                                                                                    {{ __('ui.blog.comments.confirm_delete_confirm') }}
-                                                                                </flux:button>
-                                                                            </form>
-                                                                        </div>
-                                                                    </div>
-                                                                </flux:modal>
+                                                                <button
+                                                                    type="button"
+                                                                    class="inline-flex size-7 items-center justify-center border border-zinc-300 text-zinc-400 transition-colors hover:border-red-400 hover:text-red-600"
+                                                                    title="{{ __('ui.blog.comments.delete') }}"
+                                                                    x-bind:disabled="isProcessing"
+                                                                    x-on:click="$dispatch('comment:request-delete', { url: '{{ route('comments.destroy', ['comment' => $reply]) }}', commentId: @js($reply->id) })"
+                                                                >
+                                                                    <x-ui.icon name="trash" class="size-3.5" />
+                                                                    <span class="sr-only">{{ __('ui.blog.comments.delete') }}</span>
+                                                                </button>
                                                             @endcan
                                                         </div>
                                                     </div>
@@ -420,6 +374,39 @@
                             </div>
                         @endif
                     </x-ui.card>
+
+                    {{-- Modal global de confirmation de suppression (hors des articles, évite le freeze) --}}
+                    @if ($comments->isNotEmpty())
+                        @can('delete', $comments->first())
+                            <flux:modal
+                                name="confirm-comment-delete"
+                                class="max-w-md"
+                                x-on:comment:request-delete.window="openDeleteModal($event.detail.url, $event.detail.commentId)"
+                            >
+                                <div class="space-y-4">
+                                    <flux:heading size="lg">{{ __('ui.blog.comments.confirm_delete_title') }}</flux:heading>
+                                    <flux:text>{{ __('ui.blog.comments.confirm_delete_body') }}</flux:text>
+                                    <div class="flex items-center justify-end gap-2">
+                                        <flux:modal.close>
+                                            <flux:button variant="filled">{{ __('ui.blog.comments.confirm_delete_cancel') }}</flux:button>
+                                        </flux:modal.close>
+                                        <flux:button
+                                            variant="danger"
+                                            type="button"
+                                            x-on:click="confirmDelete()"
+                                            x-bind:disabled="deleteModal.isProcessing"
+                                            data-test="confirm-comment-delete-button"
+                                        >
+                                            <span x-show="deleteModal.isProcessing">
+                                                <svg class="size-4 animate-spin inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                            </span>
+                                            {{ __('ui.blog.comments.confirm_delete_confirm') }}
+                                        </flux:button>
+                                    </div>
+                                </div>
+                            </flux:modal>
+                        @endcan
+                    @endif
 
                     @auth
                         <x-ui.card>
@@ -541,8 +528,57 @@
         });
 
         document.addEventListener('alpine:init', () => {
+            Alpine.data('commentSection', (config) => ({
+                deleteModal: {
+                    url: '',
+                    commentId: null,
+                    isProcessing: false,
+                },
+                deletedToast: String(config.deletedToast ?? ''),
+                failedToast: String(config.failedToast ?? ''),
+
+                openDeleteModal(url, commentId) {
+                    this.deleteModal.url = url;
+                    this.deleteModal.commentId = commentId;
+                    this.deleteModal.isProcessing = false;
+                    this.$flux.modal('confirm-comment-delete').show();
+                },
+
+                async confirmDelete() {
+                    if (this.deleteModal.isProcessing || !this.deleteModal.url) return;
+                    this.deleteModal.isProcessing = true;
+                    try {
+                        const csrfToken = document.querySelector('meta[name=csrf-token]')?.content ?? '';
+                        const resp = await fetch(this.deleteModal.url, {
+                            method: 'POST',
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
+                            body: (() => {
+                                const fd = new FormData();
+                                fd.append('_method', 'DELETE');
+                                fd.append('_token', csrfToken);
+                                return fd;
+                            })(),
+                        });
+                        if (!resp.ok) throw new Error();
+                        const id = this.deleteModal.commentId;
+                        this.$flux.modal('confirm-comment-delete').close();
+                        window.dispatchEvent(new CustomEvent('comment:deleted', { detail: { id } }));
+                        window.dispatchEvent(new CustomEvent('ui-toast', {
+                            detail: { message: this.deletedToast, variant: 'success' },
+                        }));
+                    } catch (e) {
+                        window.dispatchEvent(new CustomEvent('ui-toast', {
+                            detail: { message: this.failedToast, variant: 'error' },
+                        }));
+                    } finally {
+                        this.deleteModal.isProcessing = false;
+                    }
+                },
+            }));
+
             Alpine.data('commentActions', (config) => ({
                 hidden: Boolean(config.hidden),
+                id: config.id ?? null,
                 deleted: false,
                 isProcessing: false,
                 showReply: false,
@@ -550,26 +586,12 @@
                 shownLabel: String(config.shownLabel ?? ''),
                 hiddenToast: String(config.hiddenToast ?? ''),
                 shownToast: String(config.shownToast ?? ''),
-                deletedToast: String(config.deletedToast ?? ''),
                 failedToast: String(config.failedToast ?? ''),
 
                 notify(message, variant = 'success') {
-                    if (message.trim() === '') {
-                        return;
-                    }
-
+                    if (message.trim() === '') return;
                     window.dispatchEvent(new CustomEvent('ui-toast', {
                         detail: { message, variant },
-                    }));
-                },
-
-                closeModal(modalName) {
-                    if (typeof modalName !== 'string' || modalName.trim() === '') {
-                        return;
-                    }
-
-                    window.dispatchEvent(new CustomEvent('modal-close', {
-                        detail: { name: modalName },
                     }));
                 },
 
@@ -592,14 +614,12 @@
 
                         if (!response.ok) {
                             this.notify(this.failedToast, 'error');
-
                             return false;
                         }
 
                         return true;
                     } catch (error) {
                         this.notify(this.failedToast, 'error');
-
                         return false;
                     } finally {
                         this.isProcessing = false;
@@ -617,22 +637,6 @@
 
                     this.hidden = nextHiddenState;
                     this.notify(nextHiddenState ? this.hiddenToast : this.shownToast, 'success');
-                },
-
-                async deleteComment(event, modalName = null) {
-                    const form = event.target;
-                    const isSubmitted = await this.submitForm(form);
-
-                    if (!isSubmitted) {
-                        return;
-                    }
-
-                    // Fermer le modal d'abord, puis marquer deleted après l'animation
-                    this.closeModal(modalName);
-                    this.notify(this.deletedToast, 'success');
-                    window.setTimeout(() => {
-                        this.deleted = true;
-                    }, 300);
                 },
             }));
         });
