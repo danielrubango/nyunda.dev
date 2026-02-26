@@ -124,3 +124,19 @@ test('non admin users cannot access subscriber and editorial resources', functio
         ->get('/admin/community-links')
         ->assertForbidden();
 });
+
+test('author selection on internal post form includes non author users', function () {
+    $admin = User::factory()->admin()->create();
+    $regularUser = User::factory()->create([
+        'name' => 'Regular Dashboard User',
+    ]);
+    $authorUser = User::factory()->author()->create([
+        'name' => 'Editorial Author User',
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/internal-posts/create');
+
+    $response->assertSuccessful();
+    $response->assertSee('Regular Dashboard User');
+    $response->assertSee('Editorial Author User');
+});

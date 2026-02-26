@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ContentItems\Schemas;
 use App\Enums\ContentStatus;
 use App\Enums\ContentType;
 use App\Models\ContentItem;
+use App\Models\User;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\MarkdownEditor;
@@ -39,7 +40,10 @@ class ContentItemForm
                                 ->live()
                                 ->columnSpanFull(),
                         Select::make('author_id')
-                            ->relationship('author', 'name')
+                            ->options(fn (): array => User::query()
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->all())
                             ->searchable()
                             ->preload()
                             ->required()
