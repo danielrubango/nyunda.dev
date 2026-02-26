@@ -375,37 +375,35 @@
                     </x-ui.card>
 
                     {{-- Modal global de confirmation de suppression (hors des articles, évite le freeze) --}}
-                    @if ($comments->isNotEmpty())
-                        @can('delete', $comments->first())
-                            <flux:modal
-                                name="confirm-comment-delete"
-                                class="max-w-md"
-                                x-on:comment:request-delete.window="openDeleteModal($event.detail.url, $event.detail.commentId)"
-                            >
-                                <div class="space-y-4">
-                                    <flux:heading size="lg">{{ __('ui.blog.comments.confirm_delete_title') }}</flux:heading>
-                                    <flux:text>{{ __('ui.blog.comments.confirm_delete_body') }}</flux:text>
-                                    <div class="flex items-center justify-end gap-2">
-                                        <flux:modal.close>
-                                            <flux:button variant="filled">{{ __('ui.blog.comments.confirm_delete_cancel') }}</flux:button>
-                                        </flux:modal.close>
-                                        <flux:button
-                                            variant="danger"
-                                            type="button"
-                                            x-on:click="confirmDelete()"
-                                            x-bind:disabled="deleteModal.isProcessing"
-                                            data-test="confirm-comment-delete-button"
-                                        >
-                                            <span x-show="deleteModal.isProcessing">
-                                                <svg class="size-4 animate-spin inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                                            </span>
-                                            {{ __('ui.blog.comments.confirm_delete_confirm') }}
-                                        </flux:button>
-                                    </div>
+                    @auth
+                        <flux:modal
+                            name="confirm-comment-delete"
+                            class="max-w-md"
+                            x-on:comment:request-delete.window="openDeleteModal($event.detail.url, $event.detail.commentId)"
+                        >
+                            <div class="space-y-4">
+                                <flux:heading size="lg">{{ __('ui.blog.comments.confirm_delete_title') }}</flux:heading>
+                                <flux:text>{{ __('ui.blog.comments.confirm_delete_body') }}</flux:text>
+                                <div class="flex items-center justify-end gap-2">
+                                    <flux:modal.close>
+                                        <flux:button variant="filled">{{ __('ui.blog.comments.confirm_delete_cancel') }}</flux:button>
+                                    </flux:modal.close>
+                                    <flux:button
+                                        variant="danger"
+                                        type="button"
+                                        x-on:click="confirmDelete()"
+                                        x-bind:disabled="deleteModal.isProcessing"
+                                        data-test="confirm-comment-delete-button"
+                                    >
+                                        <span x-show="deleteModal.isProcessing">
+                                            <svg class="size-4 animate-spin inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                        </span>
+                                        {{ __('ui.blog.comments.confirm_delete_confirm') }}
+                                    </flux:button>
                                 </div>
-                            </flux:modal>
-                        @endcan
-                    @endif
+                            </div>
+                        </flux:modal>
+                    @endauth
 
                     @auth
                         <x-ui.card>

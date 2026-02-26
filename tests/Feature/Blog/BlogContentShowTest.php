@@ -88,7 +88,36 @@ test('hide comment action is visible only to admin users', function () {
     $userResponse = $this->actingAs($user)->get('/blog/fr/comment-visibility-post');
     $userResponse->assertSuccessful();
     $userResponse->assertDontSee(route('comments.update', ['comment' => $comment]));
-    $userResponse->assertDontSee(__('ui.blog.comments.confirm_delete_title'));
+    $userResponse->assertDontSee(route('comments.destroy', ['comment' => $comment]));
+});
+
+test('comment author can open delete modal even when first comment belongs to another user', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create();
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'comment-delete-modal-author-case',
+        'title' => 'Comment delete modal author case',
+        'excerpt' => 'Comment delete modal author case excerpt',
+    ]);
+
+    Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+        'user_id' => $otherUser->id,
+    ]);
+
+    $ownComment = Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/blog/fr/comment-delete-modal-author-case');
+
+    $response->assertSuccessful();
+    $response->assertSee(__('ui.blog.comments.confirm_delete_title'));
+    $response->assertSee('data-test="open-comment-delete-confirmation"', false);
+    $response->assertSee(route('comments.destroy', ['comment' => $ownComment]), false);
 });
 
 test('admin can see reads count on internal post page', function () {
