@@ -324,7 +324,7 @@
                                                     {{-- En-tête reply : indicateur ↳ à gauche, actions admin à droite --}}
                                                     <div class="flex items-start justify-between gap-3">
                                                         <p class="flex items-center gap-1 text-xs text-zinc-400">
-                                                            <x-ui.icon name="corner-down-right" class="size-3 shrink-0 text-zinc-300" />
+                                                            <span class="shrink-0 text-zinc-300" aria-hidden="true">&hookrightarrow;</span>
                                                             <span class="font-medium text-zinc-500">{{ $reply->user->name }}</span>
                                                             <span class="text-zinc-300">•</span>
                                                             <span>{{ $replyPublishedLabel }}</span>

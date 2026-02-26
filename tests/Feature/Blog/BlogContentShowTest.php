@@ -258,3 +258,31 @@ test('reply button displays an icon for authenticated users', function () {
         __('ui.blog.comments.reply'),
     ], false);
 });
+
+test('child comments do not render the reply icon component in their header', function () {
+    $user = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'show_comments' => true,
+    ]);
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'comments-child-header-indicator',
+        'title' => 'Comments child header indicator',
+        'excerpt' => 'Comments child header indicator excerpt',
+    ]);
+
+    $parentComment = Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+    ]);
+
+    Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+        'parent_id' => $parentComment->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/blog/fr/comments-child-header-indicator');
+
+    $response->assertSuccessful();
+    $response->assertDontSee('size-3 shrink-0 text-zinc-300', false);
+    $response->assertSee('&hookrightarrow;', false);
+});
