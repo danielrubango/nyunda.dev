@@ -118,6 +118,8 @@ test('comment author can open delete modal even when first comment belongs to an
     $response->assertSee(__('ui.blog.comments.confirm_delete_title'));
     $response->assertSee('data-test="open-comment-delete-confirmation"', false);
     $response->assertSee(route('comments.destroy', ['comment' => $ownComment]), false);
+    $response->assertSee('x-on:comment:request-delete.window="openDeleteModal($event.detail.url, $event.detail.commentId)"', false);
+    $response->assertSee('csrfToken:', false);
     $response->assertSee("document.dispatchEvent(new CustomEvent('modal-show'", false);
     $response->assertSee("document.dispatchEvent(new CustomEvent('modal-close'", false);
 });

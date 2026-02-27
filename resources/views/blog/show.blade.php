@@ -117,7 +117,9 @@
                     x-data="commentSection({
                         deletedToast: @js(__('ui.flash.comment_deleted')),
                         failedToast: @js(__('ui.flash.action_failed')),
+                        csrfToken: @js(csrf_token()),
                     })"
+                    x-on:comment:request-delete.window="openDeleteModal($event.detail.url, $event.detail.commentId)"
                 >
                     <h2 class="ui-section-title">{{ __('ui.blog.comments.title') }}</h2>
 
@@ -379,7 +381,6 @@
                         <flux:modal
                             name="confirm-comment-delete"
                             class="max-w-md"
-                            x-on:comment:request-delete.window="openDeleteModal($event.detail.url, $event.detail.commentId)"
                         >
                             <div class="space-y-4">
                                 <flux:heading size="lg">{{ __('ui.blog.comments.confirm_delete_title') }}</flux:heading>
@@ -533,6 +534,7 @@
                 },
                 deletedToast: String(config.deletedToast ?? ''),
                 failedToast: String(config.failedToast ?? ''),
+                csrfToken: String(config.csrfToken ?? ''),
 
                 openDeleteModal(url, commentId) {
                     this.deleteModal.url = url;
@@ -545,14 +547,13 @@
                     if (this.deleteModal.isProcessing || !this.deleteModal.url) return;
                     this.deleteModal.isProcessing = true;
                     try {
-                        const csrfToken = document.querySelector('meta[name=csrf-token]')?.content ?? '';
                         const resp = await fetch(this.deleteModal.url, {
                             method: 'POST',
                             headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
                             body: (() => {
                                 const fd = new FormData();
                                 fd.append('_method', 'DELETE');
-                                fd.append('_token', csrfToken);
+                                fd.append('_token', this.csrfToken);
                                 return fd;
                             })(),
                         });
