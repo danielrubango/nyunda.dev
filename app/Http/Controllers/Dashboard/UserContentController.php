@@ -47,7 +47,7 @@ class UserContentController extends Controller
                     ->limit(1),
             ])
             ->with(['translations', 'author'])
-            ->withCount(['comments', 'likes', 'linkVotes']);
+            ->withCount(['comments', 'likes']);
 
         if (is_string($statusFilter) && in_array($statusFilter, collect(ContentStatus::cases())->map(fn (ContentStatus $status): string => $status->value)->all(), true)) {
             $query->where('status', $statusFilter);
@@ -74,10 +74,8 @@ class UserContentController extends Controller
             $query->orderBy('comments_count', $sortDirection)
                 ->orderBy('created_at', 'desc');
         } elseif ($sort === 'interactions') {
-            $query->orderByRaw(
-                'CASE WHEN type = ? THEN likes_count ELSE link_votes_count END '.$sortDirection,
-                [ContentType::InternalPost->value],
-            )->orderBy('created_at', 'desc');
+            $query->orderBy('likes_count', $sortDirection)
+                ->orderBy('created_at', 'desc');
         } elseif ($sort === 'reads') {
             $query->orderBy('reads_count', $sortDirection)
                 ->orderBy('created_at', 'desc');
@@ -91,9 +89,6 @@ class UserContentController extends Controller
         $rows = $contentItems->getCollection()
             ->map(function (ContentItem $item): array {
                 $translation = $item->translations->first();
-                $interactionCount = $item->isInternalPost()
-                    ? (int) $item->likes_count
-                    : (int) $item->link_votes_count;
 
                 return [
                     'item' => $item,
@@ -101,7 +96,7 @@ class UserContentController extends Controller
                     'status_label' => $this->resolveStatusLabel($item),
                     'status_variant' => $this->resolveStatusVariant($item),
                     'comments_count' => (int) $item->comments_count,
-                    'interaction_count' => $interactionCount,
+                    'interaction_count' => (int) $item->likes_count,
                     'reads_count' => (int) $item->reads_count,
                     'edit_url' => route('dashboard.content.edit', ['contentItem' => $item]),
                 ];
@@ -118,8 +113,11 @@ class UserContentController extends Controller
             'comments' => (int) Comment::query()
                 ->whereHas('contentItem', fn (Builder $builder): Builder => $builder->where('author_id', $user->id))
                 ->count(),
-            'interactions' => (int) ContentItem::query()->where('author_id', $user->id)->withCount(['likes', 'linkVotes'])->get()
-                ->sum(fn (ContentItem $item): int => (int) $item->likes_count + (int) $item->link_votes_count),
+            'interactions' => (int) ContentItem::query()
+                ->where('author_id', $user->id)
+                ->withCount('likes')
+                ->get()
+                ->sum(fn (ContentItem $item): int => (int) $item->likes_count),
         ];
 
         /** @var LengthAwarePaginator<int, Comment> $recentComments */
@@ -192,7 +190,7 @@ class UserContentController extends Controller
         );
 
         return redirect()
-            ->route('dashboard')
+            ->route('dashboard.content.index')
             ->with('status', 'Contenu soumis avec succes.');
     }
 
