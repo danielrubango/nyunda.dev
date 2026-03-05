@@ -79,16 +79,49 @@ test('hide comment action is visible only to admin users', function () {
     $adminResponse->assertSee(__('ui.blog.comments.hide'));
     $adminResponse->assertSee('x-data="commentActions(', false);
     $adminResponse->assertSee('x-on:submit.prevent="toggleVisibility($event)"', false);
-    $adminResponse->assertSee('x-on:submit.prevent="deleteComment($event,', false);
+    $adminResponse->assertSee('comment:request-delete', false);
     $adminResponse->assertSee('data-test="open-comment-delete-confirmation"', false);
-    $adminResponse->assertSee('data-modal="confirm-comment-deletion-'.$comment->id.'"', false);
+    $adminResponse->assertSee('data-modal="confirm-comment-delete"', false);
     $adminResponse->assertSee(__('ui.blog.comments.confirm_delete_title'));
     $adminResponse->assertDontSee('group-hover:opacity-100');
 
     $userResponse = $this->actingAs($user)->get('/blog/fr/comment-visibility-post');
     $userResponse->assertSuccessful();
     $userResponse->assertDontSee(route('comments.update', ['comment' => $comment]));
-    $userResponse->assertDontSee(__('ui.blog.comments.confirm_delete_title'));
+    $userResponse->assertDontSee(route('comments.destroy', ['comment' => $comment]));
+});
+
+test('comment author can open delete modal even when first comment belongs to another user', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create();
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'comment-delete-modal-author-case',
+        'title' => 'Comment delete modal author case',
+        'excerpt' => 'Comment delete modal author case excerpt',
+    ]);
+
+    Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+        'user_id' => $otherUser->id,
+    ]);
+
+    $ownComment = Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/blog/fr/comment-delete-modal-author-case');
+
+    $response->assertSuccessful();
+    $response->assertSee(__('ui.blog.comments.confirm_delete_title'));
+    $response->assertSee('data-test="open-comment-delete-confirmation"', false);
+    $response->assertSee(route('comments.destroy', ['comment' => $ownComment]), false);
+    $response->assertSee('x-on:comment:request-delete.window="openDeleteModal($event.detail.url, $event.detail.commentId)"', false);
+    $response->assertSee('csrfToken:', false);
+    $response->assertSee("document.dispatchEvent(new CustomEvent('modal-show'", false);
+    $response->assertSee("document.dispatchEvent(new CustomEvent('modal-close'", false);
 });
 
 test('admin can see reads count on internal post page', function () {
@@ -227,8 +260,276 @@ test('authenticated comment form has no visible label and comments use compact s
     $response = $this->actingAs($user)->get('/blog/fr/comments-form-style');
 
     $response->assertSuccessful();
-    $response->assertSee('class="group space-y-1 p-5 sm:p-6', false);
+    $response->assertSee('class="group scroll-mt-24 space-y-1 p-5 sm:p-6', false);
     $response->assertSee('class="article-content max-w-none font-sans text-base"', false);
     $response->assertDontSee('<label for="body_markdown"', false);
     $response->assertSee('aria-label="'.__('ui.blog.comments.form_placeholder').'"', false);
+});
+
+test('reply button displays an icon for authenticated users', function () {
+    $user = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'show_comments' => true,
+    ]);
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'comments-reply-icon',
+        'title' => 'Comments reply icon',
+        'excerpt' => 'Comments reply icon excerpt',
+    ]);
+
+    Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/blog/fr/comments-reply-icon');
+
+    $response->assertSuccessful();
+    $response->assertSeeInOrder([
+        'title="'.__('ui.blog.comments.reply').'"',
+        'd="M7 5V11C7 12.1046 7.89543 13 9 13H17"',
+        __('ui.blog.comments.reply'),
+    ], false);
+});
+
+test('child comments do not render the reply icon component in their header', function () {
+    $user = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'show_comments' => true,
+    ]);
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'comments-child-header-indicator',
+        'title' => 'Comments child header indicator',
+        'excerpt' => 'Comments child header indicator excerpt',
+    ]);
+
+    $parentComment = Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+    ]);
+
+    Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+        'parent_id' => $parentComment->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/blog/fr/comments-child-header-indicator');
+
+    $response->assertSuccessful();
+    $response->assertDontSee('size-3 shrink-0 text-zinc-300', false);
+    $response->assertDontSee('&hookrightarrow;', false);
+});
+
+test('blog show uses manual previous and next article links when provided', function () {
+    $previousItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subDays(2),
+    ]);
+    $currentItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subDay(),
+    ]);
+    $nextItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now(),
+    ]);
+
+    $previousTranslation = ContentTranslation::factory()->for($previousItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-manual-prev',
+        'title' => 'Article manuel precedent',
+        'excerpt' => 'Prev excerpt',
+    ]);
+    $currentTranslation = ContentTranslation::factory()->for($currentItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-manual-current',
+        'title' => 'Article manuel courant',
+        'excerpt' => 'Current excerpt',
+    ]);
+    $nextTranslation = ContentTranslation::factory()->for($nextItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-manual-next',
+        'title' => 'Article manuel suivant',
+        'excerpt' => 'Next excerpt',
+    ]);
+
+    $currentItem->forceFill([
+        'prev_article_id' => $previousItem->id,
+        'next_article_id' => $nextItem->id,
+    ])->save();
+
+    $response = $this->get('/blog/fr/'.$currentTranslation->slug);
+
+    $response->assertSuccessful();
+    $response->assertSee(__('ui.blog.navigation.previous'));
+    $response->assertSee(__('ui.blog.navigation.next'));
+    $response->assertSee($previousTranslation->title);
+    $response->assertSee($nextTranslation->title);
+    $response->assertSee(route('blog.show', ['locale' => 'fr', 'slug' => $previousTranslation->slug]), false);
+    $response->assertSee(route('blog.show', ['locale' => 'fr', 'slug' => $nextTranslation->slug]), false);
+    $response->assertSeeInOrder([
+        __('ui.blog.share.menu'),
+        __('ui.blog.navigation.previous'),
+        __('ui.blog.comments.title'),
+    ]);
+});
+
+test('blog show falls back to closest published internal articles when manual links are not set', function () {
+    $previousItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subHours(6),
+    ]);
+    $currentItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subHours(4),
+    ]);
+    $nextItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subHours(2),
+    ]);
+
+    $previousTranslation = ContentTranslation::factory()->for($previousItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-auto-prev',
+        'title' => 'Article auto precedent',
+        'excerpt' => 'Prev excerpt',
+    ]);
+    $currentTranslation = ContentTranslation::factory()->for($currentItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-auto-current',
+        'title' => 'Article auto courant',
+        'excerpt' => 'Current excerpt',
+    ]);
+    $nextTranslation = ContentTranslation::factory()->for($nextItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-auto-next',
+        'title' => 'Article auto suivant',
+        'excerpt' => 'Next excerpt',
+    ]);
+
+    $response = $this->get('/blog/fr/'.$currentTranslation->slug);
+
+    $response->assertSuccessful();
+    $response->assertSee($previousTranslation->title);
+    $response->assertSee($nextTranslation->title);
+    $response->assertSee(route('blog.show', ['locale' => 'fr', 'slug' => $previousTranslation->slug]), false);
+    $response->assertSee(route('blog.show', ['locale' => 'fr', 'slug' => $nextTranslation->slug]), false);
+});
+
+test('blog show ignores invalid manual links and falls back to automatic adjacent articles', function () {
+    $previousItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subHours(5),
+    ]);
+    $currentItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subHours(3),
+    ]);
+    $nextItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subHour(),
+    ]);
+    $invalidPrevious = ContentItem::factory()->internalPost()->create([
+        'status' => ContentStatus::Pending->value,
+        'published_at' => now()->addHour(),
+    ]);
+    $invalidNext = ContentItem::factory()->published()->externalPost()->create([
+        'published_at' => now()->subMinutes(30),
+    ]);
+
+    $previousTranslation = ContentTranslation::factory()->for($previousItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-fallback-prev',
+        'title' => 'Article fallback precedent',
+        'excerpt' => 'Prev excerpt',
+    ]);
+    $currentTranslation = ContentTranslation::factory()->for($currentItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-fallback-current',
+        'title' => 'Article fallback courant',
+        'excerpt' => 'Current excerpt',
+    ]);
+    $nextTranslation = ContentTranslation::factory()->for($nextItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-fallback-next',
+        'title' => 'Article fallback suivant',
+        'excerpt' => 'Next excerpt',
+    ]);
+
+    ContentTranslation::factory()->for($invalidPrevious)->forLocale('fr')->create([
+        'slug' => 'adjacent-invalid-prev',
+        'title' => 'Article invalide precedent',
+        'excerpt' => 'Invalid prev',
+    ]);
+    ContentTranslation::factory()->for($invalidNext)->forLocale('fr')->create([
+        'slug' => 'adjacent-invalid-next',
+        'title' => 'Article invalide suivant',
+        'excerpt' => 'Invalid next',
+        'external_url' => 'https://example.com/invalid-next',
+    ]);
+
+    $currentItem->forceFill([
+        'prev_article_id' => $invalidPrevious->id,
+        'next_article_id' => $invalidNext->id,
+    ])->save();
+
+    $response = $this->get('/blog/fr/'.$currentTranslation->slug);
+
+    $response->assertSuccessful();
+    $response->assertSee($previousTranslation->title);
+    $response->assertSee($nextTranslation->title);
+    $response->assertDontSee('Article invalide precedent');
+    $response->assertDontSee('Article invalide suivant');
+});
+
+test('blog show renders only next link when no previous candidate exists', function () {
+    $currentItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subDays(2),
+    ]);
+    $nextItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subDay(),
+    ]);
+
+    $currentTranslation = ContentTranslation::factory()->for($currentItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-one-side-current',
+        'title' => 'Article un cote courant',
+        'excerpt' => 'Current excerpt',
+    ]);
+    $nextTranslation = ContentTranslation::factory()->for($nextItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-one-side-next',
+        'title' => 'Article un cote suivant',
+        'excerpt' => 'Next excerpt',
+    ]);
+
+    $response = $this->get('/blog/fr/'.$currentTranslation->slug);
+
+    $response->assertSuccessful();
+    $response->assertDontSee(__('ui.blog.navigation.previous'));
+    $response->assertSee(__('ui.blog.navigation.next'));
+    $response->assertSee($nextTranslation->title);
+});
+
+test('blog show never picks external post as adjacent link', function () {
+    $currentItem = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subHours(3),
+    ]);
+
+    $closestExternal = ContentItem::factory()->published()->externalPost()->create([
+        'published_at' => now()->subHours(2),
+    ]);
+
+    $nextInternal = ContentItem::factory()->published()->internalPost()->create([
+        'published_at' => now()->subHour(),
+    ]);
+
+    $currentTranslation = ContentTranslation::factory()->for($currentItem)->forLocale('fr')->create([
+        'slug' => 'adjacent-internal-only-current',
+        'title' => 'Article interne courant',
+        'excerpt' => 'Current excerpt',
+    ]);
+
+    ContentTranslation::factory()->for($closestExternal)->forLocale('fr')->create([
+        'slug' => 'adjacent-internal-only-external',
+        'title' => 'Article externe proche',
+        'excerpt' => 'External excerpt',
+        'external_url' => 'https://example.com/external-nearest',
+    ]);
+
+    $nextInternalTranslation = ContentTranslation::factory()->for($nextInternal)->forLocale('fr')->create([
+        'slug' => 'adjacent-internal-only-next',
+        'title' => 'Article interne suivant',
+        'excerpt' => 'Next excerpt',
+    ]);
+
+    $response = $this->get('/blog/fr/'.$currentTranslation->slug);
+
+    $response->assertSuccessful();
+    $response->assertSee('Article interne suivant');
+    $response->assertDontSee('Article externe proche');
+    $response->assertSee(route('blog.show', [
+        'locale' => 'fr',
+        'slug' => $nextInternalTranslation->slug,
+    ]), false);
 });

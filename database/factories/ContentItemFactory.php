@@ -30,6 +30,8 @@ class ContentItemFactory extends Factory
             'share_on_publish' => false,
             'reads_count' => 0,
             'is_featured' => false,
+            'prev_article_id' => null,
+            'next_article_id' => null,
         ];
     }
 

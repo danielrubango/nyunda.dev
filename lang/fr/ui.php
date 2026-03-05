@@ -16,6 +16,14 @@ return [
         'register' => 'Créer un compte',
         'rss' => 'Flux RSS',
     ],
+    'auth' => [
+        'social' => [
+            'divider' => 'Se connecter avec',
+            'google' => 'Google',
+            'linkedin' => 'LinkedIn',
+            'callback_error' => 'La connexion sociale a echoue. Veuillez reessayer.',
+        ],
+    ],
     'accessibility' => [
         'skip_to_content' => 'Aller au contenu',
         'tabs' => 'Onglets',
@@ -83,6 +91,10 @@ return [
             'copied' => 'Copié',
             'copy_error' => 'Échec de copie',
         ],
+        'navigation' => [
+            'previous' => 'Article precedent',
+            'next' => 'Article suivant',
+        ],
         'comments' => [
             'title' => 'Commentaires',
             'form_label' => 'Votre commentaire',
@@ -102,6 +114,12 @@ return [
             'validation_max' => 'Le commentaire ne peut pas depasser :max caracteres.',
             'empty' => 'Aucun commentaire pour le moment.',
             'disabled' => 'Les commentaires sont désactivés pour cet article.',
+            'reply' => 'Répondre',
+            'reply_to' => 'Répondre à :name',
+            'cancel_reply' => 'Annuler',
+            'reply_published' => 'Réponse publiée avec succès.',
+            'shortcut_submit' => 'pour publier',
+            'shortcut_cancel' => 'pour annuler',
         ],
     ],
     'forum' => [
@@ -168,6 +186,8 @@ return [
         'subtitle' => 'Références externes validées.',
         'visit' => 'Visiter',
         'empty' => 'Aucun lien ne correspond aux filtres sélectionnés.',
+        'vote_toggle' => 'Voter pour ce lien',
+        'votes' => ':count votes',
         'vote_score_unavailable' => 'Score vote: à venir',
         'shared_on_domain' => 'Partagé le :date — :domain',
         'unknown_domain' => 'source externe',
@@ -222,6 +242,9 @@ return [
         'forum_coming_soon' => 'La page forum sera bientôt disponible.',
         'like_added' => 'Article ajouté à vos favoris.',
         'like_removed' => 'Article retiré de vos favoris.',
+        'vote_added' => 'Vote enregistré.',
+        'vote_removed' => 'Vote retiré.',
+        'login_required' => 'Vous devez être connecté pour effectuer cette action.',
         'comment_added' => 'Commentaire publié avec succès.',
         'comment_hidden' => 'Commentaire masqué.',
         'comment_shown' => 'Commentaire démasqué.',

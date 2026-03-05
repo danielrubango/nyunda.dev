@@ -39,6 +39,8 @@ class EditContentItem extends EditRecord
         if ($contentType !== null && ! $this->record->isInternalPost()) {
             $data['show_likes'] = false;
             $data['show_comments'] = false;
+            $data['prev_article_id'] = null;
+            $data['next_article_id'] = null;
         }
 
         return $data;

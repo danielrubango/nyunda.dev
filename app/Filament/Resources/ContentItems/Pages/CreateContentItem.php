@@ -48,6 +48,8 @@ class CreateContentItem extends CreateRecord
         if (($data['type'] ?? null) !== ContentType::InternalPost->value) {
             $data['show_likes'] = false;
             $data['show_comments'] = false;
+            $data['prev_article_id'] = null;
+            $data['next_article_id'] = null;
         }
 
         return $data;
