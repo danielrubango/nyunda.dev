@@ -11,6 +11,7 @@ use App\Http\Requests\Dashboard\StoreDashboardContentRequest;
 use App\Http\Requests\Dashboard\UpdateDashboardContentRequest;
 use App\Models\Comment;
 use App\Models\ContentItem;
+use App\Models\ContentTranslation;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -28,12 +29,25 @@ class UserContentController extends Controller
         $statusFilter = $request->query('status');
         $typeFilter = $request->query('type');
         $searchFilter = trim((string) $request->query('q', ''));
+        $sort = (string) $request->query('sort', 'created_at');
+        $sortDirection = strtolower((string) $request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['title', 'status', 'comments', 'interactions', 'reads', 'created_at'];
+
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'created_at';
+        }
 
         $query = ContentItem::query()
             ->where('author_id', $user->id)
+            ->addSelect([
+                'sort_title' => ContentTranslation::query()
+                    ->select('title')
+                    ->whereColumn('content_item_id', 'content_items.id')
+                    ->orderBy('id')
+                    ->limit(1),
+            ])
             ->with(['translations', 'author'])
-            ->withCount(['comments', 'likes', 'linkVotes'])
-            ->latest('created_at');
+            ->withCount(['comments', 'likes', 'linkVotes']);
 
         if (is_string($statusFilter) && in_array($statusFilter, collect(ContentStatus::cases())->map(fn (ContentStatus $status): string => $status->value)->all(), true)) {
             $query->where('status', $statusFilter);
@@ -48,6 +62,27 @@ class UserContentController extends Controller
                 $builder->where('title', 'like', '%'.$searchFilter.'%')
                     ->orWhere('excerpt', 'like', '%'.$searchFilter.'%');
             });
+        }
+
+        if ($sort === 'title') {
+            $query->orderBy('sort_title', $sortDirection)
+                ->orderBy('id', 'desc');
+        } elseif ($sort === 'status') {
+            $query->orderBy('status', $sortDirection)
+                ->orderBy('created_at', 'desc');
+        } elseif ($sort === 'comments') {
+            $query->orderBy('comments_count', $sortDirection)
+                ->orderBy('created_at', 'desc');
+        } elseif ($sort === 'interactions') {
+            $query->orderByRaw(
+                'CASE WHEN type = ? THEN likes_count ELSE link_votes_count END '.$sortDirection,
+                [ContentType::InternalPost->value],
+            )->orderBy('created_at', 'desc');
+        } elseif ($sort === 'reads') {
+            $query->orderBy('reads_count', $sortDirection)
+                ->orderBy('created_at', 'desc');
+        } else {
+            $query->orderBy('created_at', $sortDirection);
         }
 
         /** @var LengthAwarePaginator<int, ContentItem> $contentItems */
@@ -87,12 +122,13 @@ class UserContentController extends Controller
                 ->sum(fn (ContentItem $item): int => (int) $item->likes_count + (int) $item->link_votes_count),
         ];
 
+        /** @var LengthAwarePaginator<int, Comment> $recentComments */
         $recentComments = Comment::query()
             ->where('user_id', $user->id)
             ->with('contentItem.translations')
             ->latest('created_at')
-            ->limit(10)
-            ->get();
+            ->paginate(5, ['*'], 'comments_page')
+            ->withQueryString();
 
         return view('dashboard.content.index', [
             'contentItems' => $contentItems,
@@ -107,6 +143,8 @@ class UserContentController extends Controller
             'typeOptions' => collect(ContentType::cases())->mapWithKeys(fn (ContentType $type): array => [
                 $type->value => ucfirst(str_replace('_', ' ', $type->value)),
             ])->all(),
+            'sort' => $sort,
+            'sortDirection' => $sortDirection,
         ]);
     }
 
@@ -178,15 +216,15 @@ class UserContentController extends Controller
     protected function resolveStatusLabel(ContentItem $contentItem): string
     {
         if ($contentItem->status === ContentStatus::Published) {
-            return 'Accepte et publie';
+            return 'Publie';
         }
 
-        if ($contentItem->status === ContentStatus::Pending && $contentItem->published_at !== null && $contentItem->published_at->isFuture()) {
-            return 'Accepte et planifie';
+        if ($contentItem->status === ContentStatus::Pending && $contentItem->published_at !== null) {
+            return 'Accepte';
         }
 
         if ($contentItem->status === ContentStatus::Pending) {
-            return 'En attente d acceptation';
+            return 'En attente';
         }
 
         if ($contentItem->status === ContentStatus::Rejected) {
@@ -202,7 +240,7 @@ class UserContentController extends Controller
             return 'success';
         }
 
-        if ($contentItem->status === ContentStatus::Pending && $contentItem->published_at !== null && $contentItem->published_at->isFuture()) {
+        if ($contentItem->status === ContentStatus::Pending && $contentItem->published_at !== null) {
             return 'info';
         }
 

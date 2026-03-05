@@ -40,6 +40,12 @@ test('dashboard content index shows personal rows stats and status labels', func
         'reads_count' => 1,
     ]);
 
+    $draft = ContentItem::factory()->internalPost()->create([
+        'author_id' => $user->id,
+        'status' => ContentStatus::Draft->value,
+        'reads_count' => 0,
+    ]);
+
     $otherItem = ContentItem::factory()->internalPost()->create([
         'author_id' => $otherUser->id,
         'status' => ContentStatus::Published->value,
@@ -49,6 +55,7 @@ test('dashboard content index shows personal rows stats and status labels', func
     ContentTranslation::factory()->for($scheduled)->forLocale('fr')->create(['title' => 'Mon contenu planifie', 'slug' => 'mon-contenu-planifie', 'external_url' => 'https://example.com/scheduled']);
     ContentTranslation::factory()->for($pending)->forLocale('fr')->create(['title' => 'Mon contenu en attente', 'slug' => 'mon-contenu-pending', 'external_url' => 'https://example.com/pending']);
     ContentTranslation::factory()->for($rejected)->forLocale('fr')->create(['title' => 'Mon contenu rejete', 'slug' => 'mon-contenu-rejete']);
+    ContentTranslation::factory()->for($draft)->forLocale('fr')->create(['title' => 'Mon contenu brouillon', 'slug' => 'mon-contenu-brouillon']);
     ContentTranslation::factory()->for($otherItem)->forLocale('fr')->create(['title' => 'Contenu autre utilisateur', 'slug' => 'contenu-autre-utilisateur']);
 
     Comment::factory()->create(['content_item_id' => $published->id, 'user_id' => $otherUser->id]);
@@ -64,14 +71,17 @@ test('dashboard content index shows personal rows stats and status labels', func
     $response->assertSee('Mon contenu planifie');
     $response->assertSee('Mon contenu en attente');
     $response->assertSee('Mon contenu rejete');
+    $response->assertSee('Mon contenu brouillon');
     $response->assertDontSee('Contenu autre utilisateur');
-    $response->assertSee('Accepte et publie');
-    $response->assertSee('Accepte et planifie');
-    $response->assertSee('En attente d acceptation');
+    $response->assertSee('Publie');
+    $response->assertSee('Accepte');
+    $response->assertSee('En attente');
     $response->assertSee('Rejete');
+    $response->assertSee('Brouillon');
     $response->assertSee('21');
     $response->assertSee(route('dashboard.content.edit', ['contentItem' => $published]), false);
     $response->assertSee('data-test="dashboard-content-datatable"', false);
+    $response->assertSee('data-row-link="'.route('dashboard.content.edit', ['contentItem' => $published]).'"', false);
     $response->assertSee('← Retour au dashboard');
 });
 
@@ -107,4 +117,84 @@ test('dashboard activity comments route redirects to content index', function ()
     $response = $this->actingAs($user)->get(route('dashboard.activity.comments'));
 
     $response->assertRedirect(route('dashboard.content.index'));
+});
+
+test('dashboard content index exposes sortable header links and sorts by reads', function () {
+    $user = User::factory()->create();
+
+    $lowReadsItem = ContentItem::factory()->internalPost()->create([
+        'author_id' => $user->id,
+        'status' => ContentStatus::Published->value,
+        'reads_count' => 3,
+        'published_at' => now(),
+    ]);
+
+    $highReadsItem = ContentItem::factory()->internalPost()->create([
+        'author_id' => $user->id,
+        'status' => ContentStatus::Published->value,
+        'reads_count' => 25,
+        'published_at' => now(),
+    ]);
+
+    ContentTranslation::factory()->for($lowReadsItem)->forLocale('fr')->create([
+        'title' => 'Article faible vue',
+        'slug' => 'article-faible-vue',
+    ]);
+    ContentTranslation::factory()->for($highReadsItem)->forLocale('fr')->create([
+        'title' => 'Article forte vue',
+        'slug' => 'article-forte-vue',
+    ]);
+
+    $response = $this->actingAs($user)->get(route('dashboard.content.index', [
+        'sort' => 'reads',
+        'direction' => 'asc',
+    ]));
+
+    $response->assertSuccessful();
+    $response->assertSee('sort=reads');
+    $response->assertSeeInOrder([
+        'Article faible vue',
+        'Article forte vue',
+    ]);
+});
+
+test('dashboard recent comments are paginated by five and link to article comment anchor', function () {
+    $user = User::factory()->create();
+
+    $contentItem = ContentItem::factory()->internalPost()->create([
+        'author_id' => $user->id,
+        'status' => ContentStatus::Published->value,
+        'published_at' => now()->subDay(),
+    ]);
+
+    $translation = ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'title' => 'Article cible commentaires',
+        'slug' => 'article-cible-commentaires',
+    ]);
+
+    $latestComment = null;
+
+    for ($i = 1; $i <= 6; $i++) {
+        $comment = Comment::factory()->create([
+            'content_item_id' => $contentItem->id,
+            'user_id' => $user->id,
+            'body_markdown' => 'Commentaire perso '.$i,
+            'created_at' => now()->subMinutes($i),
+        ]);
+
+        if ($i === 1) {
+            $latestComment = $comment;
+        }
+    }
+
+    $response = $this->actingAs($user)->get(route('dashboard.content.index'));
+
+    $response->assertSuccessful();
+    $response->assertSee('Commentaire perso 1');
+    $response->assertDontSee('Commentaire perso 6');
+    $response->assertSee('comments_page=2');
+    $response->assertSee(route('blog.show', [
+        'locale' => $translation->locale,
+        'slug' => $translation->slug,
+    ]).'#comment-'.$latestComment->id, false);
 });

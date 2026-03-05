@@ -1,23 +1,46 @@
 @php
-    $selectedType = old('type', $contentItem?->type?->value ?? 'internal_post');
+    $isEditing = $contentItem !== null;
+    $lockedType = $contentItem?->type?->value;
+    $selectedType = $isEditing
+        ? (string) $lockedType
+        : old('type', $lockedType ?? 'internal_post');
     $selectedLocale = old('locale', $translation?->locale ?? $defaultLocale);
+
+    $typeLabels = [
+        'internal_post' => 'Article interne',
+        'external_post' => 'Article externe',
+        'community_link' => 'Lien communautaire',
+    ];
 @endphp
 
-<form method="POST" action="{{ $formAction }}" class="space-y-4">
+<form method="POST" action="{{ $formAction }}" class="space-y-4" x-data="{ selectedType: @js($selectedType) }">
     @csrf
     @if ($formMethod !== 'POST')
         @method($formMethod)
     @endif
 
     <div class="grid gap-4 sm:grid-cols-2">
-        <label class="block text-sm font-medium text-zinc-700">
-            Type
-            <select name="type" class="mt-1 w-full rounded-sm border border-zinc-300 px-3 py-2 text-sm" required>
-                <option value="internal_post" @selected($selectedType === 'internal_post')>Article interne</option>
-                <option value="external_post" @selected($selectedType === 'external_post')>Article externe</option>
-                <option value="community_link" @selected($selectedType === 'community_link')>Lien communautaire</option>
-            </select>
-        </label>
+        @if ($isEditing)
+            <label class="block text-sm font-medium text-zinc-700">
+                Type
+                <input
+                    type="text"
+                    value="{{ $typeLabels[$selectedType] ?? ucfirst(str_replace('_', ' ', $selectedType)) }}"
+                    class="mt-1 w-full rounded-sm border border-zinc-300 bg-zinc-100 px-3 py-2 text-sm text-zinc-700"
+                    disabled
+                >
+                <input type="hidden" name="type" value="{{ $selectedType }}">
+            </label>
+        @else
+            <label class="block text-sm font-medium text-zinc-700">
+                Type
+                <select name="type" x-model="selectedType" class="mt-1 w-full rounded-sm border border-zinc-300 px-3 py-2 text-sm" required>
+                    <option value="internal_post" @selected($selectedType === 'internal_post')>Article interne</option>
+                    <option value="external_post" @selected($selectedType === 'external_post')>Article externe</option>
+                    <option value="community_link" @selected($selectedType === 'community_link')>Lien communautaire</option>
+                </select>
+            </label>
+        @endif
 
         <label class="block text-sm font-medium text-zinc-700">
             Langue
@@ -51,46 +74,50 @@
         >{{ old('excerpt', $translation?->excerpt ?? '') }}</textarea>
     </label>
 
-    <x-dashboard.markdown-editor
-        name="body_markdown"
-        :value="old('body_markdown', $translation?->body_markdown ?? '')"
-        label="Corps markdown (obligatoire pour article interne)"
-        placeholder="# Titre\n\nVotre contenu en markdown ici..."
-    />
-
-    <div class="grid gap-4 sm:grid-cols-2">
-        <label class="block text-sm font-medium text-zinc-700">
-            URL externe (obligatoire pour externe/lien)
-            <input
-                name="external_url"
-                type="url"
-                value="{{ old('external_url', $translation?->external_url ?? '') }}"
-                class="mt-1 w-full rounded-sm border border-zinc-300 px-3 py-2 text-sm"
-                placeholder="https://exemple.com/article"
-            >
-        </label>
-
-        <label class="block text-sm font-medium text-zinc-700">
-            Site externe (optionnel)
-            <input
-                name="external_site_name"
-                type="text"
-                value="{{ old('external_site_name', $translation?->external_site_name ?? '') }}"
-                class="mt-1 w-full rounded-sm border border-zinc-300 px-3 py-2 text-sm"
-                placeholder="Nom du site source"
-            >
-        </label>
+    <div x-show="selectedType === 'internal_post'">
+        <x-dashboard.markdown-editor
+            name="body_markdown"
+            :value="old('body_markdown', $translation?->body_markdown ?? '')"
+            label="Corps markdown (obligatoire pour article interne)"
+            placeholder="# Titre\n\nVotre contenu en markdown ici..."
+        />
     </div>
 
-    <label class="block text-sm font-medium text-zinc-700">
-        Description externe (optionnel)
-        <textarea
-            name="external_description"
-            rows="4"
-            class="mt-1 w-full rounded-sm border border-zinc-300 px-3 py-2 text-sm"
-            placeholder="Description utile pour les contenus externes"
-        >{{ old('external_description', $translation?->external_description ?? '') }}</textarea>
-    </label>
+    <div x-show="selectedType !== 'internal_post'" class="space-y-4">
+        <div class="grid gap-4 sm:grid-cols-2">
+            <label class="block text-sm font-medium text-zinc-700">
+                URL externe (obligatoire pour externe/lien)
+                <input
+                    name="external_url"
+                    type="url"
+                    value="{{ old('external_url', $translation?->external_url ?? '') }}"
+                    class="mt-1 w-full rounded-sm border border-zinc-300 px-3 py-2 text-sm"
+                    placeholder="https://exemple.com/article"
+                >
+            </label>
+
+            <label class="block text-sm font-medium text-zinc-700">
+                Site externe (optionnel)
+                <input
+                    name="external_site_name"
+                    type="text"
+                    value="{{ old('external_site_name', $translation?->external_site_name ?? '') }}"
+                    class="mt-1 w-full rounded-sm border border-zinc-300 px-3 py-2 text-sm"
+                    placeholder="Nom du site source"
+                >
+            </label>
+        </div>
+
+        <label class="block text-sm font-medium text-zinc-700">
+            Description externe (optionnel)
+            <textarea
+                name="external_description"
+                rows="4"
+                class="mt-1 w-full rounded-sm border border-zinc-300 px-3 py-2 text-sm"
+                placeholder="Description utile pour les contenus externes"
+            >{{ old('external_description', $translation?->external_description ?? '') }}</textarea>
+        </label>
+    </div>
 
     <label class="block text-sm font-medium text-zinc-700">
         URL image de couverture (optionnel)

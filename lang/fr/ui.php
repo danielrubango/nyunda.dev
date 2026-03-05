@@ -18,7 +18,7 @@ return [
     ],
     'auth' => [
         'social' => [
-            'divider' => 'Ou continuer avec',
+            'divider' => 'Se connecter avec',
             'google' => 'Google',
             'linkedin' => 'LinkedIn',
             'callback_error' => 'La connexion sociale a echoue. Veuillez reessayer.',
@@ -90,6 +90,10 @@ return [
             'copy' => 'Copier le lien',
             'copied' => 'Copié',
             'copy_error' => 'Échec de copie',
+        ],
+        'navigation' => [
+            'previous' => 'Article precedent',
+            'next' => 'Article suivant',
         ],
         'comments' => [
             'title' => 'Commentaires',

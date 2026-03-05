@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Dashboard;
 
 use App\Enums\ContentType;
+use App\Models\ContentItem;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,8 +19,19 @@ class UpdateDashboardContentRequest extends FormRequest
      */
     public function rules(): array
     {
+        /** @var ContentItem|null $contentItem */
+        $contentItem = $this->route('contentItem');
+
+        $allowedType = $contentItem?->type instanceof ContentType
+            ? $contentItem->type->value
+            : (is_string($contentItem?->type) ? $contentItem->type : null);
+
         return [
-            'type' => ['required', Rule::enum(ContentType::class)],
+            'type' => [
+                'required',
+                Rule::enum(ContentType::class),
+                $allowedType !== null ? Rule::in([$allowedType]) : Rule::in(collect(ContentType::cases())->map(fn (ContentType $type): string => $type->value)->all()),
+            ],
             'locale' => [
                 'required',
                 'string',

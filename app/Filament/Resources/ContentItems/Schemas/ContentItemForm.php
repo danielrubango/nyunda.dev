@@ -18,6 +18,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ContentItemForm
 {
@@ -53,6 +54,78 @@ class ContentItemForm
                             ->multiple()
                             ->searchable()
                             ->preload()
+                            ->columnSpanFull(),
+                        Select::make('prev_article_id')
+                            ->label('Previous article')
+                            ->options(fn (?ContentItem $record): array => self::publishedInternalArticleOptions($record))
+                            ->searchable()
+                            ->preload()
+                            ->nullable()
+                            ->visible(fn (Get $get): bool => self::isInternalType($get, $forcedType))
+                            ->dehydrated(fn (Get $get): bool => self::isInternalType($get, $forcedType))
+                            ->different('next_article_id')
+                            ->rules([
+                                fn (?ContentItem $record) => Rule::exists('content_items', 'id')
+                                    ->where(function ($query) use ($record): void {
+                                        $query
+                                            ->where('type', ContentType::InternalPost->value)
+                                            ->where('status', ContentStatus::Published->value)
+                                            ->where(function ($publishedQuery): void {
+                                                $publishedQuery
+                                                    ->whereNull('published_at')
+                                                    ->orWhere('published_at', '<=', now());
+                                            });
+
+                                        if ($record !== null) {
+                                            $query->where('id', '!=', $record->getKey());
+                                        }
+                                    }),
+                                fn (?ContentItem $record): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($record): void {
+                                    if ($value === null || $record === null) {
+                                        return;
+                                    }
+
+                                    if ((int) $value === (int) $record->getKey()) {
+                                        $fail('The selected previous article is invalid.');
+                                    }
+                                },
+                            ])
+                            ->columnSpanFull(),
+                        Select::make('next_article_id')
+                            ->label('Next article')
+                            ->options(fn (?ContentItem $record): array => self::publishedInternalArticleOptions($record))
+                            ->searchable()
+                            ->preload()
+                            ->nullable()
+                            ->visible(fn (Get $get): bool => self::isInternalType($get, $forcedType))
+                            ->dehydrated(fn (Get $get): bool => self::isInternalType($get, $forcedType))
+                            ->different('prev_article_id')
+                            ->rules([
+                                fn (?ContentItem $record) => Rule::exists('content_items', 'id')
+                                    ->where(function ($query) use ($record): void {
+                                        $query
+                                            ->where('type', ContentType::InternalPost->value)
+                                            ->where('status', ContentStatus::Published->value)
+                                            ->where(function ($publishedQuery): void {
+                                                $publishedQuery
+                                                    ->whereNull('published_at')
+                                                    ->orWhere('published_at', '<=', now());
+                                            });
+
+                                        if ($record !== null) {
+                                            $query->where('id', '!=', $record->getKey());
+                                        }
+                                    }),
+                                fn (?ContentItem $record): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($record): void {
+                                    if ($value === null || $record === null) {
+                                        return;
+                                    }
+
+                                    if ((int) $value === (int) $record->getKey()) {
+                                        $fail('The selected next article is invalid.');
+                                    }
+                                },
+                            ])
                             ->columnSpanFull(),
                         DateTimePicker::make('approved_at')
                             ->label('Approved at')
@@ -189,5 +262,40 @@ class ContentItemForm
         $type = $forcedType?->value ?? (string) $get('type');
 
         return $type === ContentType::InternalPost->value;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected static function publishedInternalArticleOptions(?ContentItem $record = null): array
+    {
+        $query = ContentItem::query()
+            ->where('type', ContentType::InternalPost->value)
+            ->where('status', ContentStatus::Published->value)
+            ->where(function ($builder): void {
+                $builder
+                    ->whereNull('published_at')
+                    ->orWhere('published_at', '<=', now());
+            })
+            ->with('translations')
+            ->orderByDesc('published_at')
+            ->orderByDesc('id');
+
+        if ($record !== null) {
+            $query->where('id', '!=', $record->getKey());
+        }
+
+        return $query
+            ->get()
+            ->mapWithKeys(function (ContentItem $contentItem): array {
+                $translation = $contentItem->translations->firstWhere('locale', app()->getLocale())
+                    ?? $contentItem->translations->firstWhere('locale', 'fr')
+                    ?? $contentItem->translations->first();
+
+                $label = ($translation?->title ?? 'Article #'.$contentItem->id).' (#'.$contentItem->id.')';
+
+                return [(int) $contentItem->id => $label];
+            })
+            ->all();
     }
 }

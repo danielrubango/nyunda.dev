@@ -111,6 +111,28 @@
                 </div>
             </section>
 
+            @if ($adjacentArticles['previous'] !== null || $adjacentArticles['next'] !== null)
+                <section class="flex flex-wrap items-start justify-between gap-3">
+                    <div class="w-full sm:w-auto">
+                        @if ($adjacentArticles['previous'] !== null)
+                            <a href="{{ $adjacentArticles['previous']['url'] }}" class="group block w-full border border-zinc-300 p-3 text-zinc-700 no-underline transition-colors hover:border-zinc-500 hover:bg-zinc-50 sm:w-72">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">{{ __('ui.blog.navigation.previous') }}</p>
+                                <p class="mt-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-zinc-900 group-hover:text-zinc-700">{{ $adjacentArticles['previous']['title'] }}</p>
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="w-full sm:ms-auto sm:w-auto sm:text-right">
+                        @if ($adjacentArticles['next'] !== null)
+                            <a href="{{ $adjacentArticles['next']['url'] }}" class="group block w-full border border-zinc-300 p-3 text-zinc-700 no-underline transition-colors hover:border-zinc-500 hover:bg-zinc-50 sm:w-72">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">{{ __('ui.blog.navigation.next') }}</p>
+                                <p class="mt-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-zinc-900 group-hover:text-zinc-700">{{ $adjacentArticles['next']['title'] }}</p>
+                            </a>
+                        @endif
+                    </div>
+                </section>
+            @endif
+
             @if ($contentItem->show_comments)
                 <section
                     class="space-y-4"
@@ -141,6 +163,7 @@
                                     }
                                 @endphp
                                 <article
+                                    id="comment-{{ $comment->id }}"
                                     x-data="commentActions({
                                         hidden: @js((bool) $comment->is_hidden),
                                         id: @js($comment->id),
@@ -153,7 +176,7 @@
                                     x-show="!deleted"
                                     x-transition.opacity.duration.150ms
                                     x-on:comment:deleted.window="if ($event.detail.id === id) deleted = true"
-                                    class="group space-y-1 p-5 sm:p-6"
+                                    class="group scroll-mt-24 space-y-1 p-5 sm:p-6"
                                     :class="{
                                         'bg-orange-50/70': hidden,
                                         'opacity-60': isProcessing,
@@ -305,6 +328,7 @@
                                                     $replyDeleteModal = 'confirm-comment-deletion-'.$reply->id;
                                                 @endphp
                                                 <article
+                                                    id="comment-{{ $reply->id }}"
                                                     x-data="commentActions({
                                                         hidden: @js((bool) $reply->is_hidden),
                                                         id: @js($reply->id),
@@ -317,7 +341,7 @@
                                                     x-show="!deleted"
                                                     x-transition.opacity.duration.150ms
                                                     x-on:comment:deleted.window="if ($event.detail.id === id) deleted = true"
-                                                    class="border-t border-zinc-200 pl-4 -mr-5 sm:-mr-6 pr-5 sm:pr-6 py-3 first:border-t-0"
+                                                    class="scroll-mt-24 border-t border-zinc-200 py-3 pl-4 pr-5 first:border-t-0 sm:-mr-6 sm:pr-6"
                                                     :class="{
                                                         'bg-orange-50/70': hidden,
                                                         'opacity-60': isProcessing,

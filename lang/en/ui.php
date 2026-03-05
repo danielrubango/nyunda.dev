@@ -91,6 +91,10 @@ return [
             'copied' => 'Copied',
             'copy_error' => 'Copy failed',
         ],
+        'navigation' => [
+            'previous' => 'Previous article',
+            'next' => 'Next article',
+        ],
         'comments' => [
             'title' => 'Comments',
             'form_label' => 'Your comment',

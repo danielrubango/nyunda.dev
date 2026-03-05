@@ -30,6 +30,8 @@ class ContentItem extends Model
         'share_on_publish',
         'reads_count',
         'is_featured',
+        'prev_article_id',
+        'next_article_id',
     ];
 
     /**
@@ -47,6 +49,8 @@ class ContentItem extends Model
             'share_on_publish' => 'boolean',
             'reads_count' => 'integer',
             'is_featured' => 'boolean',
+            'prev_article_id' => 'integer',
+            'next_article_id' => 'integer',
         ];
     }
 
@@ -64,6 +68,16 @@ class ContentItem extends Model
     {
         return $this->belongsToMany(Tag::class, 'content_item_tag')
             ->withTimestamps();
+    }
+
+    public function prevArticle(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'prev_article_id');
+    }
+
+    public function nextArticle(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'next_article_id');
     }
 
     public function comments(): HasMany

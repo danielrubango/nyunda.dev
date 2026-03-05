@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Blog;
 use App\Actions\Content\GetPublishedContentTranslationBySlug;
 use App\Actions\Content\ListLocalizedPublishedContentItems;
 use App\Actions\Content\RenderSafeMarkdown;
+use App\Actions\Content\ResolveAdjacentInternalArticles;
 use App\Actions\Content\TrackContentRead;
 use App\Actions\Seo\BuildSeoMeta;
 use App\Enums\ContentType;
@@ -24,6 +25,7 @@ class BlogContentController extends Controller
         private readonly ListLocalizedPublishedContentItems $listLocalizedPublishedContentItems,
         private readonly GetPublishedContentTranslationBySlug $getPublishedContentTranslationBySlug,
         private readonly RenderSafeMarkdown $renderSafeMarkdown,
+        private readonly ResolveAdjacentInternalArticles $resolveAdjacentInternalArticles,
         private readonly TrackContentRead $trackContentRead,
         private readonly BuildSeoMeta $buildSeoMeta,
     ) {}
@@ -139,6 +141,7 @@ class BlogContentController extends Controller
             'hasLiked' => $hasLiked,
             'isAdmin' => $isAdmin,
             'renderedBody' => $this->renderSafeMarkdown->handle($translation->body_markdown),
+            'adjacentArticles' => $this->resolveAdjacentInternalArticles->handle($contentItem, $translation->locale),
             'comments' => $comments,
             'renderedComments' => $renderedComments,
             'seo' => $this->buildSeoMeta->handle(

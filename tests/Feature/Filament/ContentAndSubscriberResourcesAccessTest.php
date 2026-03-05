@@ -140,3 +140,33 @@ test('author selection on internal post form includes non author users', functio
     $response->assertSee('Regular Dashboard User');
     $response->assertSee('Editorial Author User');
 });
+
+test('adjacent article fields are only visible on internal post forms', function () {
+    $admin = User::factory()->admin()->create();
+
+    $internalPost = ContentItem::factory()->internalPost()->create([
+        'author_id' => $admin->id,
+        'status' => ContentStatus::Published->value,
+        'published_at' => now(),
+    ]);
+
+    $internalCreateResponse = $this->actingAs($admin)->get('/admin/internal-posts/create');
+    $internalCreateResponse->assertSuccessful();
+    $internalCreateResponse->assertSee('Previous article');
+    $internalCreateResponse->assertSee('Next article');
+
+    $internalEditResponse = $this->actingAs($admin)->get('/admin/internal-posts/'.$internalPost->id.'/edit');
+    $internalEditResponse->assertSuccessful();
+    $internalEditResponse->assertSee('Previous article');
+    $internalEditResponse->assertSee('Next article');
+
+    $externalCreateResponse = $this->actingAs($admin)->get('/admin/external-posts/create');
+    $externalCreateResponse->assertSuccessful();
+    $externalCreateResponse->assertDontSee('Previous article');
+    $externalCreateResponse->assertDontSee('Next article');
+
+    $communityCreateResponse = $this->actingAs($admin)->get('/admin/community-links/create');
+    $communityCreateResponse->assertSuccessful();
+    $communityCreateResponse->assertDontSee('Previous article');
+    $communityCreateResponse->assertDontSee('Next article');
+});

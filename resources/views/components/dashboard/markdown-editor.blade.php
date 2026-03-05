@@ -7,93 +7,128 @@
     'placeholder' => '',
 ])
 
+@php
+    $resolvedPlaceholder = str_replace('\n', "\n", (string) $placeholder);
+@endphp
+
 <div class="space-y-2" data-markdown-editor>
     <label class="block text-sm font-medium text-zinc-700">{{ $label }}</label>
-
-    <div class="flex flex-wrap gap-2 rounded-sm border border-zinc-300 bg-zinc-50 p-2">
-        <button type="button" class="inline-flex h-8 items-center border border-zinc-300 bg-white px-2 text-xs font-medium text-zinc-700" data-markdown-wrap="**" title="Gras">Gras</button>
-        <button type="button" class="inline-flex h-8 items-center border border-zinc-300 bg-white px-2 text-xs font-medium text-zinc-700" data-markdown-wrap="*" title="Italique">Italique</button>
-        <button type="button" class="inline-flex h-8 items-center border border-zinc-300 bg-white px-2 text-xs font-medium text-zinc-700" data-markdown-prefix="# " title="Titre">Titre</button>
-        <button type="button" class="inline-flex h-8 items-center border border-zinc-300 bg-white px-2 text-xs font-medium text-zinc-700" data-markdown-prefix="- " title="Liste">Liste</button>
-        <button type="button" class="inline-flex h-8 items-center border border-zinc-300 bg-white px-2 text-xs font-medium text-zinc-700" data-markdown-wrap="`" title="Code inline">Code</button>
-        <button type="button" class="inline-flex h-8 items-center border border-zinc-300 bg-white px-2 text-xs font-medium text-zinc-700" data-markdown-block="```\n\n```" title="Bloc code">Bloc code</button>
-        <button type="button" class="inline-flex h-8 items-center border border-zinc-300 bg-white px-2 text-xs font-medium text-zinc-700" data-markdown-link="[Texte](https://)" title="Lien">Lien</button>
-    </div>
 
     <textarea
         name="{{ $name }}"
         rows="{{ $rows }}"
-        placeholder="{{ $placeholder }}"
+        placeholder="{{ $resolvedPlaceholder }}"
         class="w-full rounded-sm border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
         @if ($required) required @endif
         data-markdown-input
     >{{ $value }}</textarea>
 
-    <p class="text-xs text-zinc-500">Astuce: utilisez la toolbar pour inserer rapidement les syntaxes Markdown.</p>
+    <p class="text-xs text-zinc-500">Astuce: la barre d'outils EasyMDE est disponible quand le script est charge.</p>
 </div>
 
 @once
     @push('scripts')
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                document.querySelectorAll('[data-markdown-editor]').forEach((editor) => {
-                    const textarea = editor.querySelector('[data-markdown-input]');
+            (() => {
+                const stylesheetId = 'easymde-style';
+                const stylesheetUrl = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css';
+                const scriptId = 'easymde-script';
+                const scriptUrl = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js';
 
-                    if (!textarea) {
+                let loaderPromise = null;
+
+                const ensureStylesheet = () => {
+                    if (document.getElementById(stylesheetId)) {
                         return;
                     }
 
-                    const applyWrap = (wrapper) => {
-                        const start = textarea.selectionStart;
-                        const end = textarea.selectionEnd;
-                        const selected = textarea.value.slice(start, end) || 'texte';
-                        const result = `${wrapper}${selected}${wrapper}`;
-                        textarea.setRangeText(result, start, end, 'end');
-                        textarea.focus();
-                    };
+                    const link = document.createElement('link');
+                    link.id = stylesheetId;
+                    link.rel = 'stylesheet';
+                    link.href = stylesheetUrl;
+                    document.head.appendChild(link);
+                };
 
-                    const applyPrefix = (prefix) => {
-                        const start = textarea.selectionStart;
-                        const end = textarea.selectionEnd;
-                        const selected = textarea.value.slice(start, end) || 'texte';
-                        const prefixed = selected
-                            .split('\n')
-                            .map((line) => `${prefix}${line}`)
-                            .join('\n');
+                const ensureScript = () => {
+                    if (window.EasyMDE) {
+                        return Promise.resolve();
+                    }
 
-                        textarea.setRangeText(prefixed, start, end, 'end');
-                        textarea.focus();
-                    };
+                    if (loaderPromise) {
+                        return loaderPromise;
+                    }
 
-                    editor.querySelectorAll('[data-markdown-wrap]').forEach((button) => {
-                        button.addEventListener('click', () => applyWrap(button.dataset.markdownWrap || '**'));
+                    loaderPromise = new Promise((resolve, reject) => {
+                        const existing = document.getElementById(scriptId);
+
+                        if (existing) {
+                            existing.addEventListener('load', () => resolve(), { once: true });
+                            existing.addEventListener('error', () => reject(new Error('Unable to load EasyMDE.')), { once: true });
+                            return;
+                        }
+
+                        const script = document.createElement('script');
+                        script.id = scriptId;
+                        script.src = scriptUrl;
+                        script.async = true;
+                        script.onload = () => resolve();
+                        script.onerror = () => reject(new Error('Unable to load EasyMDE.'));
+                        document.head.appendChild(script);
                     });
 
-                    editor.querySelectorAll('[data-markdown-prefix]').forEach((button) => {
-                        button.addEventListener('click', () => applyPrefix(button.dataset.markdownPrefix || '- '));
-                    });
+                    return loaderPromise;
+                };
 
-                    editor.querySelectorAll('[data-markdown-block]').forEach((button) => {
-                        button.addEventListener('click', () => {
-                            const template = button.dataset.markdownBlock || '```\n\n```';
-                            const start = textarea.selectionStart;
-                            const end = textarea.selectionEnd;
-                            textarea.setRangeText(template, start, end, 'end');
-                            textarea.focus();
+                const initializeEditors = () => {
+                    if (!window.EasyMDE) {
+                        return;
+                    }
+
+                    document.querySelectorAll('[data-markdown-editor]').forEach((editor) => {
+                        const textarea = editor.querySelector('[data-markdown-input]');
+
+                        if (!textarea || textarea.dataset.easymdeInitialized === 'true') {
+                            return;
+                        }
+
+                        textarea.dataset.easymdeInitialized = 'true';
+
+                        new window.EasyMDE({
+                            element: textarea,
+                            spellChecker: false,
+                            forceSync: true,
+                            status: ['lines', 'words'],
+                            toolbar: [
+                                'bold',
+                                'italic',
+                                'heading',
+                                '|',
+                                'quote',
+                                'unordered-list',
+                                'ordered-list',
+                                '|',
+                                'link',
+                                'image',
+                                'code',
+                                'preview',
+                                'side-by-side',
+                                'fullscreen',
+                                '|',
+                                'guide',
+                            ],
                         });
                     });
+                };
 
-                    editor.querySelectorAll('[data-markdown-link]').forEach((button) => {
-                        button.addEventListener('click', () => {
-                            const template = button.dataset.markdownLink || '[Texte](https://)';
-                            const start = textarea.selectionStart;
-                            const end = textarea.selectionEnd;
-                            textarea.setRangeText(template, start, end, 'end');
-                            textarea.focus();
+                document.addEventListener('DOMContentLoaded', () => {
+                    ensureStylesheet();
+
+                    ensureScript()
+                        .then(() => initializeEditors())
+                        .catch(() => {
                         });
-                    });
                 });
-            });
+            })();
         </script>
     @endpush
 @endonce

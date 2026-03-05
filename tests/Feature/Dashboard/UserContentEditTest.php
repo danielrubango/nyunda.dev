@@ -26,6 +26,10 @@ test('user can open edit page for own content', function () {
     $response->assertSee('Modifier mon contenu');
     $response->assertSee('Mon article editable');
     $response->assertSee('← Retour a mes contenus');
+    $response->assertSee('type="hidden" name="type" value="internal_post"', false);
+    $response->assertDontSee('name="type" x-model="selectedType"', false);
+    $response->assertSee('x-show="selectedType === \'internal_post\'"', false);
+    $response->assertSee('x-show="selectedType !== \'internal_post\'"', false);
 });
 
 test('user cannot open edit page for another user content', function () {
@@ -114,4 +118,42 @@ test('user cannot update another user content', function () {
 
     expect($translation->title)->toBe('Titre protege')
         ->and($translation->body_markdown)->toBe('Version protegee');
+});
+
+test('user cannot change content type after creation from dashboard edit', function () {
+    $user = User::factory()->create();
+
+    $contentItem = ContentItem::factory()->externalPost()->create([
+        'author_id' => $user->id,
+        'status' => ContentStatus::Pending->value,
+    ]);
+
+    $translation = ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'title' => 'Article externe initial',
+        'slug' => 'article-externe-initial',
+        'external_url' => 'https://example.com/original-external-url',
+    ]);
+
+    $response = $this->actingAs($user)
+        ->from(route('dashboard.content.edit', ['contentItem' => $contentItem]))
+        ->put(route('dashboard.content.update', ['contentItem' => $contentItem]), [
+            'type' => ContentType::InternalPost->value,
+            'locale' => 'fr',
+            'title' => 'Tentative changement type',
+            'excerpt' => 'Extrait',
+            'body_markdown' => 'Contenu invalide pour ce type',
+            'external_url' => 'https://example.com/updated-external-url',
+            'external_site_name' => 'Source',
+            'external_description' => 'Description',
+            'featured_image_url' => null,
+        ]);
+
+    $response->assertSessionHasErrors(['type']);
+
+    $contentItem->refresh();
+    $translation->refresh();
+
+    expect($contentItem->type)->toBe(ContentType::ExternalPost)
+        ->and($translation->title)->toBe('Article externe initial')
+        ->and($translation->external_url)->toBe('https://example.com/original-external-url');
 });
