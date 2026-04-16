@@ -90,11 +90,11 @@
                     </button>
 
                     <flux:menu class="min-w-44">
-                        <flux:menu.item :href="route('dashboard')">
-                            {{ __('ui.nav.dashboard') }}
-                        </flux:menu.item>
-
                         @if ($isAdmin)
+                            <flux:menu.item :href="route('dashboard')">
+                                {{ __('ui.nav.dashboard') }}
+                            </flux:menu.item>
+
                             <flux:menu.item href="/admin">
                                 Admin
                             </flux:menu.item>

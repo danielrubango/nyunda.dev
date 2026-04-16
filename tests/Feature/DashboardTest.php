@@ -28,17 +28,12 @@ test('admin users can visit the dashboard', function () {
     $response->assertSee(NewsletterEditionResource::getUrl(panel: 'admin'), false);
 });
 
-test('non admin users can visit the dashboard', function () {
+test('non admin users are redirected home when visiting the dashboard', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard'));
-    $response->assertOk();
-    $response->assertHeader('X-Robots-Tag', 'noindex,follow');
-    $response->assertSee('<meta name="robots" content="noindex,follow">', false);
-    $response->assertSee(__('ui.nav.account'));
-    $response->assertDontSee('Gerer la communaute (Filament)');
-    $response->assertDontSee('Gerer la newsletter (Filament)');
+    $response->assertRedirect(route('home'));
 });
 
 test('settings pages are marked as noindex for authenticated users', function () {

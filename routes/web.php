@@ -142,7 +142,7 @@ Route::middleware(['auth', 'seo.noindex'])->group(function () {
 Route::get('dashboard', function () {
     return view('dashboard');
 })
-    ->middleware(['auth', 'verified', 'seo.noindex'])
+    ->middleware(['auth', 'verified', 'admin.only', 'seo.noindex'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified', 'seo.noindex'])->group(function (): void {

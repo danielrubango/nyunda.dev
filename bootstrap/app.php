@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\ApplyPreferredLocale;
+use App\Http\Middleware\EnsureAdminAccess;
 use App\Http\Middleware\ForceHttpsWhenConfigured;
 use App\Http\Middleware\SetRobotsTag;
 use Illuminate\Foundation\Application;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $middleware->alias([
+            'admin.only' => EnsureAdminAccess::class,
             'seo.noindex' => SetRobotsTag::class,
         ]);
     })
