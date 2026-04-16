@@ -79,9 +79,9 @@ test('hide comment action is visible only to admin users', function () {
     $adminResponse->assertSee(__('ui.blog.comments.hide'));
     $adminResponse->assertSee('x-data="commentActions(', false);
     $adminResponse->assertSee('x-on:submit.prevent="toggleVisibility($event)"', false);
-    $adminResponse->assertSee('x-on:submit.prevent="deleteComment($event,', false);
+    $adminResponse->assertSee('comment:request-delete', false);
     $adminResponse->assertSee('data-test="open-comment-delete-confirmation"', false);
-    $adminResponse->assertSee('data-modal="confirm-comment-deletion-'.$comment->id.'"', false);
+    $adminResponse->assertSee('data-modal="confirm-comment-delete"', false);
     $adminResponse->assertSee(__('ui.blog.comments.confirm_delete_title'));
     $adminResponse->assertDontSee('group-hover:opacity-100');
 
@@ -118,8 +118,10 @@ test('comment author can open delete modal even when first comment belongs to an
     $response->assertSee(__('ui.blog.comments.confirm_delete_title'));
     $response->assertSee('data-test="open-comment-delete-confirmation"', false);
     $response->assertSee(route('comments.destroy', ['comment' => $ownComment]), false);
-    $response->assertSee('x-on:submit.prevent="deleteComment($event,', false);
-    $response->assertSee('data-modal="confirm-comment-deletion-'.$ownComment->id.'"', false);
+    $response->assertSee('x-on:comment:request-delete.window="openDeleteModal($event.detail.url, $event.detail.commentId)"', false);
+    $response->assertSee('csrfToken:', false);
+    $response->assertSee("document.dispatchEvent(new CustomEvent('modal-show'", false);
+    $response->assertSee("document.dispatchEvent(new CustomEvent('modal-close'", false);
 });
 
 test('admin can see reads count on internal post page', function () {
@@ -264,6 +266,59 @@ test('authenticated comment form has no visible label and comments use compact s
     $response->assertSee('aria-label="'.__('ui.blog.comments.form_placeholder').'"', false);
 });
 
+test('reply button displays an icon for authenticated users', function () {
+    $user = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'show_comments' => true,
+    ]);
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'comments-reply-icon',
+        'title' => 'Comments reply icon',
+        'excerpt' => 'Comments reply icon excerpt',
+    ]);
+
+    Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/blog/fr/comments-reply-icon');
+
+    $response->assertSuccessful();
+    $response->assertSeeInOrder([
+        'title="'.__('ui.blog.comments.reply').'"',
+        'd="M7 5V11C7 12.1046 7.89543 13 9 13H17"',
+        __('ui.blog.comments.reply'),
+    ], false);
+});
+
+test('child comments do not render the reply icon component in their header', function () {
+    $user = User::factory()->create();
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'show_comments' => true,
+    ]);
+
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'slug' => 'comments-child-header-indicator',
+        'title' => 'Comments child header indicator',
+        'excerpt' => 'Comments child header indicator excerpt',
+    ]);
+
+    $parentComment = Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+    ]);
+
+    Comment::factory()->create([
+        'content_item_id' => $contentItem->id,
+        'parent_id' => $parentComment->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/blog/fr/comments-child-header-indicator');
+
+    $response->assertSuccessful();
+    $response->assertDontSee('size-3 shrink-0 text-zinc-300', false);
+    $response->assertDontSee('&hookrightarrow;', false);
+});
 test('blog show uses manual previous and next article links when provided', function () {
     $previousItem = ContentItem::factory()->published()->internalPost()->create([
         'published_at' => now()->subDays(2),

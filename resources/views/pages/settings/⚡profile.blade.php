@@ -5,7 +5,7 @@ use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -14,14 +14,35 @@ new class extends Component {
 
     public string $name = '';
     public string $email = '';
+    public ?string $headline = null;
+    public ?string $bio = null;
+    public ?string $location = null;
+    public ?string $website_url = null;
+    public ?string $linkedin_url = null;
+    public ?string $x_url = null;
+    public ?string $github_url = null;
+    public bool $is_profile_public = false;
+    public ?string $public_profile_slug = null;
 
     /**
      * Mount the component.
      */
     public function mount(): void
     {
-        $this->name = Auth::user()->name;
-        $this->email = Auth::user()->email;
+        /** @var User $user */
+        $user = Auth::user();
+
+        $this->name = $user->name;
+        $this->email = $user->email;
+        $this->headline = $user->headline;
+        $this->bio = $user->bio;
+        $this->location = $user->location;
+        $this->website_url = $user->website_url;
+        $this->linkedin_url = $user->linkedin_url;
+        $this->x_url = $user->x_url;
+        $this->github_url = $user->github_url;
+        $this->is_profile_public = (bool) $user->is_profile_public;
+        $this->public_profile_slug = $user->public_profile_slug;
     }
 
     /**
@@ -29,9 +50,31 @@ new class extends Component {
      */
     public function updateProfileInformation(): void
     {
+        /** @var User $user */
         $user = Auth::user();
 
+        foreach (['headline', 'bio', 'location', 'website_url', 'linkedin_url', 'x_url', 'github_url', 'public_profile_slug'] as $field) {
+            $value = $this->{$field};
+
+            if (! is_string($value)) {
+                continue;
+            }
+
+            $value = trim($value);
+            $this->{$field} = $value === '' ? null : $value;
+        }
+
         $validated = $this->validate($this->profileRules($user->id));
+
+        if ((bool) $validated['is_profile_public'] === true) {
+            $validated['public_profile_slug'] = trim((string) ($validated['public_profile_slug'] ?? ''));
+
+            if ($validated['public_profile_slug'] === '') {
+                $validated['public_profile_slug'] = Str::slug((string) $validated['name']);
+            }
+        } else {
+            $validated['public_profile_slug'] = null;
+        }
 
         $user->fill($validated);
 
@@ -106,6 +149,27 @@ new class extends Component {
                     </div>
                 @endif
             </div>
+
+            <flux:input wire:model="headline" label="Headline" type="text" autocomplete="organization-title" />
+            <flux:textarea wire:model="bio" label="Bio" rows="5" />
+            <flux:input wire:model="location" label="Location" type="text" autocomplete="address-level2" />
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <flux:input wire:model="website_url" label="Website URL" type="url" />
+                <flux:input wire:model="linkedin_url" label="LinkedIn URL" type="url" />
+                <flux:input wire:model="x_url" label="X URL" type="url" />
+                <flux:input wire:model="github_url" label="GitHub URL" type="url" />
+            </div>
+
+            <flux:checkbox wire:model="is_profile_public" label="Rendre mon profil public" />
+
+            <flux:input
+                wire:model="public_profile_slug"
+                label="Slug public"
+                type="text"
+                :disabled="! $is_profile_public"
+                placeholder="mon-profil-public"
+            />
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">

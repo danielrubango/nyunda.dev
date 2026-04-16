@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ContentStatus;
 use App\Enums\ContentType;
+use Database\Factories\ContentItemFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContentItem extends Model
 {
-    /** @use HasFactory<\Database\Factories\ContentItemFactory> */
+    /** @use HasFactory<ContentItemFactory> */
     use HasFactory;
 
     /**
@@ -98,6 +99,11 @@ class ContentItem extends Model
     public function socialShareLogs(): HasMany
     {
         return $this->hasMany(SocialShareLog::class);
+    }
+
+    public function linkVotes(): HasMany
+    {
+        return $this->hasMany(LinkVote::class);
     }
 
     public function scopePublished(Builder $query): Builder

@@ -18,4 +18,9 @@ class ContentItemPolicy
     {
         return $contentItem->isPublished() && $contentItem->isInternalPost();
     }
+
+    public function vote(User $user, ContentItem $contentItem): bool
+    {
+        return $contentItem->isPublished() && $contentItem->isExternalPost();
+    }
 }

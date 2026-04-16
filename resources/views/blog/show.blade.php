@@ -134,14 +134,22 @@
             @endif
 
             @if ($contentItem->show_comments)
-                <section class="space-y-4">
+                <section
+                    class="space-y-4"
+                    x-data="commentSection({
+                        deletedToast: @js(__('ui.flash.comment_deleted')),
+                        failedToast: @js(__('ui.flash.action_failed')),
+                        csrfToken: @js(csrf_token()),
+                    })"
+                    x-on:comment:request-delete.window="openDeleteModal($event.detail.url, $event.detail.commentId)"
+                >
                     <h2 class="ui-section-title">{{ __('ui.blog.comments.title') }}</h2>
 
                     <x-ui.card :padding="false">
                         @if ($comments->isEmpty())
                             <p class="px-5 py-6 text-sm text-zinc-500 sm:px-6">{{ __('ui.blog.comments.empty') }}</p>
                         @else
-                            <div class="divide-y divide-zinc-200">
+                            <div class="divide-y divide-zinc-300">
                             @foreach ($comments as $comment)
                                 @php
                                     $commentPublishedAt = $comment->created_at;
@@ -158,24 +166,44 @@
                                     id="comment-{{ $comment->id }}"
                                     x-data="commentActions({
                                         hidden: @js((bool) $comment->is_hidden),
+                                        id: @js($comment->id),
                                         hiddenLabel: @js(__('ui.blog.comments.hide')),
                                         shownLabel: @js(__('ui.blog.comments.show')),
                                         hiddenToast: @js(__('ui.flash.comment_hidden')),
                                         shownToast: @js(__('ui.flash.comment_shown')),
-                                        deletedToast: @js(__('ui.flash.comment_deleted')),
                                         failedToast: @js(__('ui.flash.action_failed')),
                                     })"
                                     x-show="!deleted"
                                     x-transition.opacity.duration.150ms
+                                    x-on:comment:deleted.window="if ($event.detail.id === id) deleted = true"
                                     class="group scroll-mt-24 space-y-1 p-5 sm:p-6 {{ $comment->is_hidden ? 'bg-orange-50/70' : '' }}"
-                                    :class="hidden ? 'bg-orange-50/70' : ''"
+                                    :class="{
+                                        'bg-orange-50/70': hidden,
+                                        'opacity-60': isProcessing,
+                                    }"
                                     :data-hidden-comment="hidden ? 'true' : null"
                                 >
+                                    {{-- En-tête : auteur à gauche, actions + Répondre à droite --}}
                                     <div class="flex items-start justify-between gap-3">
                                         <p class="text-xs text-zinc-500">
                                             {{ $comment->user->name }} • {{ $commentPublishedLabel }}
                                         </p>
                                         <div class="flex items-center gap-2">
+                                            @auth
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex h-8 items-center gap-1 border px-2 text-xs font-medium transition-colors"
+                                                    :class="showReply
+                                                        ? 'border-brand-300 bg-brand-50 text-brand-700 hover:border-brand-400 hover:bg-brand-100'
+                                                        : 'border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-700'"
+                                                    x-on:click="showReply = !showReply"
+                                                    :aria-expanded="showReply ? 'true' : 'false'"
+                                                    title="{{ __('ui.blog.comments.reply') }}"
+                                                >
+                                                    <x-ui.icon name="corner-down-right" class="size-3.5" />
+                                                    <span>{{ __('ui.blog.comments.reply') }}</span>
+                                                </button>
+                                            @endauth
                                             @can('update', $comment)
                                                 <form method="POST" action="{{ route('comments.update', ['comment' => $comment]) }}" x-on:submit.prevent="toggleVisibility($event)">
                                                     @csrf
@@ -198,78 +226,251 @@
                                                 </form>
                                             @endcan
                                             @can('delete', $comment)
-                                                <flux:modal.trigger :name="$commentDeleteModal">
-                                                    <button
-                                                        type="button"
-                                                        class="inline-flex size-8 items-center justify-center border border-zinc-300 text-zinc-500 transition-colors hover:border-red-400 hover:text-red-600"
-                                                        title="{{ __('ui.blog.comments.delete') }}"
-                                                        x-bind:disabled="isProcessing"
-                                                        data-test="open-comment-delete-confirmation"
-                                                    >
-                                                        <x-ui.icon name="trash" class="size-4" />
-                                                        <span class="sr-only">{{ __('ui.blog.comments.delete') }}</span>
-                                                    </button>
-                                                </flux:modal.trigger>
-
-                                                <flux:modal :name="$commentDeleteModal" class="max-w-md">
-                                                    <div class="space-y-4">
-                                                        <flux:heading size="lg">{{ __('ui.blog.comments.confirm_delete_title') }}</flux:heading>
-
-                                                        <flux:text>
-                                                            {{ __('ui.blog.comments.confirm_delete_body') }}
-                                                        </flux:text>
-
-                                                        <div class="flex items-center justify-end gap-2">
-                                                            <flux:modal.close>
-                                                                <flux:button variant="filled">
-                                                                    {{ __('ui.blog.comments.confirm_delete_cancel') }}
-                                                                </flux:button>
-                                                            </flux:modal.close>
-
-                                                            <form
-                                                                method="POST"
-                                                                action="{{ route('comments.destroy', ['comment' => $comment]) }}"
-                                                                x-on:submit.prevent="deleteComment($event, @js($commentDeleteModal))"
-                                                            >
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <flux:button variant="danger" type="submit" x-bind:disabled="isProcessing" data-test="confirm-comment-delete-button">
-                                                                    {{ __('ui.blog.comments.confirm_delete_confirm') }}
-                                                                </flux:button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </flux:modal>
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex size-8 items-center justify-center border border-zinc-300 text-zinc-500 transition-colors hover:border-red-400 hover:text-red-600"
+                                                    title="{{ __('ui.blog.comments.delete') }}"
+                                                    x-bind:disabled="isProcessing"
+                                                    data-test="open-comment-delete-confirmation"
+                                                    x-on:click="$dispatch('comment:request-delete', { url: '{{ route('comments.destroy', ['comment' => $comment]) }}', commentId: @js($comment->id) })"
+                                                >
+                                                    <x-ui.icon name="trash" class="size-4" />
+                                                    <span class="sr-only">{{ __('ui.blog.comments.delete') }}</span>
+                                                </button>
                                             @endcan
                                         </div>
                                     </div>
+
+                                    {{-- Corps du commentaire --}}
                                     <div class="article-content max-w-none font-sans text-base">
                                         {!! $renderedComments[$comment->id] !!}
                                     </div>
+
+                                    {{-- Formulaire inline de réponse --}}
+                                    @auth
+                                        <div
+                                            x-show="showReply"
+                                            x-transition:enter="transition ease-out duration-150"
+                                            x-transition:enter-start="opacity-0 -translate-y-1"
+                                            x-transition:enter-end="opacity-100 translate-y-0"
+                                            x-transition:leave="transition ease-in duration-100"
+                                            x-transition:leave-start="opacity-100 translate-y-0"
+                                            x-transition:leave-end="opacity-0 -translate-y-1"
+                                            class="mt-3 border-l-2 border-zinc-400 pl-4"
+                                        >
+                                            <p class="mb-2 text-xs font-medium text-zinc-500">
+                                                {{ __('ui.blog.comments.reply_to', ['name' => $comment->user->name]) }}
+                                            </p>
+                                            <form
+                                                method="POST"
+                                                action="{{ route('content.comments.store', ['contentItem' => $contentItem]) }}"
+                                                class="space-y-2"
+                                                x-data="{ submitting: false }"
+                                                x-on:submit="submitting = true"
+                                            >
+                                                @csrf
+                                                <input type="hidden" name="parent_id" value="{{ $comment->id }}">
+                                                <textarea
+                                                    name="body_markdown"
+                                                    rows="3"
+                                                    class="w-full border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none"
+                                                    placeholder="{{ __('ui.blog.comments.form_placeholder') }}"
+                                                    aria-label="{{ __('ui.blog.comments.reply_to', ['name' => $comment->user->name]) }}"
+                                                    x-ref="replyTextarea"
+                                                    x-effect="if (showReply) $nextTick(() => $refs.replyTextarea?.focus())"
+                                                    x-on:keydown.ctrl.enter.prevent="$el.closest('form').requestSubmit()"
+                                                    x-on:keydown.meta.enter.prevent="$el.closest('form').requestSubmit()"
+                                                    x-on:keydown.escape="showReply = false"
+                                                ></textarea>
+                                                @error('body_markdown')
+                                                    <p class="text-sm text-red-600">{{ $message }}</p>
+                                                @enderror
+                                                <div class="flex items-center gap-3">
+                                                    <button
+                                                        type="submit"
+                                                        class="inline-flex h-8 items-center gap-2 border border-brand-700 px-3 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-50 disabled:opacity-50"
+                                                        :disabled="submitting"
+                                                    >
+                                                        <span x-show="submitting">
+                                                            <svg class="size-3.5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                                        </span>
+                                                        {{ __('ui.blog.comments.publish') }}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        class="h-8 border border-zinc-300 px-3 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100"
+                                                        x-on:click="showReply = false"
+                                                    >
+                                                        {{ __('ui.blog.comments.cancel_reply') }}
+                                                    </button>
+                                                    <p class="hidden text-xs text-zinc-400 sm:block">
+                                                        <kbd class="rounded border border-zinc-300 bg-zinc-100 px-1 py-0.5 font-mono text-xs">Ctrl</kbd>+<kbd class="rounded border border-zinc-300 bg-zinc-100 px-1 py-0.5 font-mono text-xs">↵</kbd>
+                                                        &nbsp;·&nbsp;
+                                                        <kbd class="rounded border border-zinc-300 bg-zinc-100 px-1 py-0.5 font-mono text-xs">Esc</kbd> {{ __('ui.blog.comments.shortcut_cancel') }}
+                                                    </p>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    @endauth
+
+                                    {{-- Replies imbriquées (1 niveau) --}}
+                                    @if ($comment->replies->isNotEmpty())
+                                        <div class="mt-4 space-y-0 border-l-2 border-zinc-300">
+                                            @foreach ($comment->replies as $reply)
+                                                @php
+                                                    $replyPublishedAt = $reply->created_at;
+                                                    $replyPublishedLabel = '';
+                                                    if ($replyPublishedAt !== null) {
+                                                        $replyPublishedLabel = $replyPublishedAt->diffInSeconds(now()) < 60
+                                                            ? __('ui.blog.comments.just_now')
+                                                            : $replyPublishedAt->locale(app()->getLocale())->diffForHumans();
+                                                    }
+                                                    $replyDeleteModal = 'confirm-comment-deletion-'.$reply->id;
+                                                @endphp
+                                                <article
+                                                    id="comment-{{ $reply->id }}"
+                                                    x-data="commentActions({
+                                                        hidden: @js((bool) $reply->is_hidden),
+                                                        id: @js($reply->id),
+                                                        hiddenLabel: @js(__('ui.blog.comments.hide')),
+                                                        shownLabel: @js(__('ui.blog.comments.show')),
+                                                        hiddenToast: @js(__('ui.flash.comment_hidden')),
+                                                        shownToast: @js(__('ui.flash.comment_shown')),
+                                                        failedToast: @js(__('ui.flash.action_failed')),
+                                                    })"
+                                                    x-show="!deleted"
+                                                    x-transition.opacity.duration.150ms
+                                                    x-on:comment:deleted.window="if ($event.detail.id === id) deleted = true"
+                                                    class="scroll-mt-24 border-t border-zinc-200 py-3 pl-4 pr-5 first:border-t-0 sm:-mr-6 sm:pr-6"
+                                                    :class="{
+                                                        'bg-orange-50/70': hidden,
+                                                        'opacity-60': isProcessing,
+                                                    }"
+                                                >
+                                                    {{-- En-tête reply : indicateur ↳ à gauche, actions admin à droite --}}
+                                                    <div class="flex items-start justify-between gap-3">
+                                                        <p class="flex items-center gap-1 text-xs text-zinc-400">
+                                                            <span class="font-medium text-zinc-500">{{ $reply->user->name }}</span>
+                                                            <span class="text-zinc-300">•</span>
+                                                            <span>{{ $replyPublishedLabel }}</span>
+                                                        </p>
+                                                        <div class="flex items-center gap-2">
+                                                            @can('update', $reply)
+                                                                <form method="POST" action="{{ route('comments.update', ['comment' => $reply]) }}" x-on:submit.prevent="toggleVisibility($event)">
+                                                                    @csrf
+                                                                    @method('PATCH')
+                                                                    <input type="hidden" name="is_hidden" x-bind:value="hidden ? 0 : 1">
+                                                                    <button
+                                                                        type="submit"
+                                                                        class="inline-flex h-7 items-center gap-1 border border-orange-200 bg-orange-50 px-2 text-xs font-medium text-orange-700 transition-colors hover:border-orange-300 hover:bg-orange-100"
+                                                                        x-bind:title="hidden ? shownLabel : hiddenLabel"
+                                                                        x-bind:disabled="isProcessing"
+                                                                    >
+                                                                        <span x-show="!hidden"><x-ui.icon name="eye-off" class="size-3.5" /></span>
+                                                                        <span x-show="hidden"><x-ui.icon name="eye" class="size-3.5" /></span>
+                                                                        <span x-text="hidden ? shownLabel : hiddenLabel"></span>
+                                                                    </button>
+                                                                </form>
+                                                            @endcan
+                                                            @can('delete', $reply)
+                                                                <button
+                                                                    type="button"
+                                                                    class="inline-flex size-7 items-center justify-center border border-zinc-300 text-zinc-400 transition-colors hover:border-red-400 hover:text-red-600"
+                                                                    title="{{ __('ui.blog.comments.delete') }}"
+                                                                    x-bind:disabled="isProcessing"
+                                                                    x-on:click="$dispatch('comment:request-delete', { url: '{{ route('comments.destroy', ['comment' => $reply]) }}', commentId: @js($reply->id) })"
+                                                                >
+                                                                    <x-ui.icon name="trash" class="size-3.5" />
+                                                                    <span class="sr-only">{{ __('ui.blog.comments.delete') }}</span>
+                                                                </button>
+                                                            @endcan
+                                                        </div>
+                                                    </div>
+                                                    {{-- Corps de la réponse --}}
+                                                    <div class="mt-1 article-content max-w-none font-sans text-sm">
+                                                        {!! $renderedComments[$reply->id] ?? '' !!}
+                                                    </div>
+                                                </article>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </article>
                             @endforeach
                             </div>
                         @endif
                     </x-ui.card>
 
+                    {{-- Modal global de confirmation de suppression (hors des articles, évite le freeze) --}}
+                    @auth
+                        <flux:modal
+                            name="confirm-comment-delete"
+                            class="max-w-md"
+                        >
+                            <div class="space-y-4">
+                                <flux:heading size="lg">{{ __('ui.blog.comments.confirm_delete_title') }}</flux:heading>
+                                <flux:text>{{ __('ui.blog.comments.confirm_delete_body') }}</flux:text>
+                                <div class="flex items-center justify-end gap-2">
+                                    <flux:modal.close>
+                                        <flux:button variant="filled">{{ __('ui.blog.comments.confirm_delete_cancel') }}</flux:button>
+                                    </flux:modal.close>
+                                    <flux:button
+                                        variant="danger"
+                                        type="button"
+                                        x-on:click="confirmDelete()"
+                                        x-bind:disabled="deleteModal.isProcessing"
+                                        data-test="confirm-comment-delete-button"
+                                    >
+                                        <span x-show="deleteModal.isProcessing">
+                                            <svg class="size-4 animate-spin inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                        </span>
+                                        {{ __('ui.blog.comments.confirm_delete_confirm') }}
+                                    </flux:button>
+                                </div>
+                            </div>
+                        </flux:modal>
+                    @endauth
+
                     @auth
                         <x-ui.card>
-                            <form method="POST" action="{{ route('content.comments.store', ['contentItem' => $contentItem]) }}" class="space-y-3">
+                            <form
+                                method="POST"
+                                action="{{ route('content.comments.store', ['contentItem' => $contentItem]) }}"
+                                class="space-y-3"
+                                x-data="{ submitting: false }"
+                                x-on:submit="submitting = true"
+                            >
                                 @csrf
                                 <textarea
                                     id="body_markdown"
                                     name="body_markdown"
                                     rows="5"
                                     aria-label="{{ __('ui.blog.comments.form_placeholder') }}"
-                                    class="w-full border border-zinc-300 px-3 py-2 text-sm"
+                                    class="w-full border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none"
                                     placeholder="{{ __('ui.blog.comments.form_placeholder') }}"
+                                    x-on:keydown.ctrl.enter.prevent="$el.closest('form').requestSubmit()"
+                                    x-on:keydown.meta.enter.prevent="$el.closest('form').requestSubmit()"
                                 >{{ old('body_markdown') }}</textarea>
                                 @error('body_markdown')
                                     <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                                <button type="submit" class="h-10 border border-brand-700 px-4 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 focus:border-brand-800 focus-visible:border-brand-800">
-                                    {{ __('ui.blog.comments.publish') }}
-                                </button>
+                                <div class="flex items-center gap-4">
+                                    <button
+                                        type="submit"
+                                        class="inline-flex h-10 items-center gap-2 border border-brand-700 px-4 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 focus:border-brand-800 focus-visible:border-brand-800 disabled:opacity-50"
+                                        :disabled="submitting"
+                                    >
+                                        <span x-show="submitting">
+                                            <svg class="size-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                        </span>
+                                        {{ __('ui.blog.comments.publish') }}
+                                    </button>
+                                    <p class="hidden text-xs text-zinc-400 sm:block">
+                                        <kbd class="rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-xs">Ctrl</kbd>
+                                        <span class="mx-0.5">+</span>
+                                        <kbd class="rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-xs">↵</kbd>
+                                        {{ __('ui.blog.comments.shortcut_submit') }}
+                                    </p>
+                                </div>
                             </form>
                         </x-ui.card>
                     @else
@@ -277,6 +478,7 @@
                     @endauth
                 </section>
             @endif
+
         </div>
     </div>
 
@@ -348,34 +550,70 @@
         });
 
         document.addEventListener('alpine:init', () => {
+            Alpine.data('commentSection', (config) => ({
+                deleteModal: {
+                    url: '',
+                    commentId: null,
+                    isProcessing: false,
+                },
+                deletedToast: String(config.deletedToast ?? ''),
+                failedToast: String(config.failedToast ?? ''),
+                csrfToken: String(config.csrfToken ?? ''),
+
+                openDeleteModal(url, commentId) {
+                    this.deleteModal.url = url;
+                    this.deleteModal.commentId = commentId;
+                    this.deleteModal.isProcessing = false;
+                    document.dispatchEvent(new CustomEvent('modal-show', { detail: { name: 'confirm-comment-delete' } }));
+                },
+
+                async confirmDelete() {
+                    if (this.deleteModal.isProcessing || !this.deleteModal.url) return;
+                    this.deleteModal.isProcessing = true;
+                    try {
+                        const resp = await fetch(this.deleteModal.url, {
+                            method: 'POST',
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
+                            body: (() => {
+                                const fd = new FormData();
+                                fd.append('_method', 'DELETE');
+                                fd.append('_token', this.csrfToken);
+                                return fd;
+                            })(),
+                        });
+                        if (!resp.ok) throw new Error();
+                        const id = this.deleteModal.commentId;
+                        document.dispatchEvent(new CustomEvent('modal-close', { detail: { name: 'confirm-comment-delete' } }));
+                        window.dispatchEvent(new CustomEvent('comment:deleted', { detail: { id } }));
+                        window.dispatchEvent(new CustomEvent('ui-toast', {
+                            detail: { message: this.deletedToast, variant: 'success' },
+                        }));
+                    } catch (e) {
+                        window.dispatchEvent(new CustomEvent('ui-toast', {
+                            detail: { message: this.failedToast, variant: 'error' },
+                        }));
+                    } finally {
+                        this.deleteModal.isProcessing = false;
+                    }
+                },
+            }));
+
             Alpine.data('commentActions', (config) => ({
                 hidden: Boolean(config.hidden),
+                id: config.id ?? null,
                 deleted: false,
                 isProcessing: false,
+                showReply: false,
                 hiddenLabel: String(config.hiddenLabel ?? ''),
                 shownLabel: String(config.shownLabel ?? ''),
                 hiddenToast: String(config.hiddenToast ?? ''),
                 shownToast: String(config.shownToast ?? ''),
-                deletedToast: String(config.deletedToast ?? ''),
                 failedToast: String(config.failedToast ?? ''),
 
                 notify(message, variant = 'success') {
-                    if (message.trim() === '') {
-                        return;
-                    }
-
+                    if (message.trim() === '') return;
                     window.dispatchEvent(new CustomEvent('ui-toast', {
                         detail: { message, variant },
-                    }));
-                },
-
-                closeModal(modalName) {
-                    if (typeof modalName !== 'string' || modalName.trim() === '') {
-                        return;
-                    }
-
-                    window.dispatchEvent(new CustomEvent('modal-close', {
-                        detail: { name: modalName },
                     }));
                 },
 
@@ -398,14 +636,12 @@
 
                         if (!response.ok) {
                             this.notify(this.failedToast, 'error');
-
                             return false;
                         }
 
                         return true;
                     } catch (error) {
                         this.notify(this.failedToast, 'error');
-
                         return false;
                     } finally {
                         this.isProcessing = false;
@@ -423,19 +659,6 @@
 
                     this.hidden = nextHiddenState;
                     this.notify(nextHiddenState ? this.hiddenToast : this.shownToast, 'success');
-                },
-
-                async deleteComment(event, modalName = null) {
-                    const form = event.target;
-                    const isSubmitted = await this.submitForm(form);
-
-                    if (!isSubmitted) {
-                        return;
-                    }
-
-                    this.closeModal(modalName);
-                    this.deleted = true;
-                    this.notify(this.deletedToast, 'success');
                 },
             }));
         });

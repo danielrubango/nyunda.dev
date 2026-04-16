@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +16,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     /**
@@ -31,6 +32,13 @@ class User extends Authenticatable implements FilamentUser
         'preferred_locale',
         'is_profile_public',
         'public_profile_slug',
+        'headline',
+        'bio',
+        'location',
+        'website_url',
+        'linkedin_url',
+        'x_url',
+        'github_url',
     ];
 
     /**
@@ -95,6 +103,11 @@ class User extends Authenticatable implements FilamentUser
     public function contentLikes(): HasMany
     {
         return $this->hasMany(ContentLike::class);
+    }
+
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
     }
 
     public function contentReads(): HasMany

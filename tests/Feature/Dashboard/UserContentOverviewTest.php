@@ -5,6 +5,7 @@ use App\Models\Comment;
 use App\Models\ContentItem;
 use App\Models\ContentLike;
 use App\Models\ContentTranslation;
+use App\Models\LinkVote;
 use App\Models\User;
 
 test('dashboard content index shows personal rows stats and status labels', function () {
@@ -61,7 +62,7 @@ test('dashboard content index shows personal rows stats and status labels', func
     Comment::factory()->create(['content_item_id' => $pending->id, 'user_id' => $otherUser->id]);
 
     ContentLike::factory()->create(['content_item_id' => $published->id, 'user_id' => $otherUser->id]);
-    ContentLike::factory()->create(['content_item_id' => $pending->id, 'user_id' => $otherUser->id]);
+    LinkVote::query()->create(['content_item_id' => $pending->id, 'user_id' => $otherUser->id]);
 
     $response = $this->actingAs($user)->get(route('dashboard.content.index'));
 

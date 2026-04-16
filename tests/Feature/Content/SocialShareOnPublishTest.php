@@ -110,6 +110,43 @@ test('social sharing action logs successful attempts for x and linkedin', functi
     Http::assertSentCount(2);
 });
 
+test('social sharing logs skipped attempts with global credential context when disabled', function () {
+    config()->set('social.credential_mode', 'global');
+    config()->set('social.x.enabled', false);
+    config()->set('social.linkedin.enabled', false);
+
+    $contentItem = ContentItem::factory()->published()->internalPost()->create([
+        'share_on_publish' => true,
+    ]);
+    ContentTranslation::factory()->for($contentItem)->forLocale('fr')->create([
+        'title' => 'Publication sans credentials',
+        'slug' => 'publication-sans-credentials',
+        'excerpt' => 'Extrait',
+    ]);
+
+    app(ShareOnSocialNetworks::class)->handle($contentItem->fresh(['translations']));
+
+    $xLog = $contentItem->socialShareLogs()
+        ->where('platform', 'x')
+        ->latest('id')
+        ->first();
+
+    $linkedinLog = $contentItem->socialShareLogs()
+        ->where('platform', 'linkedin')
+        ->latest('id')
+        ->first();
+
+    expect($xLog)->not->toBeNull()
+        ->and($xLog->status)->toBe('skipped')
+        ->and($xLog->error_message)->toContain('global application credentials')
+        ->and($xLog->response_payload['credential_mode'] ?? null)->toBe('global');
+
+    expect($linkedinLog)->not->toBeNull()
+        ->and($linkedinLog->status)->toBe('skipped')
+        ->and($linkedinLog->error_message)->toContain('global application credentials')
+        ->and($linkedinLog->response_payload['credential_mode'] ?? null)->toBe('global');
+});
+
 test('social sharing throws and logs failure when a platform request fails', function () {
     config()->set('social.x.enabled', true);
     config()->set('social.x.bearer_token', 'x-token');
@@ -130,11 +167,16 @@ test('social sharing throws and logs failure when a platform request fails', fun
     ]);
 
     expect(fn () => app(ShareOnSocialNetworks::class)->handle($contentItem->fresh(['translations'])))
-        ->toThrow(\RuntimeException::class);
+        ->toThrow(RuntimeException::class);
 
     $this->assertDatabaseHas('social_share_logs', [
         'content_item_id' => $contentItem->id,
         'platform' => 'x',
         'status' => 'failed',
+    ]);
+    $this->assertDatabaseHas('social_share_logs', [
+        'content_item_id' => $contentItem->id,
+        'platform' => 'linkedin',
+        'status' => 'skipped',
     ]);
 });

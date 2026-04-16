@@ -19,15 +19,19 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        Validator::make($input, [
+        $payload = array_merge([
+            'is_profile_public' => false,
+        ], $input);
+
+        Validator::make($payload, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
         ])->validate();
 
         return User::create([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'password' => $input['password'],
+            'name' => $payload['name'],
+            'email' => $payload['email'],
+            'password' => $payload['password'],
         ]);
     }
 }

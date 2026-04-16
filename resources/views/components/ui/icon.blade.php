@@ -58,6 +58,15 @@
     <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
+@elseif ($name === 'corner-down-right')
+    <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M7 5V11C7 12.1046 7.89543 13 9 13H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M13 9L17 13L13 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+@elseif ($name === 'google')
+    <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M21 12.25C21 17.15 17.7 20.65 12.2 20.65C7.15 20.65 3 16.5 3 11.45C3 6.4 7.15 2.25 12.2 2.25C14.65 2.25 16.7 3.15 18.2 4.65L15.95 6.8C15.05 5.95 13.8 5.4 12.2 5.4C8.85 5.4 6.15 8.15 6.15 11.45C6.15 14.75 8.85 17.5 12.2 17.5C15.25 17.5 16.8 15.75 17.2 14.2H12.2V11.2H20.8C20.95 11.75 21 12 21 12.25Z" fill="currentColor" />
+    </svg>
 @elseif ($name === 'linkedin')
     <svg {{ $attributes->class(['size-4']) }} viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <rect x="4" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.8" />

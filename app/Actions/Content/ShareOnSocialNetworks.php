@@ -16,12 +16,22 @@ class ShareOnSocialNetworks
         $translation = $this->resolveTranslation($contentItem);
 
         if ($translation === null) {
+            $this->logSkippedForAllPlatforms(
+                contentItem: $contentItem,
+                errorMessage: 'No content translation available for social sharing.',
+            );
+
             return;
         }
 
         $sharedUrl = $this->resolveSharedUrl($contentItem, $translation);
 
         if ($sharedUrl === null) {
+            $this->logSkippedForAllPlatforms(
+                contentItem: $contentItem,
+                errorMessage: 'No sharable URL available for social sharing.',
+            );
+
             return;
         }
 
@@ -100,15 +110,28 @@ class ShareOnSocialNetworks
     protected function shareOnX(ContentItem $contentItem, string $message, string $sharedUrl): bool
     {
         $platform = 'x';
+        $credentialMode = $this->credentialMode();
+        $payload = ['text' => $message];
 
         if ($this->hasSuccessfulShare($contentItem, $platform)) {
+            $this->logAttempt(
+                contentItem: $contentItem,
+                platform: $platform,
+                status: 'skipped',
+                sharedUrl: $sharedUrl,
+                requestPayload: $payload,
+                responsePayload: [
+                    'credential_mode' => $credentialMode,
+                ],
+                errorMessage: 'Share already completed successfully.',
+            );
+
             return true;
         }
 
         $enabled = (bool) config('social.x.enabled', false);
         $token = (string) config('social.x.bearer_token', '');
         $apiUrl = (string) config('social.x.api_url', 'https://api.x.com/2/tweets');
-        $payload = ['text' => $message];
 
         if (! $enabled || $token === '') {
             $this->logAttempt(
@@ -117,7 +140,10 @@ class ShareOnSocialNetworks
                 status: 'skipped',
                 sharedUrl: $sharedUrl,
                 requestPayload: $payload,
-                errorMessage: 'X sharing disabled or missing bearer token.',
+                responsePayload: [
+                    'credential_mode' => $credentialMode,
+                ],
+                errorMessage: 'X sharing skipped: global application credentials are disabled or incomplete.',
             );
 
             return true;
@@ -135,7 +161,10 @@ class ShareOnSocialNetworks
                 status: 'success',
                 sharedUrl: $sharedUrl,
                 requestPayload: $payload,
-                responsePayload: $response->json(),
+                responsePayload: [
+                    'credential_mode' => $credentialMode,
+                    'response' => $response->json(),
+                ],
             );
 
             return true;
@@ -147,7 +176,11 @@ class ShareOnSocialNetworks
             status: 'failed',
             sharedUrl: $sharedUrl,
             requestPayload: $payload,
-            responsePayload: ['status' => $response->status(), 'body' => $response->body()],
+            responsePayload: [
+                'credential_mode' => $credentialMode,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ],
             errorMessage: 'X API returned an unsuccessful response.',
         );
 
@@ -157,18 +190,10 @@ class ShareOnSocialNetworks
     protected function shareOnLinkedIn(ContentItem $contentItem, string $message, string $sharedUrl): bool
     {
         $platform = 'linkedin';
-
-        if ($this->hasSuccessfulShare($contentItem, $platform)) {
-            return true;
-        }
-
-        $enabled = (bool) config('social.linkedin.enabled', false);
-        $token = (string) config('social.linkedin.access_token', '');
-        $authorUrn = (string) config('social.linkedin.author_urn', '');
-        $apiUrl = (string) config('social.linkedin.api_url', 'https://api.linkedin.com/v2/ugcPosts');
+        $credentialMode = $this->credentialMode();
 
         $payload = [
-            'author' => $authorUrn,
+            'author' => (string) config('social.linkedin.author_urn', ''),
             'lifecycleState' => 'PUBLISHED',
             'specificContent' => [
                 'com.linkedin.ugc.ShareContent' => [
@@ -183,6 +208,27 @@ class ShareOnSocialNetworks
             ],
         ];
 
+        if ($this->hasSuccessfulShare($contentItem, $platform)) {
+            $this->logAttempt(
+                contentItem: $contentItem,
+                platform: $platform,
+                status: 'skipped',
+                sharedUrl: $sharedUrl,
+                requestPayload: $payload,
+                responsePayload: [
+                    'credential_mode' => $credentialMode,
+                ],
+                errorMessage: 'Share already completed successfully.',
+            );
+
+            return true;
+        }
+
+        $enabled = (bool) config('social.linkedin.enabled', false);
+        $token = (string) config('social.linkedin.access_token', '');
+        $authorUrn = (string) config('social.linkedin.author_urn', '');
+        $apiUrl = (string) config('social.linkedin.api_url', 'https://api.linkedin.com/v2/ugcPosts');
+
         if (! $enabled || $token === '' || $authorUrn === '') {
             $this->logAttempt(
                 contentItem: $contentItem,
@@ -190,7 +236,10 @@ class ShareOnSocialNetworks
                 status: 'skipped',
                 sharedUrl: $sharedUrl,
                 requestPayload: $payload,
-                errorMessage: 'LinkedIn sharing disabled or missing credentials.',
+                responsePayload: [
+                    'credential_mode' => $credentialMode,
+                ],
+                errorMessage: 'LinkedIn sharing skipped: global application credentials are disabled or incomplete.',
             );
 
             return true;
@@ -211,7 +260,10 @@ class ShareOnSocialNetworks
                 status: 'success',
                 sharedUrl: $sharedUrl,
                 requestPayload: $payload,
-                responsePayload: $response->json(),
+                responsePayload: [
+                    'credential_mode' => $credentialMode,
+                    'response' => $response->json(),
+                ],
             );
 
             return true;
@@ -223,7 +275,11 @@ class ShareOnSocialNetworks
             status: 'failed',
             sharedUrl: $sharedUrl,
             requestPayload: $payload,
-            responsePayload: ['status' => $response->status(), 'body' => $response->body()],
+            responsePayload: [
+                'credential_mode' => $credentialMode,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ],
             errorMessage: 'LinkedIn API returned an unsuccessful response.',
         );
 
@@ -236,6 +292,30 @@ class ShareOnSocialNetworks
             ->where('platform', $platform)
             ->where('status', 'success')
             ->exists();
+    }
+
+    protected function logSkippedForAllPlatforms(ContentItem $contentItem, string $errorMessage): void
+    {
+        $credentialMode = $this->credentialMode();
+
+        foreach (['x', 'linkedin'] as $platform) {
+            $this->logAttempt(
+                contentItem: $contentItem,
+                platform: $platform,
+                status: 'skipped',
+                sharedUrl: '',
+                requestPayload: [],
+                responsePayload: [
+                    'credential_mode' => $credentialMode,
+                ],
+                errorMessage: $errorMessage,
+            );
+        }
+    }
+
+    protected function credentialMode(): string
+    {
+        return (string) config('social.credential_mode', 'global');
     }
 
     /**

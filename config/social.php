@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'credential_mode' => 'global',
+
     'post_template' => env('SOCIAL_SHARE_TEMPLATE', ':title — :url'),
     'hashtags' => array_values(array_filter(array_map(
         fn (string $value): string => trim($value),

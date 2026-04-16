@@ -4,11 +4,12 @@ namespace Database\Factories;
 
 use App\Enums\ContentStatus;
 use App\Enums\ContentType;
+use App\Models\ContentItem;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ContentItem>
+ * @extends Factory<ContentItem>
  */
 class ContentItemFactory extends Factory
 {
@@ -62,6 +63,13 @@ class ContentItemFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'type' => ContentType::ExternalPost->value,
+        ]);
+    }
+
+    public function commentsEnabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'show_comments' => true,
         ]);
     }
 }
