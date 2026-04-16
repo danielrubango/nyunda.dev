@@ -58,7 +58,7 @@ test('oauth callback links provider to existing user by email and authenticates'
 
     $response = $this->get(route('oauth.callback', ['provider' => 'google']));
 
-    $response->assertRedirect('/dashboard');
+    $response->assertRedirect('/');
     $this->assertAuthenticatedAs($existingUser);
 
     $this->assertDatabaseHas('social_accounts', [
@@ -90,7 +90,7 @@ test('oauth callback creates a new verified user when no matching account exists
 
     $response = $this->get(route('oauth.callback', ['provider' => 'linkedin']));
 
-    $response->assertRedirect('/dashboard');
+    $response->assertRedirect('/');
     $this->assertAuthenticated();
 
     $createdUser = User::query()->first();

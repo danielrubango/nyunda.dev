@@ -18,7 +18,8 @@ return [
     ],
     'auth' => [
         'social' => [
-            'divider' => 'Se connecter avec',
+            'heading' => 'Se connecter avec',
+            'separator' => 'ou',
             'google' => 'Google',
             'linkedin' => 'LinkedIn',
             'callback_error' => 'La connexion sociale a echoue. Veuillez reessayer.',

@@ -18,7 +18,8 @@ return [
     ],
     'auth' => [
         'social' => [
-            'divider' => 'Or continue with',
+            'heading' => 'Sign in with',
+            'separator' => 'or',
             'google' => 'Google',
             'linkedin' => 'LinkedIn',
             'callback_error' => 'Social sign in failed. Please try again.',
