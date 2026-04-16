@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('subject_en');
             $table->text('intro_fr')->nullable();
             $table->text('intro_en')->nullable();
-            $table->json('content_item_ids')->default('[]');
+            $table->json('content_item_ids');
             $table->enum('status', ['draft', 'sending', 'sent', 'failed'])->default('draft');
             $table->unsignedInteger('recipients_count')->default(0);
             $table->unsignedInteger('sent_count')->default(0);

@@ -47,6 +47,7 @@ class NewsletterEditionForm
                     ->schema([
                         CheckboxList::make('content_item_ids')
                             ->label('Articles')
+                            ->default([])
                             ->options(function (): array {
                                 return ContentItem::query()
                                     ->published()

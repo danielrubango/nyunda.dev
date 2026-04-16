@@ -13,6 +13,16 @@ class NewsletterEdition extends Model
     use HasFactory;
 
     /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'content_item_ids' => '[]',
+        'status' => 'draft',
+        'recipients_count' => 0,
+        'sent_count' => 0,
+    ];
+
+    /**
      * @var list<string>
      */
     protected $fillable = [
