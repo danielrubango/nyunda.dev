@@ -27,6 +27,7 @@ class RssFeedController extends Controller
                 'feedItems' => $this->buildRssFeedItems->handle($preferredLocale),
                 'feedLocale' => $preferredLocale,
             ])
-            ->header('Content-Type', 'application/rss+xml; charset=UTF-8');
+            ->header('Content-Type', 'application/rss+xml; charset=UTF-8')
+            ->header('X-Robots-Tag', 'noindex,follow');
     }
 }

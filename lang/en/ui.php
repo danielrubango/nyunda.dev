@@ -16,6 +16,14 @@ return [
         'register' => 'Register',
         'rss' => 'RSS feed',
     ],
+    'auth' => [
+        'social' => [
+            'divider' => 'Or continue with',
+            'google' => 'Google',
+            'linkedin' => 'LinkedIn',
+            'callback_error' => 'Social sign in failed. Please try again.',
+        ],
+    ],
     'accessibility' => [
         'skip_to_content' => 'Skip to content',
         'tabs' => 'Tabs',
@@ -106,6 +114,12 @@ return [
             'validation_max' => 'The comment may not be greater than :max characters.',
             'empty' => 'No comments yet.',
             'disabled' => 'Comments are disabled for this article.',
+            'reply' => 'Reply',
+            'reply_to' => 'Reply to :name',
+            'cancel_reply' => 'Cancel',
+            'reply_published' => 'Reply published successfully.',
+            'shortcut_submit' => 'to publish',
+            'shortcut_cancel' => 'to cancel',
         ],
     ],
     'forum' => [
@@ -172,6 +186,8 @@ return [
         'subtitle' => 'Approved external references.',
         'visit' => 'Visit',
         'empty' => 'No links match the selected filters.',
+        'vote_toggle' => 'Vote for this link',
+        'votes' => ':count votes',
         'vote_score_unavailable' => 'Vote score: coming soon',
         'shared_on_domain' => 'Shared on :date — :domain',
         'unknown_domain' => 'external source',
@@ -210,6 +226,14 @@ return [
         'social_text' => 'You can follow my work and discussions on these platforms.',
     ],
     'seo' => [
+        'default_description' => 'NYUNDA.DEV shares practical articles on Laravel, PHP, and AI, plus curated resources for developers.',
+        'meta' => [
+            'home' => 'NYUNDA.DEV publishes practical articles on Laravel, PHP, and applied AI, with useful resources for developers and product teams.',
+            'about' => 'Learn more about the maker of NYUNDA.DEV, with experience across Laravel, backend engineering, infrastructure, and reliable web systems.',
+            'blog' => 'Browse readable articles on Laravel, PHP, applied AI, and real-world engineering lessons to design, ship, and improve products with confidence.',
+            'links' => 'Discover a curated selection of external resources on Laravel, PHP, software architecture, AI, and developer tooling worth following.',
+            'profile' => 'Public profile for :name on NYUNDA.DEV.',
+        ],
         'rss_description' => 'RSS feed for published content on :app.',
     ],
     'newsletter' => [
@@ -226,6 +250,9 @@ return [
         'forum_coming_soon' => 'The forum page will be available soon.',
         'like_added' => 'Post added to your favorites.',
         'like_removed' => 'Post removed from your favorites.',
+        'vote_added' => 'Vote recorded.',
+        'vote_removed' => 'Vote removed.',
+        'login_required' => 'You must be signed in to perform this action.',
         'comment_added' => 'Comment posted successfully.',
         'comment_hidden' => 'Comment hidden.',
         'comment_shown' => 'Comment unhidden.',

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Actions\Content\CreateDashboardContentSubmission;
 use App\Actions\Content\UpdateDashboardContentSubmission;
+use App\Actions\Seo\BuildSeoMeta;
 use App\Enums\ContentStatus;
 use App\Enums\ContentType;
 use App\Http\Controllers\Controller;
@@ -21,6 +22,10 @@ use Illuminate\View\View;
 
 class UserContentController extends Controller
 {
+    public function __construct(
+        private readonly BuildSeoMeta $buildSeoMeta,
+    ) {}
+
     public function index(Request $request): View
     {
         /** @var User $user */
@@ -47,7 +52,7 @@ class UserContentController extends Controller
                     ->limit(1),
             ])
             ->with(['translations', 'author'])
-            ->withCount(['comments', 'likes']);
+            ->withCount(['comments', 'likes', 'linkVotes']);
 
         if (is_string($statusFilter) && in_array($statusFilter, collect(ContentStatus::cases())->map(fn (ContentStatus $status): string => $status->value)->all(), true)) {
             $query->where('status', $statusFilter);
@@ -74,8 +79,10 @@ class UserContentController extends Controller
             $query->orderBy('comments_count', $sortDirection)
                 ->orderBy('created_at', 'desc');
         } elseif ($sort === 'interactions') {
-            $query->orderBy('likes_count', $sortDirection)
-                ->orderBy('created_at', 'desc');
+            $query->orderByRaw(
+                'CASE WHEN type = ? THEN likes_count ELSE link_votes_count END '.$sortDirection,
+                [ContentType::InternalPost->value],
+            )->orderBy('created_at', 'desc');
         } elseif ($sort === 'reads') {
             $query->orderBy('reads_count', $sortDirection)
                 ->orderBy('created_at', 'desc');
@@ -89,6 +96,9 @@ class UserContentController extends Controller
         $rows = $contentItems->getCollection()
             ->map(function (ContentItem $item): array {
                 $translation = $item->translations->first();
+                $interactionCount = $item->isInternalPost()
+                    ? (int) $item->likes_count
+                    : (int) $item->link_votes_count;
 
                 return [
                     'item' => $item,
@@ -96,7 +106,7 @@ class UserContentController extends Controller
                     'status_label' => $this->resolveStatusLabel($item),
                     'status_variant' => $this->resolveStatusVariant($item),
                     'comments_count' => (int) $item->comments_count,
-                    'interaction_count' => (int) $item->likes_count,
+                    'interaction_count' => $interactionCount,
                     'reads_count' => (int) $item->reads_count,
                     'edit_url' => route('dashboard.content.edit', ['contentItem' => $item]),
                 ];
@@ -113,11 +123,8 @@ class UserContentController extends Controller
             'comments' => (int) Comment::query()
                 ->whereHas('contentItem', fn (Builder $builder): Builder => $builder->where('author_id', $user->id))
                 ->count(),
-            'interactions' => (int) ContentItem::query()
-                ->where('author_id', $user->id)
-                ->withCount('likes')
-                ->get()
-                ->sum(fn (ContentItem $item): int => (int) $item->likes_count),
+            'interactions' => (int) ContentItem::query()->where('author_id', $user->id)->withCount(['likes', 'linkVotes'])->get()
+                ->sum(fn (ContentItem $item): int => (int) $item->likes_count + (int) $item->link_votes_count),
         ];
 
         /** @var LengthAwarePaginator<int, Comment> $recentComments */
@@ -143,6 +150,12 @@ class UserContentController extends Controller
             ])->all(),
             'sort' => $sort,
             'sortDirection' => $sortDirection,
+            'seo' => $this->buildSeoMeta->handle(
+                title: 'Mes contenus',
+                description: 'Suivez vos articles, leurs statuts et vos indicateurs personnels depuis le dashboard.',
+                canonicalUrl: route('dashboard.content.index'),
+                robots: 'noindex,follow',
+            ),
         ]);
     }
 
@@ -154,6 +167,12 @@ class UserContentController extends Controller
         return view('dashboard.content.create', [
             'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
             'defaultLocale' => $user->preferred_locale,
+            'seo' => $this->buildSeoMeta->handle(
+                title: 'Proposer un contenu',
+                description: 'Soumettez un article interne, externe ou un lien communautaire depuis votre dashboard.',
+                canonicalUrl: route('dashboard.content.create'),
+                robots: 'noindex,follow',
+            ),
         ]);
     }
 
@@ -174,6 +193,12 @@ class UserContentController extends Controller
             'translation' => $editableTranslation,
             'supportedLocales' => $supportedLocales,
             'defaultLocale' => $editableTranslation?->locale ?? $user->preferred_locale,
+            'seo' => $this->buildSeoMeta->handle(
+                title: 'Modifier mon contenu',
+                description: 'Mettez a jour votre contenu sans sortir du dashboard utilisateur.',
+                canonicalUrl: route('dashboard.content.edit', ['contentItem' => $contentItem]),
+                robots: 'noindex,follow',
+            ),
         ]);
     }
 
@@ -190,7 +215,7 @@ class UserContentController extends Controller
         );
 
         return redirect()
-            ->route('dashboard.content.index')
+            ->route('dashboard')
             ->with('status', 'Contenu soumis avec succes.');
     }
 

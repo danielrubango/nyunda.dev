@@ -27,6 +27,7 @@ class CommunityLinkSubmissionsController extends Controller
                 title: __('ui.blog.submit_community_link'),
                 description: __('ui.community.description'),
                 canonicalUrl: route('community-links.create'),
+                robots: 'noindex,follow',
             ),
         ]);
     }

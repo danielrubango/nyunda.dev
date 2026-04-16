@@ -8,7 +8,11 @@
     );
 @endphp
 
-<x-layouts.public :title="'Style Guide'">
+<x-layouts.public :seo="[
+    'title' => 'Style Guide',
+    'description' => 'Base components for the public interface.',
+    'robots' => 'noindex,follow',
+]">
     <div class="ui-container space-y-8">
         <header class="space-y-3">
             <p class="ui-eyebrow">UI</p>

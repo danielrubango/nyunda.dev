@@ -12,8 +12,10 @@ use App\Enums\ContentType;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Blog\ListBlogContentRequest;
+use App\Models\Comment;
 use App\Models\ContentTranslation;
 use App\Models\Tag;
+use App\Support\SeoDescription;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -28,6 +30,7 @@ class BlogContentController extends Controller
         private readonly ResolveAdjacentInternalArticles $resolveAdjacentInternalArticles,
         private readonly TrackContentRead $trackContentRead,
         private readonly BuildSeoMeta $buildSeoMeta,
+        private readonly SeoDescription $seoDescription,
     ) {}
 
     public function index(ListBlogContentRequest $request): View
@@ -54,7 +57,7 @@ class BlogContentController extends Controller
             'tags' => Tag::query()->orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug']),
             'seo' => $this->buildSeoMeta->handle(
                 title: __('ui.blog.title'),
-                description: __('ui.blog.subtitle'),
+                description: __('ui.seo.meta.blog'),
                 canonicalUrl: $request->fullUrl(),
             ),
         ]);
@@ -69,7 +72,7 @@ class BlogContentController extends Controller
         abort_if($translation === null, 404);
 
         $contentItem = $translation->contentItem;
-        $contentItem->loadMissing(['tags', 'author']);
+        $contentItem->loadMissing(['tags', 'author', 'translations']);
 
         if ($contentItem->type !== ContentType::InternalPost) {
             abort_if($translation->external_url === null, 404);
@@ -92,22 +95,69 @@ class BlogContentController extends Controller
                 ->exists();
         }
 
-        /** @var Collection<int, \App\Models\Comment> $comments */
+        /** @var Collection<int, Comment> $comments */
         $comments = collect();
 
         if ($contentItem->show_comments) {
             $contentItem->load([
                 'comments' => function ($query) use ($isAdmin): void {
+                    // Seulement les commentaires racine
+                    $query->whereNull('parent_id');
+
                     if (! $isAdmin) {
                         $query->where('is_hidden', false);
                     }
 
-                    $query->with('user')->oldest('created_at');
+                    $query
+                        ->with([
+                            'user',
+                            'replies' => function ($replyQuery) use ($isAdmin): void {
+                                if (! $isAdmin) {
+                                    $replyQuery->where('is_hidden', false);
+                                }
+                                $replyQuery->with('user')->oldest('created_at');
+                            },
+                        ])
+                        ->oldest('created_at');
                 },
             ]);
 
             $comments = $contentItem->comments;
         }
+
+        // Render le markdown de tous les commentaires + leurs replies
+        $renderedComments = $comments->mapWithKeys(
+            fn ($comment): array => [
+                $comment->id => $this->renderSafeMarkdown->handle($comment->body_markdown),
+            ],
+        );
+
+        foreach ($comments as $comment) {
+            foreach ($comment->replies as $reply) {
+                $renderedComments[$reply->id] = $this->renderSafeMarkdown->handle($reply->body_markdown);
+            }
+        }
+
+        $canonicalUrl = route('blog.show', [
+            'locale' => $translation->locale,
+            'slug' => $translation->slug,
+        ]);
+        $imageUrl = $translation->featured_image_url ?: $translation->external_og_image_url;
+        $articleDescription = $this->seoDescription->forMeta(
+            description: $translation->excerpt,
+            fallback: $this->seoDescription->generateExcerpt($translation->body_markdown, $translation->title, 220),
+            title: $translation->title,
+        );
+        $alternates = $contentItem->translations
+            ->filter(fn (ContentTranslation $item): bool => $item->slug !== '')
+            ->mapWithKeys(fn (ContentTranslation $item): array => [
+                $item->locale => route('blog.show', [
+                    'locale' => $item->locale,
+                    'slug' => $item->slug,
+                ]),
+            ])
+            ->all();
+        $alternates['x-default'] = $canonicalUrl;
 
         return view('blog.show', [
             'contentItem' => $contentItem,
@@ -117,20 +167,36 @@ class BlogContentController extends Controller
             'renderedBody' => $this->renderSafeMarkdown->handle($translation->body_markdown),
             'adjacentArticles' => $this->resolveAdjacentInternalArticles->handle($contentItem, $translation->locale),
             'comments' => $comments,
+            'renderedComments' => $renderedComments,
             'seo' => $this->buildSeoMeta->handle(
                 title: $translation->title,
-                description: $translation->excerpt,
-                canonicalUrl: route('blog.show', [
-                    'locale' => $translation->locale,
-                    'slug' => $translation->slug,
-                ]),
-                imageUrl: $translation->featured_image_url ?: $translation->external_og_image_url,
+                description: $articleDescription,
+                canonicalUrl: $canonicalUrl,
+                imageUrl: $imageUrl,
                 ogType: 'article',
-            ),
-            'renderedComments' => $comments->mapWithKeys(
-                fn ($comment): array => [
-                    $comment->id => $this->renderSafeMarkdown->handle($comment->body_markdown),
-                ],
+                alternates: $alternates,
+                schema: [[
+                    '@context' => 'https://schema.org',
+                    '@type' => 'Article',
+                    'headline' => $translation->title,
+                    'description' => $articleDescription,
+                    'datePublished' => $contentItem->published_at?->toIso8601String(),
+                    'dateModified' => ($translation->updated_at ?? $contentItem->updated_at)?->toIso8601String(),
+                    'mainEntityOfPage' => $canonicalUrl,
+                    'inLanguage' => $translation->locale,
+                    'author' => [
+                        '@type' => 'Person',
+                        'name' => $contentItem->author->name,
+                    ],
+                    'image' => $imageUrl !== null ? [$imageUrl] : null,
+                    'publisher' => [
+                        '@type' => 'Organization',
+                        'name' => config('app.name'),
+                    ],
+                ]],
+                publishedAt: $contentItem->published_at,
+                modifiedAt: $translation->updated_at ?? $contentItem->updated_at,
+                author: $contentItem->author->name,
             ),
         ]);
     }

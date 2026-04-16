@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\ApplyPreferredLocale;
 use App\Http\Middleware\ForceHttpsWhenConfigured;
+use App\Http\Middleware\SetRobotsTag;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ApplyPreferredLocale::class,
             ],
         );
+
+        $middleware->alias([
+            'seo.noindex' => SetRobotsTag::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

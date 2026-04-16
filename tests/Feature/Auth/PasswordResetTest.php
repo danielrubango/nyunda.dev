@@ -8,6 +8,7 @@ test('reset password link screen can be rendered', function () {
     $response = $this->get(route('password.request'));
 
     $response->assertOk();
+    $response->assertSee('<meta name="robots" content="noindex,follow">', false);
 });
 
 test('reset password link can be requested', function () {
@@ -31,6 +32,7 @@ test('reset password screen can be rendered', function () {
         $response = $this->get(route('password.reset', $notification->token));
 
         $response->assertOk();
+        $response->assertSee('<meta name="robots" content="noindex,follow">', false);
 
         return true;
     });

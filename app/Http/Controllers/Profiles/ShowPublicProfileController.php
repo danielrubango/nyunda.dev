@@ -20,12 +20,37 @@ class ShowPublicProfileController extends Controller
             ->where('is_profile_public', true)
             ->firstOrFail();
 
+        $description = $user->bio
+            ?: ($user->headline ?: __('ui.seo.meta.profile', ['name' => $user->name]));
+
+        $sameAs = array_values(array_filter([
+            $user->website_url,
+            $user->linkedin_url,
+            $user->x_url,
+            $user->github_url,
+        ]));
+
         return view('profiles.show', [
             'user' => $user,
             'seo' => $this->buildSeoMeta->handle(
                 title: $user->name,
-                description: 'Profil public de '.$user->name.' sur '.config('app.name').'.',
+                description: $description,
                 canonicalUrl: route('profiles.show', ['username' => (string) $user->public_profile_slug]),
+                schema: [[
+                    '@context' => 'https://schema.org',
+                    '@type' => 'ProfilePage',
+                    'name' => $user->name,
+                    'description' => $description,
+                    'url' => route('profiles.show', ['username' => (string) $user->public_profile_slug]),
+                    'mainEntity' => array_filter([
+                        '@type' => 'Person',
+                        'name' => $user->name,
+                        'description' => $description,
+                        'jobTitle' => $user->headline,
+                        'homeLocation' => $user->location,
+                        'sameAs' => $sameAs === [] ? null : $sameAs,
+                    ], fn (mixed $value): bool => $value !== null),
+                ]],
             ),
         ]);
     }

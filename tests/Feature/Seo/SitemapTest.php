@@ -23,6 +23,7 @@ test('sitemap exposes static pages and published internal posts', function () {
 
     $response->assertSuccessful();
     $response->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
+    $response->assertHeader('X-Robots-Tag', 'noindex,follow');
     $response->assertSee('<?xml version="1.0" encoding="UTF-8"?>', false);
     $response->assertSee(route('home'));
     $response->assertSee(route('blog.index'));
@@ -30,4 +31,6 @@ test('sitemap exposes static pages and published internal posts', function () {
     $response->assertSee(route('links.index'));
     $response->assertSee(route('blog.show', ['locale' => 'fr', 'slug' => 'sitemap-post']));
     $response->assertDontSee(route('blog.show', ['locale' => 'fr', 'slug' => 'draft-post']));
+    $response->assertDontSee(route('forum.index'));
+    $response->assertDontSee(route('seo.feed'));
 });

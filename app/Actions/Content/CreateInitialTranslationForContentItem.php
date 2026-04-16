@@ -4,10 +4,15 @@ namespace App\Actions\Content;
 
 use App\Models\ContentItem;
 use App\Models\ContentTranslation;
+use App\Support\SeoDescription;
 use Illuminate\Support\Str;
 
 class CreateInitialTranslationForContentItem
 {
+    public function __construct(
+        private readonly SeoDescription $seoDescription,
+    ) {}
+
     /**
      * @param  array<string, mixed>  $translationData
      */
@@ -21,17 +26,18 @@ class CreateInitialTranslationForContentItem
 
         $bodyMarkdown = (string) ($translationData['initial_body_markdown'] ?? '');
         $externalDescription = (string) ($translationData['initial_external_description'] ?? '');
-        $computedExcerptSource = $bodyMarkdown !== '' ? $bodyMarkdown : $externalDescription;
-        $computedExcerpt = trim((string) Str::of(strip_tags((string) Str::markdown($computedExcerptSource)))->squish());
         $slug = trim((string) ($translationData['initial_slug'] ?? ''));
         $excerpt = trim((string) ($translationData['initial_excerpt'] ?? ''));
+        $computedExcerpt = $bodyMarkdown !== ''
+            ? $this->seoDescription->generateExcerpt($bodyMarkdown, $title)
+            : $this->seoDescription->generatePlainExcerpt($externalDescription, $title);
 
         return ContentTranslation::query()->create([
             'content_item_id' => $contentItem->id,
             'locale' => (string) ($translationData['initial_locale'] ?? app()->getLocale()),
             'title' => $title,
             'slug' => $slug !== '' ? $slug : Str::slug($title),
-            'excerpt' => $excerpt !== '' ? $excerpt : Str::limit($computedExcerpt, 200),
+            'excerpt' => $excerpt !== '' ? $excerpt : $computedExcerpt,
             'body_markdown' => $bodyMarkdown !== '' ? $bodyMarkdown : null,
             'external_url' => $this->blankToNull($translationData['initial_external_url'] ?? null),
             'external_description' => $this->blankToNull($translationData['initial_external_description'] ?? null),

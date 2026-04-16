@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Http\Controllers\AboutPageController;
 use App\Http\Controllers\Admin\ExportSubscribersCsvController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Blog\BlogContentController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\CommunityLinkSubmissionsController;
@@ -30,6 +30,14 @@ Route::get('/feed.xml', RssFeedController::class)
 
 Route::post('/locale', UpdateLocaleController::class)
     ->name('locale.update');
+
+Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
+    ->whereIn('provider', ['google', 'linkedin'])
+    ->name('oauth.redirect');
+
+Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])
+    ->whereIn('provider', ['google', 'linkedin'])
+    ->name('oauth.callback');
 
 Route::get('/u/{username}', ShowPublicProfileController::class)
     ->where('username', '[A-Za-z0-9][A-Za-z0-9_-]{2,39}')
@@ -70,7 +78,7 @@ $redirectForumUnavailable = static function (): RedirectResponse {
 Route::get('/forum', $redirectForumUnavailable)
     ->name('forum.index');
 
-Route::middleware(['auth'])->group(function () use ($redirectForumUnavailable): void {
+Route::middleware(['auth', 'seo.noindex'])->group(function () use ($redirectForumUnavailable): void {
     Route::get('/forum/create', $redirectForumUnavailable)
         ->name('forum.create');
 
@@ -105,7 +113,7 @@ Route::middleware(['auth'])->group(function () use ($redirectForumUnavailable): 
 Route::get('/forum/{forumThread}', $redirectForumUnavailable)
     ->name('forum.show');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'seo.noindex'])->group(function () {
     Route::get('/admin/subscribers/export', ExportSubscribersCsvController::class)
         ->name('admin.subscribers.export');
 
@@ -132,20 +140,12 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('dashboard', function () {
-    $user = auth()->user();
-
-    if (! $user || ! $user->hasRole(UserRole::Admin)) {
-        return redirect()
-            ->route('home')
-            ->with('status', __('ui.flash.connected'));
-    }
-
     return view('dashboard');
 })
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'seo.noindex'])
     ->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->group(function (): void {
+Route::middleware(['auth', 'verified', 'seo.noindex'])->group(function (): void {
     Route::get('/dashboard/content', [UserContentController::class, 'index'])
         ->name('dashboard.content.index');
 
@@ -161,8 +161,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::put('/dashboard/content/{contentItem}', [UserContentController::class, 'update'])
         ->name('dashboard.content.update');
 
-    Route::get('/dashboard/activity/comments', static fn (): RedirectResponse => redirect()->route('dashboard.content.index'))
-        ->name('dashboard.activity.comments');
+    Route::get('/dashboard/activity/comments', function (): RedirectResponse {
+        return redirect()->route('dashboard.content.index');
+    })->name('dashboard.activity.comments');
 });
 
 Route::view('/style-guide', 'style-guide')

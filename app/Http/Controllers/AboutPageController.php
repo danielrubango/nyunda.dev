@@ -29,7 +29,7 @@ class AboutPageController extends Controller
             ],
             'seo' => $this->buildSeoMeta->handle(
                 title: __('ui.about.title'),
-                description: __('ui.about.intro'),
+                description: __('ui.seo.meta.about'),
                 canonicalUrl: route('about.show'),
             ),
         ]);

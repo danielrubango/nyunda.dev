@@ -5,6 +5,8 @@ namespace App\Filament\Resources\ContentItems\Schemas;
 use App\Enums\ContentStatus;
 use App\Enums\ContentType;
 use App\Models\ContentItem;
+use App\Models\User;
+use App\Support\SeoDescription;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\MarkdownEditor;
@@ -40,7 +42,10 @@ class ContentItemForm
                                 ->live()
                                 ->columnSpanFull(),
                         Select::make('author_id')
-                            ->relationship('author', 'name')
+                            ->options(fn (): array => User::query()
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->all())
                             ->searchable()
                             ->preload()
                             ->required()
@@ -188,6 +193,7 @@ class ContentItemForm
                             ->columnSpanFull(),
                         Textarea::make('initial_excerpt')
                             ->label('Excerpt')
+                            ->rules(fn (Get $get): array => self::isInternalType($get, $forcedType) ? ['min:70'] : [])
                             ->rows(3)
                             ->columnSpanFull(),
                         MarkdownEditor::make('initial_body_markdown')
@@ -208,8 +214,7 @@ class ContentItemForm
                                     return;
                                 }
 
-                                $plainText = trim((string) Str::of(strip_tags((string) Str::markdown((string) $state)))->squish());
-                                $set('initial_excerpt', Str::limit($plainText, 200));
+                                $set('initial_excerpt', app(SeoDescription::class)->generateExcerpt((string) $state, (string) $get('initial_title')));
                             })
                             ->columnSpanFull(),
                         TextInput::make('initial_external_url')
@@ -243,8 +248,7 @@ class ContentItemForm
                                     return;
                                 }
 
-                                $plainText = trim((string) Str::of((string) $state)->squish());
-                                $set('initial_excerpt', Str::limit($plainText, 200));
+                                $set('initial_excerpt', app(SeoDescription::class)->generatePlainExcerpt((string) $state, (string) $get('initial_title')));
                             })
                             ->columnSpanFull(),
                     ])

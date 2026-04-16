@@ -1,4 +1,4 @@
-<x-layouts.public :title="'Mes contenus'">
+<x-layouts.public :seo="$seo">
     <div class="ui-container">
         <div class="mx-auto w-full max-w-6xl space-y-6">
             <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 border-b border-transparent pb-1 text-sm font-medium text-zinc-700 no-underline hover:border-zinc-400 hover:text-zinc-900">

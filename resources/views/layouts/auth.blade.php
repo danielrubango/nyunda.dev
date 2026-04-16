@@ -2,7 +2,11 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head', [
-            'seo' => ['title' => $title ?? config('app.name')],
+            'seo' => array_filter([
+                'title' => $title ?? config('app.name'),
+                'description' => $description ?? null,
+                'robots' => 'noindex,follow',
+            ], fn (mixed $value): bool => $value !== null),
         ])
     </head>
     <body class="ui-auth-layout bg-white text-zinc-900" data-ui-auth-layout>

@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\ContentTranslations\Schemas;
 
+use App\Enums\ContentType;
+use App\Models\ContentItem;
+use App\Support\SeoDescription;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -51,6 +54,10 @@ class ContentTranslationForm
                             ->columnSpanFull(),
                         Textarea::make('excerpt')
                             ->required()
+                            ->rules(fn (Get $get): array => ContentItem::query()
+                                ->whereKey($get('content_item_id'))
+                                ->where('type', ContentType::InternalPost->value)
+                                ->exists() ? ['min:70'] : [])
                             ->rows(3)
                             ->columnSpanFull(),
                         MarkdownEditor::make('body_markdown')
@@ -62,6 +69,14 @@ class ContentTranslationForm
                             ])
                             ->fileAttachmentsDisk('public')
                             ->fileAttachmentsDirectory('content-markdown')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (Set $set, Get $get, ?string $state): void {
+                                if ((string) $get('excerpt') !== '') {
+                                    return;
+                                }
+
+                                $set('excerpt', app(SeoDescription::class)->generateExcerpt((string) $state, (string) $get('title')));
+                            })
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
@@ -81,6 +96,14 @@ class ContentTranslationForm
                             ->maxLength(2048)
                             ->columnSpanFull(),
                         Textarea::make('external_description')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (Set $set, Get $get, ?string $state): void {
+                                if ((string) $get('excerpt') !== '') {
+                                    return;
+                                }
+
+                                $set('excerpt', app(SeoDescription::class)->generatePlainExcerpt((string) $state, (string) $get('title')));
+                            })
                             ->rows(3)
                             ->columnSpanFull(),
                     ])

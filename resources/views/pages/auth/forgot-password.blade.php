@@ -1,4 +1,7 @@
-<x-layouts::auth>
+<x-layouts::auth
+    :title="__('Forgot password')"
+    :description="__('Enter your email to receive a password reset link')"
+>
     <div class="flex flex-col gap-6">
         <x-auth-header :title="__('Forgot password')" :description="__('Enter your email to receive a password reset link')" />
 

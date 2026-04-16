@@ -74,8 +74,16 @@ class HomePageController extends Controller
             'linkRows' => $linkRows,
             'seo' => $this->buildSeoMeta->handle(
                 title: config('app.name'),
-                description: __('ui.home.tagline'),
+                description: __('ui.seo.meta.home'),
                 canonicalUrl: route('home'),
+                schema: [[
+                    '@context' => 'https://schema.org',
+                    '@type' => 'WebSite',
+                    'name' => config('app.name'),
+                    'url' => route('home'),
+                    'description' => __('ui.seo.meta.home'),
+                    'inLanguage' => app()->getLocale(),
+                ]],
             ),
         ]);
     }

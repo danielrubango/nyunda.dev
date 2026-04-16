@@ -17,6 +17,7 @@ class SitemapController extends Controller
             ->view('seo.sitemap', [
                 'urls' => $this->buildSitemapUrls->handle(),
             ])
-            ->header('Content-Type', 'application/xml; charset=UTF-8');
+            ->header('Content-Type', 'application/xml; charset=UTF-8')
+            ->header('X-Robots-Tag', 'noindex,follow');
     }
 }

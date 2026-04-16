@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ContentItems\RelationManagers;
 
 use App\Enums\ContentType;
 use App\Models\ContentTranslation;
+use App\Support\SeoDescription;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -62,6 +63,7 @@ class TranslationsRelationManager extends RelationManager
                     ->maxLength(255),
                 Textarea::make('excerpt')
                     ->required()
+                    ->rules(fn (): array => $this->isInternalType() ? ['min:70'] : [])
                     ->rows(3)
                     ->columnSpanFull(),
                 MarkdownEditor::make('body_markdown')
@@ -81,8 +83,7 @@ class TranslationsRelationManager extends RelationManager
                             return;
                         }
 
-                        $plainText = trim((string) Str::of(strip_tags((string) Str::markdown((string) $state)))->squish());
-                        $set('excerpt', Str::limit($plainText, 200));
+                        $set('excerpt', app(SeoDescription::class)->generateExcerpt((string) $state, (string) $get('title')));
                     })
                     ->columnSpanFull(),
                 TextInput::make('external_url')
@@ -103,8 +104,7 @@ class TranslationsRelationManager extends RelationManager
                             return;
                         }
 
-                        $plainText = trim((string) Str::of((string) $state)->squish());
-                        $set('excerpt', Str::limit($plainText, 200));
+                        $set('excerpt', app(SeoDescription::class)->generatePlainExcerpt((string) $state, (string) $get('title')));
                     })
                     ->columnSpanFull(),
                 TextInput::make('external_og_image_url')

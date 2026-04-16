@@ -5,11 +5,16 @@ namespace App\Actions\Content;
 use App\Enums\ContentType;
 use App\Models\ContentItem;
 use App\Models\ContentTranslation;
+use App\Support\SeoDescription;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class UpdateDashboardContentSubmission
 {
+    public function __construct(
+        private readonly SeoDescription $seoDescription,
+    ) {}
+
     /**
      * @param  array{
      *     type: ContentType,
@@ -72,14 +77,14 @@ class UpdateDashboardContentSubmission
     protected function resolveExcerpt(string $title, ?string $bodyMarkdown, ?string $externalDescription): string
     {
         if (is_string($bodyMarkdown) && $bodyMarkdown !== '') {
-            return Str::limit(trim((string) Str::of(strip_tags((string) Str::markdown($bodyMarkdown)))->squish()), 200, '');
+            return $this->seoDescription->generateExcerpt($bodyMarkdown, $title);
         }
 
         if (is_string($externalDescription) && $externalDescription !== '') {
-            return Str::limit(trim((string) Str::of($externalDescription)->squish()), 200, '');
+            return $this->seoDescription->generatePlainExcerpt($externalDescription, $title);
         }
 
-        return Str::limit($title, 200, '');
+        return $this->seoDescription->generatePlainExcerpt($title, $title);
     }
 
     protected function resolveUniqueSlug(string $locale, string $title, ?int $ignoredTranslationId = null): string

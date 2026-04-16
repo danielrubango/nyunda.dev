@@ -104,7 +104,7 @@ class LinksPageController extends Controller
             'supportedLocales' => config('app.supported_locales', ['fr', 'en']),
             'seo' => $this->buildSeoMeta->handle(
                 title: __('ui.links.title'),
-                description: __('ui.links.subtitle'),
+                description: __('ui.seo.meta.links'),
                 canonicalUrl: $request->fullUrl(),
             ),
         ]);
