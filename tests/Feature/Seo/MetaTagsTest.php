@@ -17,7 +17,7 @@ test('blog listing renders canonical and open graph metadata', function () {
 test('public pages render targeted seo descriptions', function () {
     $this->get('/')
         ->assertSuccessful()
-        ->assertSee('<meta name="description" content="publie des articles concrets sur Laravel, PHP et l&#039;IA, avec des ressources utiles pour les developpeurs et les equipes produit.">', false)
+        ->assertSee('<meta name="description" content="'.e(__('ui.seo.meta.home')).'">', false)
         ->assertSee('application/ld+json', false)
         ->assertSee('"@type": "WebSite"', false);
 

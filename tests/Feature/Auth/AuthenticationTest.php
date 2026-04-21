@@ -21,7 +21,8 @@ test('login screen can be rendered', function () {
     $response->assertDontSee('id="footer-locale-select"', false);
     $response->assertDontSee(__('ui.nav.blog'));
     $response->assertSee('<meta name="robots" content="noindex,follow">', false);
-    $response->assertSee('<meta name="description" content="'.e(__('Enter your email and password below to log in')).'">', false);
+    $response->assertHeader('X-Robots-Tag', 'noindex,follow');
+    $response->assertSee('<meta name="description" content="'.e(__('Access your Nyunda account to manage your profile, publish content, and continue your activity.')).'">', false);
 });
 
 test('login screen shows only configured social providers and separator', function () {

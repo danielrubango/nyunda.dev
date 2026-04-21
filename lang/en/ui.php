@@ -227,9 +227,9 @@ return [
         'social_text' => 'You can follow my work and discussions on these platforms.',
     ],
     'seo' => [
-        'default_description' => 'NYUNDA.DEV shares practical articles on Laravel, PHP, and AI, plus curated resources for developers.',
+        'default_description' => 'Practical articles on Laravel, PHP, and AI, plus curated resources for developers.',
         'meta' => [
-            'home' => 'NYUNDA.DEV publishes practical articles on Laravel, PHP, and applied AI, with useful resources for developers and product teams.',
+            'home' => 'Practical articles on Laravel, PHP, and applied AI, plus curated resources for developers and product teams.',
             'about' => 'Learn more about the maker of NYUNDA.DEV, with experience across Laravel, backend engineering, infrastructure, and reliable web systems.',
             'blog' => 'Browse readable articles on Laravel, PHP, applied AI, and real-world engineering lessons to design, ship, and improve products with confidence.',
             'links' => 'Discover a curated selection of external resources on Laravel, PHP, software architecture, AI, and developer tooling worth following.',

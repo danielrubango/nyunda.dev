@@ -227,9 +227,9 @@ return [
         'social_text' => 'Retrouvez mes publications et échanges sur ces plateformes.',
     ],
     'seo' => [
-        'default_description' => 'NYUNDA.DEV partage des articles pratiques sur Laravel, PHP et l\'IA, avec des ressources selectionnees pour les developpeurs.',
+        'default_description' => 'Articles pratiques sur Laravel, PHP et l\'IA, avec une selection de ressources utiles pour les developpeurs.',
         'meta' => [
-            'home' => 'NYUNDA.DEV publie des articles concrets sur Laravel, PHP et l\'IA, avec des ressources utiles pour les developpeurs et les equipes produit.',
+            'home' => 'Articles pratiques sur Laravel, PHP et l\'IA appliquee, avec une selection de ressources utiles pour les developpeurs et les equipes produit.',
             'about' => 'Decouvrez le parcours, l\'experience et les domaines d\'expertise du createur de NYUNDA.DEV autour de Laravel, du backend et des systemes web.',
             'blog' => 'Explorez des articles lisibles sur Laravel, PHP, l\'IA appliquee et les retours terrain pour mieux concevoir, livrer et faire evoluer vos produits.',
             'links' => 'Retrouvez une selection editoriale de ressources externes utiles sur Laravel, PHP, architecture logicielle, IA et outils pour developpeurs.',
