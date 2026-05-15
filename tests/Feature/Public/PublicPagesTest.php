@@ -117,6 +117,7 @@ test('links page lists only external links', function () {
     $response->assertSee('data-testid="external-link-card"', false);
     $response->assertSee('id="links-search-input"', false);
     $response->assertSee('focus:border-zinc-700 focus-visible:border-zinc-700', false);
+    $response->assertSee('group relative flex h-full flex-col no-underline transition-colors border-zinc-300 hover:bg-brand-50', false);
     $response->assertSee('class="pr-8 font-sans text-xl font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-brand-700"', false);
     $response->assertDontSee('opacity-0 transition-opacity duration-150 group-hover:opacity-100', false);
 });

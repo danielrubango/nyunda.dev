@@ -34,11 +34,14 @@
     $titlePaddingClasses = $isExternal ? 'pr-8' : '';
 
     $cardBorderClasses = $isInternal
-        ? 'border-zinc-300'
-        : 'border-brand-300';
+        ? 'border-brand-300'
+        : 'border-zinc-300';
     $cardHoverBackgroundClasses = $isInternal
         ? 'hover:bg-zinc-100'
         : 'hover:bg-brand-50';
+    $canSeeReads = $showReads
+        && ($authenticatedUser = auth()->user()) !== null
+        && $authenticatedUser->hasRole(\App\Enums\UserRole::Admin);
 @endphp
 
 <x-ui.card
@@ -76,7 +79,7 @@
                     @endif
                 </p>
 
-                @if ($showReads && $isInternal)
+                @if ($canSeeReads && $isInternal)
                     <p class="text-sm font-medium tabular-nums text-zinc-800">
                         {{ __('ui.blog.reads', ['count' => number_format((int) $item->reads_count)]) }}
                     </p>

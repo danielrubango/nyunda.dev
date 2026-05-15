@@ -27,16 +27,13 @@
 
             @if (is_array($featuredRow))
                 <div class="space-y-3">
-                    <div class="space-y-1">
-                        <p class="ui-eyebrow">{{ __('ui.home.featured_title') }}</p>
-                        <p class="text-sm text-zinc-500">{{ __('ui.home.featured_hint') }}</p>
-                    </div>
+                    <p class="ui-eyebrow">{{ __('ui.home.featured_title') }}</p>
 
                     <x-public.article-card
                         :item="$featuredRow['content_item']"
                         :translation="$featuredRow['translation']"
                         size="xl"
-                        class="border-2 border-brand-700 bg-linear-to-br from-white to-brand-50/70 shadow-xs"
+                        class="border-2 bg-linear-to-br from-white to-brand-50/70 shadow-xs"
                     />
                 </div>
             @endif

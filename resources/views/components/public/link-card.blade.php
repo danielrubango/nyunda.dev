@@ -10,7 +10,7 @@
     $domain = is_string($host) ? \Illuminate\Support\Str::of($host)->replaceStart('www.', '')->value() : null;
     $description = $translation->external_description ?: $translation->excerpt;
     $isExternalPost = $item->type === \App\Enums\ContentType::ExternalPost;
-    $cardBorderClasses = $isExternalPost ? 'border-brand-300' : 'border-zinc-300';
+    $cardBorderClasses = 'border-zinc-300';
     $cardHoverBackgroundClasses = $isExternalPost ? 'hover:bg-brand-50' : 'hover:bg-zinc-100';
 @endphp
 
