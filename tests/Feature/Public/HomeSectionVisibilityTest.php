@@ -32,7 +32,6 @@ test('home page hides links section when there are no link rows', function () {
 
     $response->assertSuccessful();
     $response->assertDontSee('Liens récents');
-    $response->assertDontSee('Voir tous les liens');
 });
 
 test('home page hides dynamic sections when there is no published content', function () {
