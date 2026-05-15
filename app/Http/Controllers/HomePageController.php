@@ -43,15 +43,12 @@ class HomePageController extends Controller
             ->values();
 
         $popularRows = $articleRows
-            ->sortByDesc(function (array $row): int {
-                $contentItem = $row['content_item'];
-
-                if ($contentItem->type === ContentType::InternalPost) {
-                    return (int) $contentItem->likes_count;
-                }
-
-                return 0;
-            })
+            ->filter(fn (array $row): bool => $row['content_item']->type === ContentType::InternalPost)
+            ->sortByDesc(fn (array $row): string => sprintf(
+                '%020d-%020d',
+                (int) $row['content_item']->reads_count,
+                (int) $row['content_item']->id,
+            ))
             ->take(4)
             ->values();
 
@@ -99,7 +96,6 @@ class HomePageController extends Controller
                 ContentType::InternalPost->value,
                 ContentType::ExternalPost->value,
             ])
-            ->withCount('likes')
             ->with('author')
             ->with('translations')
             ->latest('published_at')

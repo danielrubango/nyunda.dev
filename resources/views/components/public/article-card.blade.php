@@ -2,6 +2,7 @@
     'item',
     'translation',
     'size' => 'md',
+    'showReads' => false,
 ])
 
 @php
@@ -65,14 +66,22 @@
 
         <p class="line-clamp-3 text-sm text-zinc-600">{{ $excerpt }}</p>
 
-        <div class="mt-auto flex items-end justify-between gap-3">
-            <p class="text-xs text-zinc-500">
-                @if ($isInternal)
-                    {{ __('ui.blog.published_by', ['date' => $publishedAt, 'author' => $authorName]) }}
-                @else
-                    {{ __('ui.blog.shared_on_domain', ['date' => $publishedAt, 'domain' => $externalDomain ?? __('ui.links.unknown_domain')]) }}
+        <div class="mt-auto flex flex-wrap items-end justify-between gap-3">
+            <div class="space-y-2">
+                <p class="text-xs text-zinc-500">
+                    @if ($isInternal)
+                        {{ __('ui.blog.published_by', ['date' => $publishedAt, 'author' => $authorName]) }}
+                    @else
+                        {{ __('ui.blog.shared_on_domain', ['date' => $publishedAt, 'domain' => $externalDomain ?? __('ui.links.unknown_domain')]) }}
+                    @endif
+                </p>
+
+                @if ($showReads && $isInternal)
+                    <p class="text-sm font-medium tabular-nums text-zinc-800">
+                        {{ __('ui.blog.reads', ['count' => number_format((int) $item->reads_count)]) }}
+                    </p>
                 @endif
-            </p>
+            </div>
 
             <div class="flex shrink-0 items-center gap-2">
                 <x-ui.badge :variant="$isInternal ? 'internal' : 'external'">
